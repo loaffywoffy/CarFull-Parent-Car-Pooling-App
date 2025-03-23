@@ -73,7 +73,7 @@ export default function PartyGroupDetails({ partyGroup, onOfferCarpool }: PartyG
             <div className="flex items-start space-x-2">
               <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
               <div>
-                <p className="font-medium text-gray-900">Arrival Time</p>
+                <p className="font-medium text-gray-900">Start Time</p>
                 <p className="text-gray-600 text-sm">{partyGroup.targetArrivalTime}</p>
               </div>
             </div>

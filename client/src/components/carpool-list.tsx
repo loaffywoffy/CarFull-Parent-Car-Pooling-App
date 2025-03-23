@@ -160,7 +160,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
                     </p>
                     {carpool.targetArrivalTime && (
                       <div className="flex flex-wrap gap-x-4 text-neutral-600 text-sm">
-                        <p><span className="font-medium">Arrival:</span> {carpool.targetArrivalTime}</p>
+                        <p><span className="font-medium">Start:</span> {carpool.targetArrivalTime}</p>
                         {carpool.estimatedDepartureTime && (
                           <p><span className="font-medium">Departure:</span> {carpool.estimatedDepartureTime}</p>
                         )}

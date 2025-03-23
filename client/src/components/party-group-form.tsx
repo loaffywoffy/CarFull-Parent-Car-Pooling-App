@@ -21,7 +21,7 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   partyAddress: z.string().min(5, "Party address is required"),
   partyCity: z.string().min(2, "City is required"),
   partyPostcode: z.string().min(3, "Postcode is required"),
-  targetArrivalTime: z.string().min(1, "Arrival time is required"),
+  targetArrivalTime: z.string().min(1, "Start time is required"),
   accessCode: z.string().min(4, "Access code must be at least 4 characters")
 });
 

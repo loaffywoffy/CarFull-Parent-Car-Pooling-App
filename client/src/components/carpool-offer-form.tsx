@@ -208,7 +208,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
               </div>
               <div className="flex items-center">
                 <ClockIcon className="mr-2 h-4 w-4 text-primary-600" />
-                Arrival: {partyGroup.targetArrivalTime}
+                Start: {partyGroup.targetArrivalTime}
               </div>
             </div>
             
