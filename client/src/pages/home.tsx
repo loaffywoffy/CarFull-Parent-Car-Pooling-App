@@ -101,7 +101,21 @@ export default function Home() {
 
   const handleOfferCarpool = (partyGroupId: number) => {
     if (partyGroupId) {
-      setActiveTab("offer");
+      // If we don't have the party group selected yet, fetch it first
+      if (!selectedPartyGroup || selectedPartyGroup.id !== partyGroupId) {
+        const fetchPartyGroup = async () => {
+          try {
+            const partyGroup = await getPartyGroupById(partyGroupId);
+            setSelectedPartyGroup(partyGroup);
+            setActiveTab("offer");
+          } catch (error) {
+            console.error("Error fetching party group:", error);
+          }
+        };
+        fetchPartyGroup();
+      } else {
+        setActiveTab("offer");
+      }
     }
   };
 
