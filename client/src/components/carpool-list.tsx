@@ -10,11 +10,12 @@ import CarpoolRequestsList from "./carpool-requests-list";
 
 interface CarpoolListProps {
   onRequestSpot: (carpoolId: number) => void;
+  onManageCalendar?: (carpoolId: number) => void;
 }
 
 type FilterOption = "all" | "pickup" | "dropoff" | "both";
 
-export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
+export default function CarpoolList({ onRequestSpot, onManageCalendar }: CarpoolListProps) {
   const [filter, setFilter] = useState<FilterOption>("all");
   const [openCarpoolIds, setOpenCarpoolIds] = useState<Record<number, boolean>>({});
   

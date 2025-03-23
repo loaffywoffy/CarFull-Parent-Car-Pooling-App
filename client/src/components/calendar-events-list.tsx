@@ -35,7 +35,7 @@ export default function CalendarEventsList({ carpoolId }: CalendarEventsListProp
   const { data: events = [], isLoading, isError } = useQuery({
     queryKey: ['/api/carpools', carpoolId, 'calendar-events'],
     queryFn: () => getCalendarEventsByCarpoolId(carpoolId),
-  });
+  }) as { data: CalendarEvent[], isLoading: boolean, isError: boolean };
 
   const deleteMutation = useMutation({
     mutationFn: (eventId: number) => deleteCalendarEvent(eventId),

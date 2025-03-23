@@ -80,7 +80,25 @@ export class MemStorage implements IStorage {
   // Carpool methods
   async createCarpool(insertCarpool: InsertCarpool): Promise<Carpool> {
     const id = this.currentCarpoolId++;
-    const carpool: Carpool = { ...insertCarpool, id };
+    // Ensure all nullable fields have proper null values instead of undefined
+    const carpool: Carpool = { 
+      ...insertCarpool, 
+      id,
+      canPickup: insertCarpool.canPickup ?? null,
+      canDropoff: insertCarpool.canDropoff ?? null,
+      canBoth: insertCarpool.canBoth ?? null,
+      returnSpacesAvailable: insertCarpool.returnSpacesAvailable ?? null,
+      maxDistance: insertCarpool.maxDistance ?? null,
+      pickupLocation: insertCarpool.pickupLocation ?? null,
+      pickupLocationCity: insertCarpool.pickupLocationCity ?? null,
+      pickupLocationPostcode: insertCarpool.pickupLocationPostcode ?? null,
+      additionalNotes: insertCarpool.additionalNotes ?? null,
+      partyAddress: insertCarpool.partyAddress ?? null,
+      partyCity: insertCarpool.partyCity ?? null,
+      partyPostcode: insertCarpool.partyPostcode ?? null,
+      targetArrivalTime: insertCarpool.targetArrivalTime ?? null,
+      estimatedDepartureTime: insertCarpool.estimatedDepartureTime ?? null
+    };
     this.carpools.set(id, carpool);
     return carpool;
   }
@@ -96,7 +114,16 @@ export class MemStorage implements IStorage {
   // Carpool request methods
   async createCarpoolRequest(insertRequest: InsertCarpoolRequest): Promise<CarpoolRequest> {
     const id = this.currentRequestId++;
-    const request: CarpoolRequest = { ...insertRequest, id };
+    // Ensure all nullable fields have proper null values instead of undefined
+    const request: CarpoolRequest = { 
+      ...insertRequest, 
+      id,
+      childPhone: insertRequest.childPhone ?? null,
+      needsPickup: insertRequest.needsPickup ?? null,
+      needsDropoff: insertRequest.needsDropoff ?? null,
+      needsBoth: insertRequest.needsBoth ?? null,
+      specialRequirements: insertRequest.specialRequirements ?? null
+    };
     this.carpoolRequests.set(id, request);
     return request;
   }
@@ -110,7 +137,16 @@ export class MemStorage implements IStorage {
   // Calendar event methods
   async createCalendarEvent(insertEvent: InsertCalendarEvent): Promise<CalendarEvent> {
     const id = this.currentEventId++;
-    const event: CalendarEvent = { ...insertEvent, id };
+    // Ensure all nullable fields have proper null values instead of undefined
+    const event: CalendarEvent = { 
+      ...insertEvent, 
+      id,
+      description: insertEvent.description ?? null,
+      location: insertEvent.location ?? null,
+      isRecurring: insertEvent.isRecurring ?? null,
+      recurrencePattern: insertEvent.recurrencePattern ?? null,
+      reminderTime: insertEvent.reminderTime ?? null
+    };
     this.calendarEvents.set(id, event);
     return event;
   }
@@ -129,7 +165,22 @@ export class MemStorage implements IStorage {
     const event = this.calendarEvents.get(id);
     if (!event) return undefined;
     
-    const updatedEvent = { ...event, ...eventUpdate };
+    // Process updates with proper null handling
+    const processedUpdate: Partial<CalendarEvent> = {};
+    
+    if ('description' in eventUpdate) processedUpdate.description = eventUpdate.description ?? null;
+    if ('location' in eventUpdate) processedUpdate.location = eventUpdate.location ?? null;
+    if ('isRecurring' in eventUpdate) processedUpdate.isRecurring = eventUpdate.isRecurring ?? null;
+    if ('recurrencePattern' in eventUpdate) processedUpdate.recurrencePattern = eventUpdate.recurrencePattern ?? null;
+    if ('reminderTime' in eventUpdate) processedUpdate.reminderTime = eventUpdate.reminderTime ?? null;
+    
+    // Copy non-nullable fields directly
+    if ('title' in eventUpdate) processedUpdate.title = eventUpdate.title;
+    if ('startDate' in eventUpdate) processedUpdate.startDate = eventUpdate.startDate;
+    if ('endDate' in eventUpdate) processedUpdate.endDate = eventUpdate.endDate;
+    if ('carpoolId' in eventUpdate) processedUpdate.carpoolId = eventUpdate.carpoolId;
+    
+    const updatedEvent = { ...event, ...processedUpdate };
     this.calendarEvents.set(id, updatedEvent);
     return updatedEvent;
   }
