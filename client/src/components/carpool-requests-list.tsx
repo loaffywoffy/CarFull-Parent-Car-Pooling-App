@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getCarpoolRequests, getCarpoolById } from "@/api/carpools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CarpoolRequest, Carpool } from "@shared/schema";
+import EmergencyContactNotification from "./emergency-contact-notification";
 
 interface CarpoolRequestsListProps {
   carpoolId: number;
@@ -62,6 +63,11 @@ export default function CarpoolRequestsList({ carpoolId }: CarpoolRequestsListPr
 
   return (
     <div className="mt-3">
+      {/* Emergency Contact Notification */}
+      <div className="mb-4">
+        <EmergencyContactNotification carpoolId={carpoolId} />
+      </div>
+      
       <h4 className="text-sm font-medium text-gray-700 mb-2">Confirmed Passengers:</h4>
       
       {/* Pickup Passengers */}

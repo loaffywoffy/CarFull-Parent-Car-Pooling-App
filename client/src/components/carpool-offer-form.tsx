@@ -47,6 +47,11 @@ const carpoolFormSchema = z.object({
   pickupLocationPostcode: z.string().optional(),
   additionalNotes: z.string().optional(),
   estimatedDepartureTime: z.string().optional(),
+  
+  // Emergency contact information
+  emergencyContactName: z.string().min(1, "Emergency contact name is required"),
+  emergencyContactPhone: z.string().min(1, "Emergency contact phone is required"),
+  emergencyContactRelationship: z.string().min(1, "Relationship to child is required"),
 }).refine((data) => {
   // If canPickup or canBoth is selected, spacesAvailable is required
   if ((data.canPickup || data.canBoth) && !data.spacesAvailable) {
@@ -120,6 +125,11 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
       pickupLocationPostcode: "",
       additionalNotes: "",
       estimatedDepartureTime: "",
+      
+      // Emergency contact information
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      emergencyContactRelationship: "",
     },
   });
 
