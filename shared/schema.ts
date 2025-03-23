@@ -48,6 +48,10 @@ export const carpools = pgTable("carpools", {
   pickupLocationPostcode: text("pickup_location_postcode"),
   additionalNotes: text("additional_notes"),
   estimatedDepartureTime: text("estimated_departure_time"),
+  // Emergency contact information
+  emergencyContactName: text("emergency_contact_name"),
+  emergencyContactPhone: text("emergency_contact_phone"),
+  emergencyContactRelationship: text("emergency_contact_relationship"),
 });
 
 // CarpoolRequest schema for requests to join carpool
@@ -65,6 +69,10 @@ export const carpoolRequests = pgTable("carpool_requests", {
   needsDropoff: boolean("needs_dropoff").default(false),
   needsBoth: boolean("needs_both").default(false),
   specialRequirements: text("special_requirements"),
+  // Emergency contact information
+  emergencyContactName: text("emergency_contact_name"),
+  emergencyContactPhone: text("emergency_contact_phone"),
+  emergencyContactRelationship: text("emergency_contact_relationship"),
 });
 
 // Calendar Events schema for carpool scheduling

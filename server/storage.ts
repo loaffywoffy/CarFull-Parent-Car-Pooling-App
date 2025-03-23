@@ -144,7 +144,10 @@ export class MemStorage implements IStorage {
       pickupLocationCity: insertCarpool.pickupLocationCity ?? null,
       pickupLocationPostcode: insertCarpool.pickupLocationPostcode ?? null,
       additionalNotes: insertCarpool.additionalNotes ?? null,
-      estimatedDepartureTime: insertCarpool.estimatedDepartureTime ?? null
+      estimatedDepartureTime: insertCarpool.estimatedDepartureTime ?? null,
+      emergencyContactName: insertCarpool.emergencyContactName ?? null,
+      emergencyContactPhone: insertCarpool.emergencyContactPhone ?? null,
+      emergencyContactRelationship: insertCarpool.emergencyContactRelationship ?? null
     };
     this.carpools.set(id, carpool);
     return carpool;
@@ -175,7 +178,10 @@ export class MemStorage implements IStorage {
       needsPickup: insertRequest.needsPickup ?? null,
       needsDropoff: insertRequest.needsDropoff ?? null,
       needsBoth: insertRequest.needsBoth ?? null,
-      specialRequirements: insertRequest.specialRequirements ?? null
+      specialRequirements: insertRequest.specialRequirements ?? null,
+      emergencyContactName: insertRequest.emergencyContactName ?? null,
+      emergencyContactPhone: insertRequest.emergencyContactPhone ?? null,
+      emergencyContactRelationship: insertRequest.emergencyContactRelationship ?? null
     };
     this.carpoolRequests.set(id, request);
     return request;
