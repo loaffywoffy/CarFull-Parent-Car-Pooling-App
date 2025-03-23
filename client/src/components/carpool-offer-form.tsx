@@ -68,9 +68,11 @@ type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOfferFormProps) {
   const { toast } = useToast();
   const [showPickupLocation, setShowPickupLocation] = useState(false);
-  // Removed showHomeRadiusSelector state as we're removing the travel radius feature
+  const [showHomeRadiusSelector, setShowHomeRadiusSelector] = useState(false);
+  const [showMyAddressDisplay, setShowMyAddressDisplay] = useState(false);
   const [showReturnPreferences, setShowReturnPreferences] = useState(false);
   const [estimatedDepartureTime, setEstimatedDepartureTime] = useState("");
+  const [homeRadius, setHomeRadius] = useState(1); // Default 1-mile radius
 
   // Fetch party group details
   const { data: partyGroup, isLoading: isLoadingPartyGroup } = useQuery({
@@ -166,7 +168,10 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   };
 
   const handleDropoffPreferenceChange = (value: string) => {
+    // Handle different dropoff preference options
     setShowPickupLocation(value === "pickup-point");
+    setShowMyAddressDisplay(value === "my-address");
+    setShowHomeRadiusSelector(value === "direct-home");
     form.setValue("dropoffPreference", value);
   };
   
@@ -519,7 +524,40 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 </div>
               )}
               
-              {/* Travel radius feature removed */}
+              {/* Show parent's address when "my address" is selected */}
+              {showMyAddressDisplay && (
+                <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <h4 className="font-medium text-gray-800">Dropoff to Your Address</h4>
+                  <div className="text-sm text-gray-600">
+                    <p><strong>Address:</strong> {form.getValues("address")}</p>
+                    <p><strong>City:</strong> {form.getValues("city")}</p>
+                    <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Other parents will be asked to pick up their children from this address</p>
+                </div>
+              )}
+              
+              {/* Show home radius selector when "direct-home" is selected */}
+              {showHomeRadiusSelector && (
+                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <h4 className="font-medium text-gray-800">Home Delivery Radius</h4>
+                  <p className="text-sm text-gray-600 mb-2">Set the maximum distance you're willing to travel from your home (or alternative pickup point) to drop off children</p>
+                  
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      type="range" 
+                      min="0" 
+                      max="5" 
+                      step="0.5" 
+                      value={homeRadius} 
+                      onChange={(e) => setHomeRadius(parseFloat(e.target.value))}
+                      className="w-2/3"
+                    />
+                    <span className="text-sm font-medium">{homeRadius} {homeRadius === 1 ? 'mile' : 'miles'}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">You will only be matched with passengers within this radius of your home</p>
+                </div>
+              )}
               
               {/* Show pickup location fields if pickup-point is selected */}
               {showPickupLocation && (
