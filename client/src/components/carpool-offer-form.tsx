@@ -41,7 +41,6 @@ const carpoolFormSchema = z.object({
   spacesAvailable: z.coerce.number().min(1).optional(),
   returnSpacesAvailable: z.coerce.number().optional(),
   dropoffPreference: z.string(),
-  dropoffRadius: z.coerce.number().optional(),
   
   pickupLocation: z.string().optional(),
   pickupLocationCity: z.string().optional(),
@@ -64,7 +63,7 @@ type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOfferFormProps) {
   const { toast } = useToast();
   const [showPickupLocation, setShowPickupLocation] = useState(false);
-  const [showHomeRadiusSelector, setShowHomeRadiusSelector] = useState(true); // Default to true as "direct-home-radius" is the default
+  // Removed showHomeRadiusSelector state as we're removing the travel radius feature
   const [showReturnPreferences, setShowReturnPreferences] = useState(false);
   const [estimatedDepartureTime, setEstimatedDepartureTime] = useState("");
 
@@ -114,8 +113,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
       canBoth: false,
       spacesAvailable: 1,
       returnSpacesAvailable: 1, // Default same as spaces available for going to party
-      dropoffPreference: "direct-home-radius",
-      dropoffRadius: 5, // Default radius of 5 miles
+      dropoffPreference: "direct-home",
       
       pickupLocation: "",
       pickupLocationCity: "",
@@ -159,7 +157,6 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
 
   const handleDropoffPreferenceChange = (value: string) => {
     setShowPickupLocation(value === "pickup-point");
-    setShowHomeRadiusSelector(value === "direct-home-radius");
     form.setValue("dropoffPreference", value);
   };
   
@@ -369,7 +366,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                               
                               // Set default dropoff preference when enabling this option
                               if (checked === true) {
-                                form.setValue("dropoffPreference", "direct-home-radius");
+                                form.setValue("dropoffPreference", "direct-home");
                               }
                             }}
                           />
