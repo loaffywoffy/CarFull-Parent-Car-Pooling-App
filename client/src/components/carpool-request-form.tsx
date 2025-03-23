@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,10 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { getCarpools } from "@/api/carpools";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface CarpoolRequestFormProps {
   onSuccess: () => void;
@@ -29,6 +31,49 @@ type CarpoolRequestFormValues = z.infer<typeof carpoolRequestFormSchema>;
 
 export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: CarpoolRequestFormProps) {
   const { toast } = useToast();
+  const [distances, setDistances] = useState<{[key: number]: string}>({});
+  const [showNearbyOptions, setShowNearbyOptions] = useState(false);
+  
+  // Calculate distance between two postcodes (simplified demo version)
+  const calculateDistance = (postcode1: string, postcode2: string) => {
+    // In a real application, you would use a mapping API to calculate actual distance
+    // For this demo, we'll use a simple algorithm based on the postcode strings
+    
+    if (!postcode1 || !postcode2) return "Unknown";
+    
+    // Extract numeric parts for a simple calculation
+    const code1 = postcode1.replace(/[^0-9]/g, '');
+    const code2 = postcode2.replace(/[^0-9]/g, '');
+    
+    if (code1 === code2) return "0.1 miles";
+    
+    // Generate a pseudo-random but consistent distance based on the codes
+    const dist = Math.abs(parseInt(code1 || "0") - parseInt(code2 || "0")) / 100;
+    return dist.toFixed(1) + " miles";
+  };
+  
+  // Find nearby carpools when user enters their postcode
+  const findNearbyCarpools = () => {
+    const userPostcode = form.getValues("postcode");
+    
+    if (!userPostcode || !carpools) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your postcode first to find nearby carpools.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Calculate distances for all carpools
+    const newDistances: {[key: number]: string} = {};
+    carpools.forEach((carpool: any) => {
+      newDistances[carpool.id] = calculateDistance(userPostcode, carpool.postcode);
+    });
+    
+    setDistances(newDistances);
+    setShowNearbyOptions(true);
+  };
   
   const form = useForm<CarpoolRequestFormValues>({
     resolver: zodResolver(carpoolRequestFormSchema),
@@ -140,9 +185,19 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Postcode</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Postcode" {...field} />
-                      </FormControl>
+                      <div className="flex space-x-2">
+                        <FormControl>
+                          <Input placeholder="Postcode" {...field} />
+                        </FormControl>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={findNearbyCarpools}
+                          className="shrink-0"
+                        >
+                          Find Nearby
+                        </Button>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -196,6 +251,52 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                 )}
               />
               
+              {/* Nearby Carpools Section */}
+              {showNearbyOptions && Object.keys(distances).length > 0 && (
+                <div className="bg-gray-50 p-4 rounded-md mb-4 border border-gray-200">
+                  <h4 className="font-medium text-neutral-700 mb-3">Carpools Near You</h4>
+                  <div className="space-y-3">
+                    {carpools?.map((carpool: any) => (
+                      <Card key={carpool.id} className="overflow-hidden border-l-4 border-l-primary">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h5 className="font-medium text-neutral-800">{carpool.parentName}'s Carpool</h5>
+                              <p className="text-sm text-neutral-600 mb-1">
+                                <span className="font-medium">Distance:</span> {distances[carpool.id]}
+                              </p>
+                              <p className="text-sm text-neutral-600">
+                                <span className="font-medium">Spaces:</span> {carpool.spacesAvailable} available
+                              </p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {carpool.canPickup && <Badge className="bg-green-100 text-green-800">To party</Badge>}
+                                {carpool.canDropoff && <Badge className="bg-blue-100 text-blue-800">From party</Badge>}
+                                {carpool.canBoth && <Badge className="bg-purple-100 text-purple-800">Both</Badge>}
+                              </div>
+                            </div>
+                            <Button 
+                              type="button" 
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                form.setValue("carpoolId", carpool.id);
+                                toast({
+                                  title: "Carpool Selected",
+                                  description: `Selected ${carpool.parentName}'s carpool (${distances[carpool.id]} away)`,
+                                });
+                              }}
+                              className="text-xs"
+                            >
+                              Select
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               <FormField
                 control={form.control}
                 name="carpoolId"
@@ -216,6 +317,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                         {carpools?.map((carpool: any) => (
                           <SelectItem key={carpool.id} value={carpool.id.toString()}>
                             {carpool.parentName} - {carpool.spacesAvailable} spaces
+                            {distances[carpool.id] ? ` (${distances[carpool.id]})` : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>
