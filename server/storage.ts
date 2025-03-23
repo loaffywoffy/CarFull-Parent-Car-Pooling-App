@@ -94,14 +94,21 @@ export class MemStorage implements IStorage {
   // Party Group methods
   async createPartyGroup(insertPartyGroup: InsertPartyGroup): Promise<PartyGroup> {
     const id = this.currentPartyGroupId++;
-    // Ensure all nullable fields have proper null values instead of undefined
+    // Create a proper PartyGroup object with explicit type casting
     const partyGroup: PartyGroup = { 
-      ...insertPartyGroup, 
       id,
+      name: insertPartyGroup.name,
       description: insertPartyGroup.description ?? null,
-      additionalInformation: insertPartyGroup.additionalInformation ?? null,
+      partyAddress: insertPartyGroup.partyAddress,
+      partyCity: insertPartyGroup.partyCity,
+      partyPostcode: insertPartyGroup.partyPostcode,
+      partyDate: insertPartyGroup.partyDate,
       partyEndDate: insertPartyGroup.partyEndDate ?? null,
-      endTime: insertPartyGroup.endTime ?? null
+      targetArrivalTime: insertPartyGroup.targetArrivalTime,
+      endTime: insertPartyGroup.endTime ?? null,
+      createdBy: insertPartyGroup.createdBy,
+      accessCode: insertPartyGroup.accessCode,
+      additionalInformation: insertPartyGroup.additionalInformation ?? null
     };
     this.partyGroups.set(id, partyGroup);
     return partyGroup;

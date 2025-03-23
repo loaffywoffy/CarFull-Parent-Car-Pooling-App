@@ -229,7 +229,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                     <FormItem>
                       <FormLabel>End Time (Optional)</FormLabel>
                       <FormControl>
-                        <Input type="time" {...field} />
+                        <Input type="time" {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
