@@ -11,10 +11,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface PartyGroupDetailsProps {
   partyGroup: PartyGroup;
   onOfferCarpool: (partyGroupId: number) => void;
+  onRequestSpot?: () => void; // New prop for requesting a spot
   isCreator?: boolean; // Flag to determine if the current user created this group
 }
 
-export default function PartyGroupDetails({ partyGroup, onOfferCarpool, isCreator = false }: PartyGroupDetailsProps) {
+export default function PartyGroupDetails({ 
+  partyGroup, 
+  onOfferCarpool, 
+  onRequestSpot,
+  isCreator = false 
+}: PartyGroupDetailsProps) {
   const { toast } = useToast();
   const [copySuccess, setCopySuccess] = useState<{code: boolean, link: boolean}>({code: false, link: false});
   
@@ -234,7 +240,14 @@ export default function PartyGroupDetails({ partyGroup, onOfferCarpool, isCreato
           )}
         </div>
       </CardContent>
-      <CardFooter className="bg-gray-50 py-4 flex justify-end">
+      <CardFooter className="bg-gray-50 py-4 flex justify-end space-x-3">
+        <Button 
+          variant="outline" 
+          onClick={onRequestSpot}
+          disabled={!onRequestSpot}
+        >
+          Request a Spot
+        </Button>
         <Button onClick={() => onOfferCarpool(partyGroup.id)}>
           Offer a Carpool
         </Button>

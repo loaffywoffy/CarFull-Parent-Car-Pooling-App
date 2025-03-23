@@ -256,6 +256,7 @@ export default function Home() {
               <PartyGroupDetails 
                 partyGroup={selectedPartyGroup} 
                 onOfferCarpool={() => handleOfferCarpool(selectedPartyGroup.id)}
+                onRequestSpot={() => handleTabChange("view")} 
                 isCreator={createdGroupIds.includes(selectedPartyGroup.id)}
               />
             )}
