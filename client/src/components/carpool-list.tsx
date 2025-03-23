@@ -114,6 +114,27 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
                         : "Meet at another location: " + (carpool.pickupLocation || "Contact for details")
                   }
                 </p>
+                
+                {/* Party Details if available */}
+                {carpool.partyAddress && (
+                  <div className="mt-2 border-t border-gray-100 pt-2">
+                    <p className="text-neutral-600 text-sm font-medium">Party Information:</p>
+                    <p className="text-neutral-600 text-sm">
+                      <span className="font-medium">Address:</span> {carpool.partyAddress}
+                      {carpool.partyCity && `, ${carpool.partyCity}`}
+                      {carpool.partyPostcode && `, ${carpool.partyPostcode}`}
+                    </p>
+                    {carpool.targetArrivalTime && (
+                      <div className="flex flex-wrap gap-x-4 text-neutral-600 text-sm">
+                        <p><span className="font-medium">Arrival:</span> {carpool.targetArrivalTime}</p>
+                        {carpool.estimatedDepartureTime && (
+                          <p><span className="font-medium">Departure:</span> {carpool.estimatedDepartureTime}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 {carpool.additionalNotes && (
                   <p className="text-neutral-600 text-sm mt-2">
                     <span className="font-medium">Notes:</span> {carpool.additionalNotes}
