@@ -54,7 +54,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
       canPickup: false,
       canDropoff: false,
       canBoth: false,
-      spacesAvailable: "1",
+      spacesAvailable: 1,
       dropoffPreference: "direct-home",
       pickupLocation: "",
       additionalNotes: "",
@@ -252,7 +252,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Spaces Available in Car</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={(value) => field.onChange(Number(value))} defaultValue={String(field.value)}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select number of spaces" />
@@ -273,7 +273,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
               />
               
               <div className="space-y-3">
-                <FormLabel>Drop-off preferences:</FormLabel>
+                <FormLabel>For pickup from party - Return preferences:</FormLabel>
                 <RadioGroup 
                   defaultValue="direct-home"
                   onValueChange={handleDropoffPreferenceChange}
@@ -284,8 +284,12 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                       <label htmlFor="direct-home" className="cursor-pointer">Direct to child's home</label>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="my-home" id="my-home" />
+                      <label htmlFor="my-home" className="cursor-pointer">To my home (parent collects from there)</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
                       <RadioGroupItem value="pickup-point" id="pickup-point" />
-                      <label htmlFor="pickup-point" className="cursor-pointer">Pick up elsewhere</label>
+                      <label htmlFor="pickup-point" className="cursor-pointer">To another meeting point</label>
                     </div>
                   </div>
                 </RadioGroup>
@@ -297,9 +301,9 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                   name="pickupLocation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pick-up Location</FormLabel>
+                      <FormLabel>Meeting Location</FormLabel>
                       <FormControl>
-                        <Input placeholder="Address or description of pickup point" {...field} />
+                        <Input placeholder="Address or description of meeting point" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -106,9 +106,13 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
                   <span className="font-medium">Spaces:</span> {carpool.spacesAvailable} available
                 </p>
                 <p className="text-neutral-600 text-sm">
-                  <span className="font-medium">Drop-off:</span> {carpool.dropoffPreference === "direct-home" 
-                    ? "Direct to child's home" 
-                    : "Pick up at central location"}
+                  <span className="font-medium">Return preference:</span> {
+                    carpool.dropoffPreference === "direct-home" 
+                      ? "Direct to child's home" 
+                      : carpool.dropoffPreference === "my-home"
+                        ? "Child to be collected from my home"
+                        : "Meet at another location: " + (carpool.pickupLocation || "Contact for details")
+                  }
                 </p>
                 {carpool.additionalNotes && (
                   <p className="text-neutral-600 text-sm mt-2">
