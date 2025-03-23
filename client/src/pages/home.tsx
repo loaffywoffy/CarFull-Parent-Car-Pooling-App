@@ -2,9 +2,11 @@ import { useState } from "react";
 import CarpoolOfferForm from "@/components/carpool-offer-form";
 import CarpoolRequestForm from "@/components/carpool-request-form";
 import CarpoolList from "@/components/carpool-list";
+import CalendarEventForm from "@/components/calendar-event-form";
+import CalendarEventsList from "@/components/calendar-events-list";
 import SuccessDialog from "@/components/success-dialog";
 
-type Tab = "offer" | "request" | "view";
+type Tab = "offer" | "request" | "view" | "calendar";
 type SuccessInfo = {
   show: boolean;
   title: string;
@@ -59,10 +61,10 @@ export default function Home() {
 
         {/* Navigation Tabs */}
         <div className="mb-8">
-          <div className="flex border-b border-neutral-300 sm:space-x-8">
+          <div className="flex flex-wrap border-b border-neutral-300 sm:space-x-4">
             <button
               onClick={() => handleTabChange("offer")}
-              className={`py-2 px-4 font-medium flex-1 sm:flex-none ${
+              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
                 activeTab === "offer"
                   ? "border-b-2 border-primary text-primary"
                   : "text-neutral-600"
@@ -72,7 +74,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => handleTabChange("request")}
-              className={`py-2 px-4 font-medium flex-1 sm:flex-none ${
+              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
                 activeTab === "request"
                   ? "border-b-2 border-primary text-primary"
                   : "text-neutral-600"
@@ -82,13 +84,23 @@ export default function Home() {
             </button>
             <button
               onClick={() => handleTabChange("view")}
-              className={`py-2 px-4 font-medium flex-1 sm:flex-none ${
+              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
                 activeTab === "view"
                   ? "border-b-2 border-primary text-primary"
                   : "text-neutral-600"
               }`}
             >
               View All Carpools
+            </button>
+            <button
+              onClick={() => handleTabChange("calendar")}
+              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
+                activeTab === "calendar"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-neutral-600"
+              }`}
+            >
+              Calendar
             </button>
           </div>
         </div>
@@ -107,6 +119,39 @@ export default function Home() {
         
         {activeTab === "view" && (
           <CarpoolList onRequestSpot={handleRequestSpot} />
+        )}
+        
+        {activeTab === "calendar" && (
+          <div className="space-y-8">
+            {selectedCarpoolId ? (
+              <>
+                <CalendarEventForm 
+                  carpoolId={selectedCarpoolId} 
+                  onSuccess={() => {
+                    setSuccessInfo({
+                      show: true,
+                      title: "Calendar Event Created!",
+                      message: "Your event has been added to the calendar successfully.",
+                    });
+                  }} 
+                />
+                <CalendarEventsList carpoolId={selectedCarpoolId} />
+              </>
+            ) : (
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <h2 className="text-lg font-semibold mb-4">Calendar Events</h2>
+                <p className="text-neutral-600 mb-4">
+                  Please select a carpool from the "View All Carpools" tab first to manage its calendar events.
+                </p>
+                <button
+                  onClick={() => handleTabChange("view")}
+                  className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
+                >
+                  Go to Carpools
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Success Dialog */}
