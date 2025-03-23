@@ -423,7 +423,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                 name="spacesAvailable"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Spaces Available in Car</FormLabel>
+                    <FormLabel>Spaces Available to take to party</FormLabel>
                     <Select 
                       onValueChange={(value) => field.onChange(Number(value))} 
                       defaultValue={String(field.value)}>
