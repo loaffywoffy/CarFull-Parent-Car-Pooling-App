@@ -32,6 +32,7 @@ const carpoolFormSchema = z.object({
   canBoth: z.boolean().default(false),
   spacesAvailable: z.coerce.number().min(1), // Coerce ensures type conversion
   dropoffPreference: z.string(),
+  maxDistance: z.coerce.number().optional(),
   pickupLocation: z.string().optional(),
   pickupLocationCity: z.string().optional(),
   pickupLocationPostcode: z.string().optional(),
