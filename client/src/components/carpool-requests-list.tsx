@@ -56,9 +56,9 @@ export default function CarpoolRequestsList({ carpoolId }: CarpoolRequestsListPr
   
   // Group passengers by their needs for clear presentation
   const pickupPassengers = carpool.canPickup ? 
-    filteredRequests.filter(r => r.needsPickup || r.needsBoth) : [];
+    filteredRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth) : [];
   const dropoffPassengers = carpool.canDropoff ? 
-    filteredRequests.filter(r => r.needsDropoff || r.needsBoth) : [];
+    filteredRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth) : [];
 
   return (
     <div className="mt-3">

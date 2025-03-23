@@ -264,43 +264,63 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                 <div className="bg-gray-50 p-4 rounded-md mb-4 border border-gray-200">
                   <h4 className="font-medium text-neutral-700 mb-3">Carpools Near You</h4>
                   <div className="space-y-3">
-                    {Array.isArray(carpools) && carpools.map((carpool: any) => (
-                      <Card key={carpool.id} className="overflow-hidden border-l-4 border-l-primary">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h5 className="font-medium text-neutral-800">{carpool.parentName}'s Carpool</h5>
-                              <p className="text-sm text-neutral-600 mb-1">
-                                <span className="font-medium">Distance:</span> {distances[carpool.id]}
-                              </p>
-                              <p className="text-sm text-neutral-600">
-                                <span className="font-medium">Spaces:</span> {carpool.spacesAvailable} available
-                              </p>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {carpool.canPickup && <Badge className="bg-green-100 text-green-800">To party</Badge>}
-                                {carpool.canDropoff && <Badge className="bg-blue-100 text-blue-800">From party</Badge>}
-                                {carpool.canBoth && <Badge className="bg-purple-100 text-purple-800">Both</Badge>}
+                    {Array.isArray(carpools) && carpools
+                      .filter((carpool: any) => {
+                        // Filter carpools based on ride preference
+                        if (ridePreference === "pickup") {
+                          return carpool.canPickup || carpool.canBoth;
+                        } else if (ridePreference === "dropoff") {
+                          return carpool.canDropoff || carpool.canBoth;
+                        } else if (ridePreference === "both") {
+                          return carpool.canBoth;
+                        }
+                        return true; // Show all if no preference
+                      })
+                      .map((carpool: any) => (
+                        <Card key={carpool.id} className="overflow-hidden border-l-4 border-l-primary">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h5 className="font-medium text-neutral-800">{carpool.parentName}'s Carpool</h5>
+                                <p className="text-sm text-neutral-600 mb-1">
+                                  <span className="font-medium">Distance:</span> {distances[carpool.id]}
+                                </p>
+                                <p className="text-sm text-neutral-600">
+                                  <span className="font-medium">Spaces:</span> {carpool.spacesAvailable} available
+                                </p>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {carpool.canPickup && <Badge className="bg-green-100 text-green-800">To party</Badge>}
+                                  {carpool.canDropoff && <Badge className="bg-blue-100 text-blue-800">From party</Badge>}
+                                  {carpool.canBoth && <Badge className="bg-purple-100 text-purple-800">Both</Badge>}
+                                </div>
+                                
+                                {/* Show drop-off preferences for carpools offering return from party */}
+                                {(ridePreference === "dropoff" || ridePreference === "both") && 
+                                 (carpool.canDropoff || carpool.canBoth) && carpool.dropoffPreference && (
+                                  <p className="text-xs text-gray-600 mt-2 bg-gray-100 p-1.5 rounded">
+                                    <span className="font-medium">Drop-off preference:</span> {carpool.dropoffPreference}
+                                  </p>
+                                )}
                               </div>
+                              <Button 
+                                type="button" 
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  form.setValue("carpoolId", carpool.id);
+                                  toast({
+                                    title: "Carpool Selected",
+                                    description: `Selected ${carpool.parentName}'s carpool (${distances[carpool.id]} away)`,
+                                  });
+                                }}
+                                className="text-xs"
+                              >
+                                Select
+                              </Button>
                             </div>
-                            <Button 
-                              type="button" 
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                form.setValue("carpoolId", carpool.id);
-                                toast({
-                                  title: "Carpool Selected",
-                                  description: `Selected ${carpool.parentName}'s carpool (${distances[carpool.id]} away)`,
-                                });
-                              }}
-                              className="text-xs"
-                            >
-                              Select
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      ))}
                   </div>
                 </div>
               )}
@@ -322,12 +342,28 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Array.isArray(carpools) && carpools.map((carpool: any) => (
-                          <SelectItem key={carpool.id} value={carpool.id.toString()}>
-                            {carpool.parentName} - {carpool.spacesAvailable} spaces
-                            {distances[carpool.id] ? ` (${distances[carpool.id]})` : ''}
-                          </SelectItem>
-                        ))}
+                        {Array.isArray(carpools) && carpools
+                          .filter((carpool: any) => {
+                            // Filter carpools based on ride preference
+                            if (ridePreference === "pickup") {
+                              return carpool.canPickup || carpool.canBoth;
+                            } else if (ridePreference === "dropoff") {
+                              return carpool.canDropoff || carpool.canBoth;
+                            } else if (ridePreference === "both") {
+                              return carpool.canBoth;
+                            }
+                            return true; // Show all if no preference
+                          })
+                          .map((carpool: any) => (
+                            <SelectItem key={carpool.id} value={carpool.id.toString()}>
+                              {carpool.parentName} - {carpool.spacesAvailable} spaces
+                              {distances[carpool.id] ? ` (${distances[carpool.id]})` : ''}
+                              {(ridePreference === "dropoff" || ridePreference === "both") && 
+                               (carpool.canDropoff || carpool.canBoth) && carpool.dropoffPreference ? 
+                               ` - ${carpool.dropoffPreference}` : ''}
+                            </SelectItem>
+                          ))
+                        }
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -346,6 +382,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                         <RadioGroup
                           onValueChange={(value) => {
                             field.onChange(value);
+                            // Update ride preference state for filtering carpools
+                            setRidePreference(value);
+                            
                             // Also update the individual need fields to maintain compatibility
                             if (value === "pickup") {
                               form.setValue("needsPickup", true);
@@ -403,7 +442,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   <FormItem>
                     <FormLabel>Special Requirements</FormLabel>
                     <FormControl>
-                      <Textarea value={field.value || ""} 
+                      <Textarea 
                         placeholder="Any special requirements or information" 
                         rows={3}
                         {...field} 
