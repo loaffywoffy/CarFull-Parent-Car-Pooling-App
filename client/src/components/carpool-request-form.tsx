@@ -67,9 +67,11 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
     
     // Calculate distances for all carpools
     const newDistances: {[key: number]: string} = {};
-    carpools.forEach((carpool: any) => {
-      newDistances[carpool.id] = calculateDistance(userPostcode, carpool.postcode);
-    });
+    if (Array.isArray(carpools)) {
+      carpools.forEach((carpool: any) => {
+        newDistances[carpool.id] = calculateDistance(userPostcode, carpool.postcode);
+      });
+    }
     
     setDistances(newDistances);
     setShowNearbyOptions(true);
@@ -256,7 +258,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                 <div className="bg-gray-50 p-4 rounded-md mb-4 border border-gray-200">
                   <h4 className="font-medium text-neutral-700 mb-3">Carpools Near You</h4>
                   <div className="space-y-3">
-                    {carpools?.map((carpool: any) => (
+                    {Array.isArray(carpools) && carpools.map((carpool: any) => (
                       <Card key={carpool.id} className="overflow-hidden border-l-4 border-l-primary">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start">
@@ -314,7 +316,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {carpools?.map((carpool: any) => (
+                        {Array.isArray(carpools) && carpools.map((carpool: any) => (
                           <SelectItem key={carpool.id} value={carpool.id.toString()}>
                             {carpool.parentName} - {carpool.spacesAvailable} spaces
                             {distances[carpool.id] ? ` (${distances[carpool.id]})` : ''}
@@ -337,7 +339,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={field.value || false}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
@@ -353,7 +355,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={field.value || false}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
@@ -369,7 +371,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={field.value || false}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
