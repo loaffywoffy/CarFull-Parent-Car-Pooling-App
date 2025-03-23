@@ -378,7 +378,12 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                         <FormControl>
                           <Checkbox
                             checked={field.value}
-                            onCheckedChange={field.onChange}
+                            onCheckedChange={(checked: CheckedState) => {
+                              field.onChange(checked);
+                              // Update showReturnPreferences directly based on current state
+                              const canBoth = form.getValues("canBoth");
+                              setShowReturnPreferences(checked === true || canBoth);
+                            }}
                           />
                         </FormControl>
                         <FormLabel className="cursor-pointer">To pick up from the party</FormLabel>
@@ -394,7 +399,12 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                         <FormControl>
                           <Checkbox
                             checked={field.value}
-                            onCheckedChange={field.onChange}
+                            onCheckedChange={(checked: CheckedState) => {
+                              field.onChange(checked);
+                              // Update showReturnPreferences directly based on current state
+                              const canDropoff = form.getValues("canDropoff");
+                              setShowReturnPreferences(checked === true || canDropoff);
+                            }}
                           />
                         </FormControl>
                         <FormLabel className="cursor-pointer">Both</FormLabel>
@@ -432,28 +442,30 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                 )}
               />
               
-              <div className="space-y-3">
-                <FormLabel>For pickup from party - Return preferences:</FormLabel>
-                <RadioGroup 
-                  defaultValue="direct-home"
-                  onValueChange={handleDropoffPreferenceChange}
-                >
-                  <div className="flex flex-col space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="direct-home" id="direct-home" />
-                      <label htmlFor="direct-home" className="cursor-pointer">Direct to child's home</label>
+              {showReturnPreferences && (
+                <div className="space-y-3">
+                  <FormLabel>For pickup from party - Return preferences:</FormLabel>
+                  <RadioGroup 
+                    defaultValue="direct-home"
+                    onValueChange={handleDropoffPreferenceChange}
+                  >
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="direct-home" id="direct-home" />
+                        <label htmlFor="direct-home" className="cursor-pointer">Direct to child's home</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="my-home" id="my-home" />
+                        <label htmlFor="my-home" className="cursor-pointer">To my home (parent collects from there)</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="pickup-point" id="pickup-point" />
+                        <label htmlFor="pickup-point" className="cursor-pointer">To another meeting point</label>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="my-home" id="my-home" />
-                      <label htmlFor="my-home" className="cursor-pointer">To my home (parent collects from there)</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="pickup-point" id="pickup-point" />
-                      <label htmlFor="pickup-point" className="cursor-pointer">To another meeting point</label>
-                    </div>
-                  </div>
-                </RadioGroup>
-              </div>
+                  </RadioGroup>
+                </div>
+              )}
               
               {showPickupLocation && (
                 <FormField

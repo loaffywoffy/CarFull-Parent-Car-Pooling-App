@@ -26,7 +26,8 @@ interface CarpoolRequestFormProps {
 const carpoolRequestFormSchema = insertCarpoolRequestSchema
   .extend({
     carpoolId: z.number().or(z.string().transform(val => parseInt(val, 10))),
-    ridePreference: z.enum(["pickup", "dropoff", "both"])
+    ridePreference: z.enum(["pickup", "dropoff", "both"]),
+    specialRequirements: z.string().optional().default("")
   });
 
 type CarpoolRequestFormValues = z.infer<typeof carpoolRequestFormSchema>;
@@ -445,7 +446,11 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                       <Textarea 
                         placeholder="Any special requirements or information" 
                         rows={3}
-                        {...field} 
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
