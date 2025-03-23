@@ -207,7 +207,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Pick up</FormLabel>
+                        <FormLabel className="cursor-pointer">To take to the party</FormLabel>
                       </FormItem>
                     )}
                   />
@@ -223,7 +223,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Drop off</FormLabel>
+                        <FormLabel className="cursor-pointer">To pick up from the party</FormLabel>
                       </FormItem>
                     )}
                   />

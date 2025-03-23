@@ -72,9 +72,9 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Carpools</SelectItem>
-              <SelectItem value="pickup">Pick up only</SelectItem>
-              <SelectItem value="dropoff">Drop off only</SelectItem>
-              <SelectItem value="both">Both pick up & drop off</SelectItem>
+              <SelectItem value="pickup">Take to party only</SelectItem>
+              <SelectItem value="dropoff">Pick up from party only</SelectItem>
+              <SelectItem value="both">Both to and from party</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -95,8 +95,8 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
                 </p>
                 <p className="text-neutral-600 text-sm mb-2">
                   Offers: {" "}
-                  {carpool.canPickup && <Badge className="bg-primary-light mr-1">Pick up</Badge>}
-                  {carpool.canDropoff && <Badge className="bg-primary-light mr-1">Drop off</Badge>}
+                  {carpool.canPickup && <Badge className="bg-primary-light mr-1">Take to party</Badge>}
+                  {carpool.canDropoff && <Badge className="bg-primary-light mr-1">Pick up from party</Badge>}
                   {carpool.canBoth && <Badge className="bg-primary-light">Both</Badge>}
                 </p>
                 <p className="text-neutral-600 text-sm">

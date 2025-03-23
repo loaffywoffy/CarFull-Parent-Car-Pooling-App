@@ -239,7 +239,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Pick up</FormLabel>
+                        <FormLabel className="cursor-pointer">Ride to the party</FormLabel>
                       </FormItem>
                     )}
                   />
@@ -255,7 +255,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Drop off</FormLabel>
+                        <FormLabel className="cursor-pointer">Ride home from the party</FormLabel>
                       </FormItem>
                     )}
                   />
@@ -271,7 +271,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Both</FormLabel>
+                        <FormLabel className="cursor-pointer">Both to and from party</FormLabel>
                       </FormItem>
                     )}
                   />
