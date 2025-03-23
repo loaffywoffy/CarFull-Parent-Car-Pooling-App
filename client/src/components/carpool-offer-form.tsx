@@ -49,6 +49,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
   const { toast } = useToast();
   const [showPickupLocation, setShowPickupLocation] = useState(false);
   const [showPartyDetails, setShowPartyDetails] = useState(false);
+  const [showReturnPreferences, setShowReturnPreferences] = useState(false);
   const [estimatedDepartureTime, setEstimatedDepartureTime] = useState("");
 
   const form = useForm<CarpoolFormValues>({
@@ -142,6 +143,13 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
       calculateDepartureTime();
     }
   }, [form.watch("partyAddress"), form.watch("targetArrivalTime")]);
+  
+  // Update showReturnPreferences whenever canDropoff or canBoth changes
+  useEffect(() => {
+    const canDropoff = form.getValues("canDropoff");
+    const canBoth = form.getValues("canBoth");
+    setShowReturnPreferences(canDropoff || canBoth);
+  }, [form.watch("canDropoff"), form.watch("canBoth")]);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
