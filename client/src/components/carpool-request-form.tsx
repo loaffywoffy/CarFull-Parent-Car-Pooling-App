@@ -407,10 +407,10 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                             <SelectItem key={carpool.id} value={carpool.id.toString()}>
                               {carpool.parentName} - {
                                 ridePreference === "pickup" 
-                                  ? `${carpool.spacesAvailable} spaces to party` 
+                                  ? `${carpool.spacesAvailable} spaces left` 
                                   : ridePreference === "dropoff"
-                                    ? `${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces from party`
-                                    : `${carpool.spacesAvailable}/${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces`
+                                    ? `${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                                    : `${carpool.spacesAvailable}/${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
                               }
                               {distances[carpool.id] ? ` (${distances[carpool.id]})` : ''}
                               {(ridePreference === "dropoff" || ridePreference === "both") && 
