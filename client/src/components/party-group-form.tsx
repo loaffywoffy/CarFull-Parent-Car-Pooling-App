@@ -191,7 +191,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                   name="targetArrivalTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Target Arrival Time</FormLabel>
+                      <FormLabel>Start Time</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>

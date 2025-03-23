@@ -362,6 +362,11 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                               // Update showReturnPreferences directly based on current state
                               const canBoth = form.getValues("canBoth");
                               setShowReturnPreferences(checked === true || canBoth);
+                              
+                              // Set default dropoff preference when enabling this option
+                              if (checked === true) {
+                                form.setValue("dropoffPreference", "direct-home");
+                              }
                             }}
                           />
                         </FormControl>
@@ -480,42 +485,45 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 )}
               />
               
-              <div className="space-y-3">
-                <FormLabel>Dropoff Preference:</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="dropoffPreference"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={(value) => handleDropoffPreferenceChange(value)}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="direct-home" />
-                            </FormControl>
-                            <FormLabel className="font-normal cursor-pointer">
-                              Directly to each child's home
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="pickup-point" />
-                            </FormControl>
-                            <FormLabel className="font-normal cursor-pointer">
-                              To a central pickup point
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {/* Show dropoff preference only if canDropoff or canBoth is selected */}
+              {showReturnPreferences && (
+                <div className="space-y-3">
+                  <FormLabel>Dropoff Preference:</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="dropoffPreference"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={(value) => handleDropoffPreferenceChange(value)}
+                            defaultValue={field.value}
+                            className="flex flex-col space-y-1"
+                          >
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="direct-home" />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                Directly to each child's home
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="pickup-point" />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                To a central pickup point
+                              </FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
               
               {/* Show pickup location fields if pickup-point is selected */}
               {showPickupLocation && (
