@@ -27,7 +27,10 @@ const carpoolRequestFormSchema = insertCarpoolRequestSchema
   .extend({
     carpoolId: z.number().or(z.string().transform(val => parseInt(val, 10))),
     ridePreference: z.enum(["pickup", "dropoff", "both"]),
-    specialRequirements: z.string().optional().default("")
+    specialRequirements: z.string().optional().default(""),
+    emergencyContactName: z.string().min(1, "Emergency contact name is required"),
+    emergencyContactPhone: z.string().min(1, "Emergency contact phone is required"),
+    emergencyContactRelationship: z.string().min(1, "Relationship to child is required")
   });
 
 type CarpoolRequestFormValues = z.infer<typeof carpoolRequestFormSchema>;
@@ -105,6 +108,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       needsBoth: false,
       specialRequirements: "",
       ridePreference: "pickup", // Default to "pickup" (to party)
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      emergencyContactRelationship: ""
     },
   });
 
@@ -516,6 +522,60 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   </FormItem>
                 )}
               />
+              
+              {/* Emergency Contact Information */}
+              <div className="mt-8 space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-1">Emergency Contact</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    This information will only be used in case of emergency through our one-tap emergency notification system.
+                  </p>
+                </div>
+                
+                <div className="p-4 border border-red-100 rounded-md bg-red-50 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="emergencyContactName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Emergency Contact Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Full name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="emergencyContactPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Emergency Contact Phone</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Phone number" type="tel" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="emergencyContactRelationship"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Relationship to Child</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. Parent, Guardian, Relative" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
