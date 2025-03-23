@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +26,7 @@ interface CarpoolRequestFormProps {
 const carpoolRequestFormSchema = insertCarpoolRequestSchema
   .extend({
     carpoolId: z.number().or(z.string().transform(val => parseInt(val, 10))),
+    ridePreference: z.enum(["pickup", "dropoff", "both"])
   });
 
 type CarpoolRequestFormValues = z.infer<typeof carpoolRequestFormSchema>;
@@ -77,6 +79,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
     setShowNearbyOptions(true);
   };
   
+  // State to track ride preference for filtering carpools
+  const [ridePreference, setRidePreference] = useState<string | null>(null);
+  
   const form = useForm<CarpoolRequestFormValues>({
     resolver: zodResolver(carpoolRequestFormSchema),
     defaultValues: {
@@ -92,6 +97,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       needsDropoff: false,
       needsBoth: false,
       specialRequirements: "",
+      ridePreference: "pickup", // Default to "pickup" (to party)
     },
   });
 
@@ -330,56 +336,64 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
               />
               
               <div className="space-y-3">
-                <FormLabel>My child needs:</FormLabel>
-                <div className="flex flex-wrap gap-4">
-                  <FormField
-                    control={form.control}
-                    name="needsPickup"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value || false}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="cursor-pointer">Ride to the party</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="needsDropoff"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value || false}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="cursor-pointer">Ride home from the party</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="needsBoth"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value || false}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="cursor-pointer">Both to and from party</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="ridePreference"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel className="font-medium">Ride Preference (required)</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            // Also update the individual need fields to maintain compatibility
+                            if (value === "pickup") {
+                              form.setValue("needsPickup", true);
+                              form.setValue("needsDropoff", false);
+                              form.setValue("needsBoth", false);
+                            } else if (value === "dropoff") {
+                              form.setValue("needsPickup", false);
+                              form.setValue("needsDropoff", true);
+                              form.setValue("needsBoth", false);
+                            } else if (value === "both") {
+                              form.setValue("needsPickup", false);
+                              form.setValue("needsDropoff", false);
+                              form.setValue("needsBoth", true);
+                            }
+                          }}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-2 bg-gray-50 p-3 rounded-md"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="pickup" />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">
+                              Ride TO the party (pickup from home)
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="dropoff" />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">
+                              Ride FROM the party (return home)
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="both" />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">
+                              Both TO and FROM the party
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               
               <FormField
