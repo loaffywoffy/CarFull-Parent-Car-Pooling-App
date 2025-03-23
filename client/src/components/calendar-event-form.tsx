@@ -296,7 +296,15 @@ export default function CalendarEventForm({ carpoolId, onSuccess }: CalendarEven
               />
             )}
 
-            <div className="flex justify-end">
+            <div className="flex justify-end space-x-2">
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={createEventMutation.isPending}
+              >
+                Reset Form
+              </Button>
               <Button 
                 type="submit" 
                 disabled={createEventMutation.isPending}

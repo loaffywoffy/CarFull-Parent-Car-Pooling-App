@@ -141,7 +141,10 @@ export default function Home() {
                     });
                   }} 
                 />
-                <CalendarEventsList carpoolId={selectedCarpoolId} />
+                <CalendarEventsList 
+                  carpoolId={selectedCarpoolId} 
+                  onBackToList={() => handleTabChange("view")} 
+                />
               </>
             ) : (
               <div className="bg-white rounded-lg p-6 shadow-sm">

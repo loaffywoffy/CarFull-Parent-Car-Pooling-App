@@ -124,6 +124,18 @@ export default function CalendarEventsList({ carpoolId, onBackToList }: Calendar
         <CardContent>
           <p className="text-muted-foreground text-sm">Create a new event to keep track of important dates.</p>
         </CardContent>
+        {onBackToList && (
+          <CardFooter className="pt-2 pb-4">
+            <Button 
+              variant="outline"
+              className="flex items-center text-primary"
+              onClick={onBackToList}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Carpool List
+            </Button>
+          </CardFooter>
+        )}
       </Card>
     );
   }
