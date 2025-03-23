@@ -389,7 +389,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   <FormItem>
                     <FormLabel>Special Requirements</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <Textarea value={field.value || ""} 
                         placeholder="Any special requirements or information" 
                         rows={3}
                         {...field} 
