@@ -55,6 +55,12 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
     return dist.toFixed(1) + " miles";
   };
   
+  // Get the numeric distance value from the distance string
+  const getNumericDistance = (distanceStr: string): number => {
+    if (distanceStr === "Unknown") return 999; // Large number for unknown distances
+    return parseFloat(distanceStr.split(" ")[0]);
+  };
+  
   // Find nearby carpools when user enters their postcode
   const findNearbyCarpools = () => {
     const userPostcode = form.getValues("postcode");
@@ -268,14 +274,25 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                     {Array.isArray(carpools) && carpools
                       .filter((carpool: any) => {
                         // Filter carpools based on ride preference
+                        let matches = true;
+                        
                         if (ridePreference === "pickup") {
-                          return carpool.canPickup || carpool.canBoth;
+                          matches = carpool.canPickup || carpool.canBoth;
                         } else if (ridePreference === "dropoff") {
-                          return carpool.canDropoff || carpool.canBoth;
+                          matches = carpool.canDropoff || carpool.canBoth;
                         } else if (ridePreference === "both") {
-                          return carpool.canBoth;
+                          matches = carpool.canBoth;
                         }
-                        return true; // Show all if no preference
+                        
+                        // Check the max distance constraint for direct-to-home dropoffs
+                        if (matches && (ridePreference === "dropoff" || ridePreference === "both") && 
+                            carpool.dropoffPreference === "direct-home" && carpool.maxDistance) {
+                          const numericDistance = getNumericDistance(distances[carpool.id]);
+                          // Only include this carpool if user is within max distance range
+                          return numericDistance <= carpool.maxDistance;
+                        }
+                        
+                        return matches; // Return true if matches ride preference and other conditions
                       })
                       .map((carpool: any) => (
                         <Card key={carpool.id} className="overflow-hidden border-l-4 border-l-primary">
@@ -300,6 +317,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                                  (carpool.canDropoff || carpool.canBoth) && carpool.dropoffPreference && (
                                   <p className="text-xs text-gray-600 mt-2 bg-gray-100 p-1.5 rounded">
                                     <span className="font-medium">Drop-off preference:</span> {carpool.dropoffPreference}
+                                    {carpool.dropoffPreference === "direct-home" && carpool.maxDistance && (
+                                      <span className="ml-1 text-xs text-blue-600"> (max {carpool.maxDistance} miles from their address)</span>
+                                    )}
                                   </p>
                                 )}
                               </div>
@@ -346,14 +366,25 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                         {Array.isArray(carpools) && carpools
                           .filter((carpool: any) => {
                             // Filter carpools based on ride preference
+                            let matches = true;
+                            
                             if (ridePreference === "pickup") {
-                              return carpool.canPickup || carpool.canBoth;
+                              matches = carpool.canPickup || carpool.canBoth;
                             } else if (ridePreference === "dropoff") {
-                              return carpool.canDropoff || carpool.canBoth;
+                              matches = carpool.canDropoff || carpool.canBoth;
                             } else if (ridePreference === "both") {
-                              return carpool.canBoth;
+                              matches = carpool.canBoth;
                             }
-                            return true; // Show all if no preference
+                            
+                            // Check the max distance constraint for direct-to-home dropoffs
+                            if (matches && (ridePreference === "dropoff" || ridePreference === "both") && 
+                                carpool.dropoffPreference === "direct-home" && carpool.maxDistance) {
+                              const numericDistance = getNumericDistance(distances[carpool.id]);
+                              // Only include this carpool if user is within max distance range
+                              return numericDistance <= carpool.maxDistance;
+                            }
+                            
+                            return matches; // Return true if matches ride preference and other conditions
                           })
                           .map((carpool: any) => (
                             <SelectItem key={carpool.id} value={carpool.id.toString()}>
@@ -362,6 +393,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                               {(ridePreference === "dropoff" || ridePreference === "both") && 
                                (carpool.canDropoff || carpool.canBoth) && carpool.dropoffPreference ? 
                                ` - ${carpool.dropoffPreference}` : ''}
+                              {(ridePreference === "dropoff" || ridePreference === "both") && 
+                               carpool.dropoffPreference === "direct-home" && carpool.maxDistance ?
+                               ` (max ${carpool.maxDistance} miles)` : ''}
                             </SelectItem>
                           ))
                         }

@@ -67,6 +67,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
       canBoth: false,
       spacesAvailable: 1,
       dropoffPreference: "direct-home",
+      maxDistance: 5, // Default max distance of 5 miles
       pickupLocation: "",
       additionalNotes: "",
       partyAddress: "",
@@ -465,6 +466,38 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                       </div>
                     </div>
                   </RadioGroup>
+                  
+                  {/* Maximum Distance Setting for direct-to-home dropoffs */}
+                  {form.watch("dropoffPreference") === "direct-home" && (
+                    <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                      <FormField
+                        control={form.control}
+                        name="maxDistance"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm">Maximum distance you'll travel to drop off a child:</FormLabel>
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  min="1" 
+                                  max="50" 
+                                  step="1"
+                                  className="w-20"
+                                  {...field}
+                                  value={field.value || 5}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 5)}
+                                />
+                              </FormControl>
+                              <span className="text-gray-600">miles</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">This helps parents know if their address is within your range</p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
               
