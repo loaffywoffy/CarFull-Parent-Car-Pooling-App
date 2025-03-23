@@ -25,6 +25,11 @@ export const carpools = pgTable("carpools", {
   dropoffPreference: text("dropoff_preference").notNull(),
   pickupLocation: text("pickup_location"),
   additionalNotes: text("additional_notes"),
+  partyAddress: text("party_address"),
+  partyCity: text("party_city"),
+  partyPostcode: text("party_postcode"),
+  targetArrivalTime: text("target_arrival_time"),
+  estimatedDepartureTime: text("estimated_departure_time"),
 });
 
 // CarpoolRequest schema for requests to join carpool

@@ -100,7 +100,7 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
                   {carpool.canBoth && <Badge className="bg-primary-light">Both</Badge>}
                 </p>
                 <p className="text-neutral-600 text-sm">
-                  <span className="font-medium">Location:</span> {carpool.city}, {carpool.postcode}
+                  <span className="font-medium">Home Location:</span> {carpool.city}, {carpool.postcode}
                 </p>
                 <p className="text-neutral-600 text-sm mb-2">
                   <span className="font-medium">Spaces:</span> {carpool.spacesAvailable} available

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -34,6 +34,11 @@ const carpoolFormSchema = z.object({
   dropoffPreference: z.string(),
   pickupLocation: z.string().optional(),
   additionalNotes: z.string().optional(),
+  partyAddress: z.string().optional(),
+  partyCity: z.string().optional(),
+  partyPostcode: z.string().optional(),
+  targetArrivalTime: z.string().optional(),
+  estimatedDepartureTime: z.string().optional(),
 });
 
 type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
@@ -41,6 +46,8 @@ type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
   const { toast } = useToast();
   const [showPickupLocation, setShowPickupLocation] = useState(false);
+  const [showPartyDetails, setShowPartyDetails] = useState(false);
+  const [estimatedDepartureTime, setEstimatedDepartureTime] = useState("");
 
   const form = useForm<CarpoolFormValues>({
     resolver: zodResolver(carpoolFormSchema),
@@ -58,6 +65,11 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
       dropoffPreference: "direct-home",
       pickupLocation: "",
       additionalNotes: "",
+      partyAddress: "",
+      partyCity: "",
+      partyPostcode: "",
+      targetArrivalTime: "",
+      estimatedDepartureTime: "",
     },
   });
 
@@ -90,6 +102,44 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
     setShowPickupLocation(value === "pickup-point");
     form.setValue("dropoffPreference", value);
   };
+  
+  // Toggle showing party details and departure time calculator
+  const togglePartyDetails = () => {
+    setShowPartyDetails(!showPartyDetails);
+  };
+  
+  // Calculate estimated departure time based on travel time (simplified version)
+  const calculateDepartureTime = () => {
+    // Get values from the form
+    const targetTime = form.getValues("targetArrivalTime");
+    
+    if (!targetTime) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a target arrival time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // In a real application, we would use a mapping API to calculate travel time
+    // For this demo, we'll use a simple estimate of 30 minutes travel time
+    const arrivalDateTime = new Date(`2025-01-01T${targetTime}`);
+    const departureDateTime = new Date(arrivalDateTime.getTime() - 30 * 60000); // Subtract 30 minutes
+    
+    const departureTime = departureDateTime.toTimeString().slice(0, 5); // Format as HH:MM
+    
+    // Set the departure time in the form and state
+    form.setValue("estimatedDepartureTime", departureTime);
+    setEstimatedDepartureTime(departureTime);
+  };
+  
+  // Whenever party address changes, we should recalculate the departure time
+  useEffect(() => {
+    if (form.getValues("targetArrivalTime") && form.getValues("partyAddress")) {
+      calculateDepartureTime();
+    }
+  }, [form.watch("partyAddress"), form.watch("targetArrivalTime")]);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -192,6 +242,104 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
             {/* Carpool Options */}
             <div className="space-y-4 md:col-span-2">
               <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Carpool Options</h3>
+              
+              {/* Party Details Button */}
+              <div className="mb-4">
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={togglePartyDetails}
+                  className="w-full justify-center py-2"
+                >
+                  {showPartyDetails ? "Hide Party Details" : "Add Party Details & Calculate Travel Time"}
+                </Button>
+              </div>
+              
+              {/* Party Details Section */}
+              {showPartyDetails && (
+                <div className="bg-gray-50 p-4 rounded-md mb-4 border border-gray-200">
+                  <h4 className="font-medium text-neutral-700 mb-3">Party Details</h4>
+                  
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="partyAddress"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Party Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Street Address" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="partyCity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>City</FormLabel>
+                            <FormControl>
+                              <Input placeholder="City" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="partyPostcode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Postcode</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Postcode" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="targetArrivalTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Target Arrival Time</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="bg-blue-50 p-3 rounded-md border border-blue-100">
+                      <h5 className="font-medium text-blue-800 mb-2">Estimated Departure Time</h5>
+                      {estimatedDepartureTime ? (
+                        <p className="text-lg font-semibold text-blue-700">{estimatedDepartureTime}</p>
+                      ) : (
+                        <p className="text-sm text-blue-600">Fill in party address and arrival time to calculate</p>
+                      )}
+                      <p className="text-xs text-blue-500 mt-1">Based on estimated travel time (30 minutes for demo)</p>
+                      
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={calculateDepartureTime}
+                        className="mt-2 w-full justify-center py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-800"
+                      >
+                        Recalculate
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div className="space-y-3">
                 <FormLabel>I can offer:</FormLabel>
