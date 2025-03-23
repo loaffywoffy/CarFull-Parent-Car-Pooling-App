@@ -24,6 +24,8 @@ export const carpools = pgTable("carpools", {
   spacesAvailable: integer("spaces_available").notNull(),
   dropoffPreference: text("dropoff_preference").notNull(),
   pickupLocation: text("pickup_location"),
+  pickupLocationCity: text("pickup_location_city"),
+  pickupLocationPostcode: text("pickup_location_postcode"),
   additionalNotes: text("additional_notes"),
   partyAddress: text("party_address"),
   partyCity: text("party_city"),

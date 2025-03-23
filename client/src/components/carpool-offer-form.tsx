@@ -30,9 +30,11 @@ const carpoolFormSchema = z.object({
   canPickup: z.boolean().default(false),
   canDropoff: z.boolean().default(false),
   canBoth: z.boolean().default(false),
-  spacesAvailable: z.string().transform((val) => parseInt(val, 10)), // Transform to number for API
+  spacesAvailable: z.coerce.number().min(1), // Coerce ensures type conversion
   dropoffPreference: z.string(),
   pickupLocation: z.string().optional(),
+  pickupLocationCity: z.string().optional(),
+  pickupLocationPostcode: z.string().optional(),
   additionalNotes: z.string().optional(),
   partyAddress: z.string().optional(),
   partyCity: z.string().optional(),
@@ -401,8 +403,8 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                   <FormItem>
                     <FormLabel>Spaces Available in Car</FormLabel>
                     <Select 
-                      onValueChange={(value) => field.onChange(parseInt(value, 10))} 
-                      defaultValue={field.value ? String(field.value) : undefined}>
+                      onValueChange={(value) => field.onChange(Number(value))} 
+                      defaultValue={String(field.value)}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select number of spaces" />
