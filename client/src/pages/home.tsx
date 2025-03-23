@@ -9,10 +9,11 @@ import PartyGroupForm from "@/components/party-group-form";
 import PartyGroupsList from "@/components/party-groups-list";
 import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
+import MetricsDashboard from "@/components/metrics-dashboard";
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroupByAccessCode } from "@/api/partyGroups";
 
-type Tab = "partyGroups" | "offer" | "request" | "view" | "calendar";
+type Tab = "partyGroups" | "offer" | "request" | "view" | "calendar" | "metrics";
 type PartyGroupTab = "list" | "create" | "join" | "details";
 
 type SuccessInfo = {
@@ -224,6 +225,16 @@ export default function Home() {
             >
               Calendar
             </button>
+            <button
+              onClick={() => handleTabChange("metrics")}
+              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
+                activeTab === "metrics"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-neutral-600"
+              }`}
+            >
+              Metrics
+            </button>
           </div>
         </div>
 
@@ -391,6 +402,12 @@ export default function Home() {
                 </button>
               </div>
             )}
+          </div>
+        )}
+        
+        {activeTab === "metrics" && (
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <MetricsDashboard />
           </div>
         )}
 

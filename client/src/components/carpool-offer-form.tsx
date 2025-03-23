@@ -478,10 +478,10 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                           >
                             <FormItem className="flex items-center space-x-3 space-y-0">
                               <FormControl>
-                                <RadioGroupItem value="direct-home-radius" />
+                                <RadioGroupItem value="direct-home" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                Directly to each child's home in a selected radius
+                                Directly to each child's home
                               </FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0">
@@ -509,39 +509,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 </div>
               )}
               
-              {/* Show radius selector if direct-home-radius is selected */}
-              {showHomeRadiusSelector && (
-                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
-                  <h4 className="font-medium text-gray-800">Travel Radius</h4>
-                  
-                  <FormField
-                    control={form.control}
-                    name="dropoffRadius"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Maximum radius for dropoff (miles)</FormLabel>
-                        <Select 
-                          onValueChange={(value) => field.onChange(Number(value))} 
-                          defaultValue={String(field.value)}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select radius" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {[1, 2, 3, 5, 7, 10, 15, 20].map((num) => (
-                              <SelectItem key={num} value={String(num)}>
-                                {num} {num === 1 ? 'mile' : 'miles'}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
+              {/* Travel radius feature removed */}
               
               {/* Show pickup location fields if pickup-point is selected */}
               {showPickupLocation && (
