@@ -99,7 +99,9 @@ export class MemStorage implements IStorage {
       ...insertPartyGroup, 
       id,
       description: insertPartyGroup.description ?? null,
-      additionalInformation: insertPartyGroup.additionalInformation ?? null
+      additionalInformation: insertPartyGroup.additionalInformation ?? null,
+      partyEndDate: insertPartyGroup.partyEndDate ?? null,
+      endTime: insertPartyGroup.endTime ?? null
     };
     this.partyGroups.set(id, partyGroup);
     return partyGroup;
