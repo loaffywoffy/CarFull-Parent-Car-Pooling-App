@@ -212,7 +212,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                     <FormItem>
                       <FormLabel>Phone Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="Phone Number" type="tel" {...field} />
+                        <Input placeholder="Phone Number" type="tel" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -246,7 +246,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   <FormItem>
                     <FormLabel>Child's Phone Number (if applicable)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Phone Number" type="tel" {...field} />
+                      <Input placeholder="Phone Number" type="tel" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

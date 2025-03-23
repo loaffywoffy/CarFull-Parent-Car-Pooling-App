@@ -93,26 +93,44 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
                 <p className="text-neutral-600 text-sm">
                   <span className="font-medium">Parent of:</span> {carpool.childName}
                 </p>
+                <div className="text-neutral-600 text-sm mb-3">
+                  <div className="font-medium mb-1">Carpool Services:</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {/* Going to party section */}
+                    {(carpool.canPickup || carpool.canBoth) && (
+                      <div className="bg-gray-50 p-2 rounded border border-gray-200">
+                        <div className="flex items-center mb-1">
+                          <Badge className="bg-primary-light mr-2">To Party</Badge>
+                          <span className="text-xs">{carpool.spacesAvailable} spaces</span>
+                        </div>
+                        <p className="text-xs">
+                          Will take children from their home to the party
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Return from party section */}
+                    {(carpool.canDropoff || carpool.canBoth) && (
+                      <div className="bg-gray-50 p-2 rounded border border-gray-200">
+                        <div className="flex items-center mb-1">
+                          <Badge className="bg-primary-light mr-2">From Party</Badge>
+                          <span className="text-xs">{carpool.spacesAvailable} spaces</span>
+                        </div>
+                        <p className="text-xs font-medium">Return arrangement:</p>
+                        <p className="text-xs">{
+                          carpool.dropoffPreference === "direct-home" 
+                            ? "Direct to child's home" 
+                            : carpool.dropoffPreference === "my-home"
+                              ? "Child to be collected from my home"
+                              : "Meet at another location: " + (carpool.pickupLocation || "Contact for details")
+                        }</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
                 <p className="text-neutral-600 text-sm mb-2">
-                  Offers: {" "}
-                  {carpool.canPickup && <Badge className="bg-primary-light mr-1">Take to party</Badge>}
-                  {carpool.canDropoff && <Badge className="bg-primary-light mr-1">Pick up from party</Badge>}
-                  {carpool.canBoth && <Badge className="bg-primary-light">Both</Badge>}
-                </p>
-                <p className="text-neutral-600 text-sm">
                   <span className="font-medium">Home Location:</span> {carpool.city}, {carpool.postcode}
-                </p>
-                <p className="text-neutral-600 text-sm mb-2">
-                  <span className="font-medium">Spaces:</span> {carpool.spacesAvailable} available
-                </p>
-                <p className="text-neutral-600 text-sm">
-                  <span className="font-medium">Return preference:</span> {
-                    carpool.dropoffPreference === "direct-home" 
-                      ? "Direct to child's home" 
-                      : carpool.dropoffPreference === "my-home"
-                        ? "Child to be collected from my home"
-                        : "Meet at another location: " + (carpool.pickupLocation || "Contact for details")
-                  }
                 </p>
                 
                 {/* Party Details if available */}
