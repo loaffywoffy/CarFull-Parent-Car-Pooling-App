@@ -92,11 +92,16 @@ export default function Home() {
       title: "Joined Party Group!",
       message: `You have successfully joined the "${partyGroup.name}" party group.`,
     });
+    
+    // Set active tab to "view" so users can immediately see carpools after joining
+    setActiveTab("view");
   };
 
   const handleSelectPartyGroup = (partyGroup: PartyGroup) => {
     setSelectedPartyGroup(partyGroup);
     setPartyGroupTab("details");
+    // Navigate to view tab automatically for better user experience
+    setActiveTab("view");
   };
 
   // Check URL for access code when the component mounts
@@ -113,11 +118,12 @@ export default function Home() {
             setJoinAccessCode(accessCode);
             setSelectedPartyGroup(partyGroup);
             setPartyGroupTab("details");
+            setActiveTab("view"); // Auto-navigate to the View Carpools tab
             
             setSuccessInfo({
               show: true,
               title: "Party Group Found!",
-              message: `You've opened "${partyGroup.name}". You can now request to join a carpool.`,
+              message: `You've opened "${partyGroup.name}". You can now view available carpools.`,
             });
             
             // Remove the access code from the URL to avoid reloading on refresh
@@ -278,14 +284,14 @@ export default function Home() {
           </div>
         )}
         
-        {activeTab === "request" && selectedPartyGroup && selectedCarpoolId && (
+        {activeTab === "request" && selectedCarpoolId && (
           <CarpoolRequestForm 
             selectedCarpoolId={selectedCarpoolId}
             onSuccess={handleRequestSubmitSuccess} 
           />
         )}
         
-        {activeTab === "request" && (!selectedPartyGroup || !selectedCarpoolId) && (
+        {activeTab === "request" && !selectedCarpoolId && (
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold mb-4">Request a Carpool Spot</h2>
             <p className="text-neutral-600 mb-6">
