@@ -215,7 +215,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                     <FormItem>
                       <FormLabel>Start Time</FormLabel>
                       <FormControl>
-                        <Input type="time" {...field} />
+                        <Input type="time" step="900" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -229,7 +229,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                     <FormItem>
                       <FormLabel>End Time (Optional)</FormLabel>
                       <FormControl>
-                        <Input type="time" {...field} value={field.value || ''} />
+                        <Input type="time" step="900" {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

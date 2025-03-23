@@ -293,19 +293,42 @@ export default function Home() {
         )}
         
         {activeTab === "request" && !selectedCarpoolId && (
-          <div className="bg-white rounded-lg p-6 shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Request a Carpool Spot</h2>
-            <p className="text-neutral-600 mb-6">
-              {!selectedPartyGroup ? 
-                "Please select or join a party group first before requesting a carpool spot." : 
-                "Please select a carpool offer from the 'View All Carpools' tab before requesting a spot."}
-            </p>
-            <button
-              onClick={() => handleTabChange(!selectedPartyGroup ? "partyGroups" : "view")}
-              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
-            >
-              {!selectedPartyGroup ? "Go to Party Groups" : "View Available Carpools"}
-            </button>
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg p-6 shadow-md">
+              <h2 className="text-xl font-semibold mb-4">Request a Carpool Spot</h2>
+              
+              {!selectedPartyGroup ? (
+                <>
+                  <p className="text-neutral-600 mb-6">
+                    Please select or join a party group first before requesting a carpool spot.
+                  </p>
+                  <button
+                    onClick={() => handleTabChange("partyGroups")}
+                    className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
+                  >
+                    Go to Party Groups
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-neutral-600 mb-6">
+                    Select an available carpool offer from the list below to request a spot.
+                  </p>
+                  
+                  {/* Show available carpools directly in this tab */}
+                  <div className="mt-6">
+                    <CarpoolList 
+                      partyGroupId={selectedPartyGroup.id}
+                      onRequestSpot={handleRequestSpot}
+                      onManageCalendar={(carpoolId) => {
+                        setSelectedCarpoolId(carpoolId);
+                        setActiveTab("calendar");
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
         
