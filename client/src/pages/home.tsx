@@ -13,7 +13,7 @@ import MetricsDashboard from "@/components/metrics-dashboard";
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroupByAccessCode } from "@/api/partyGroups";
 
-type Tab = "partyGroups" | "offer" | "request" | "view" | "calendar" | "metrics";
+type Tab = "partyGroups" | "offer" | "request" | "view" | "metrics";
 type PartyGroupTab = "list" | "create" | "join" | "details";
 
 type SuccessInfo = {
@@ -215,16 +215,7 @@ export default function Home() {
             >
               View All Carpools
             </button>
-            <button
-              onClick={() => handleTabChange("calendar")}
-              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
-                activeTab === "calendar"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-neutral-600"
-              }`}
-            >
-              Calendar
-            </button>
+
             <button
               onClick={() => handleTabChange("metrics")}
               className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
@@ -331,10 +322,7 @@ export default function Home() {
                     <CarpoolList 
                       partyGroupId={selectedPartyGroup.id}
                       onRequestSpot={handleRequestSpot}
-                      onManageCalendar={(carpoolId) => {
-                        setSelectedCarpoolId(carpoolId);
-                        setActiveTab("calendar");
-                      }}
+                      onManageCalendar={null}
                     />
                   </div>
                 </>
