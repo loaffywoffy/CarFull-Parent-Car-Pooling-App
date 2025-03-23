@@ -118,7 +118,13 @@ export default function Home() {
         )}
         
         {activeTab === "view" && (
-          <CarpoolList onRequestSpot={handleRequestSpot} />
+          <CarpoolList 
+            onRequestSpot={handleRequestSpot} 
+            onManageCalendar={(carpoolId) => {
+              setSelectedCarpoolId(carpoolId);
+              setActiveTab("calendar");
+            }}
+          />
         )}
         
         {activeTab === "calendar" && (

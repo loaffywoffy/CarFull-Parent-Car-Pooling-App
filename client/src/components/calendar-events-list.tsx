@@ -22,13 +22,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CalendarIcon, ClockIcon, MapPinIcon, Trash2, AlertCircle } from "lucide-react";
+import { CalendarIcon, ClockIcon, MapPinIcon, Trash2, AlertCircle, ArrowLeft } from "lucide-react";
 
 interface CalendarEventsListProps {
   carpoolId: number;
+  onBackToList?: () => void;
 }
 
-export default function CalendarEventsList({ carpoolId }: CalendarEventsListProps) {
+export default function CalendarEventsList({ carpoolId, onBackToList }: CalendarEventsListProps) {
   const { toast } = useToast();
   const [eventToDelete, setEventToDelete] = useState<number | null>(null);
   
@@ -68,6 +69,18 @@ export default function CalendarEventsList({ carpoolId }: CalendarEventsListProp
           <CardTitle>Calendar Events</CardTitle>
           <CardDescription>Loading events...</CardDescription>
         </CardHeader>
+        {onBackToList && (
+          <CardFooter className="pt-2 pb-4">
+            <Button 
+              variant="outline"
+              className="flex items-center text-primary"
+              onClick={onBackToList}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Carpool List
+            </Button>
+          </CardFooter>
+        )}
       </Card>
     );
   }
@@ -85,6 +98,18 @@ export default function CalendarEventsList({ carpoolId }: CalendarEventsListProp
             <p>Failed to load calendar events. Please try again later.</p>
           </div>
         </CardContent>
+        {onBackToList && (
+          <CardFooter className="pt-2 pb-4">
+            <Button 
+              variant="outline"
+              className="flex items-center text-primary"
+              onClick={onBackToList}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Carpool List
+            </Button>
+          </CardFooter>
+        )}
       </Card>
     );
   }
@@ -189,6 +214,18 @@ export default function CalendarEventsList({ carpoolId }: CalendarEventsListProp
           </div>
         </ScrollArea>
       </CardContent>
+      {onBackToList && (
+        <CardFooter className="pt-2 pb-4">
+          <Button 
+            variant="outline"
+            className="flex items-center text-primary"
+            onClick={onBackToList}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Carpool List
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }
