@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CarpoolOfferForm from "@/components/carpool-offer-form";
 import CarpoolRequestForm from "@/components/carpool-request-form";
 import CarpoolList from "@/components/carpool-list";
@@ -10,7 +10,7 @@ import PartyGroupsList from "@/components/party-groups-list";
 import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
 import { type PartyGroup } from "@shared/schema";
-import { getPartyGroupById } from "@/api/partyGroups";
+import { getPartyGroupById, getPartyGroupByAccessCode } from "@/api/partyGroups";
 
 type Tab = "partyGroups" | "offer" | "request" | "view" | "calendar";
 type PartyGroupTab = "list" | "create" | "join" | "details";
@@ -98,6 +98,40 @@ export default function Home() {
     setSelectedPartyGroup(partyGroup);
     setPartyGroupTab("details");
   };
+
+  // Check URL for access code when the component mounts
+  useEffect(() => {
+    const checkUrlForAccessCode = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const accessCode = params.get('access');
+      
+      if (accessCode) {
+        try {
+          // Try to find a party group with this access code
+          const partyGroup = await getPartyGroupByAccessCode(accessCode);
+          if (partyGroup) {
+            setJoinAccessCode(accessCode);
+            setSelectedPartyGroup(partyGroup);
+            setPartyGroupTab("details");
+            
+            setSuccessInfo({
+              show: true,
+              title: "Party Group Found!",
+              message: `You've opened "${partyGroup.name}". You can now request to join a carpool.`,
+            });
+            
+            // Remove the access code from the URL to avoid reloading on refresh
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+          }
+        } catch (error) {
+          console.error("Error fetching party group by access code:", error);
+        }
+      }
+    };
+    
+    checkUrlForAccessCode();
+  }, []);
 
   const handleOfferCarpool = (partyGroupId: number) => {
     if (partyGroupId) {
