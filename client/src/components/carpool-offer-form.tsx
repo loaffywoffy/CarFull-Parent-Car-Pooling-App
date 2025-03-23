@@ -41,7 +41,8 @@ const carpoolFormSchema = z.object({
   spacesAvailable: z.coerce.number().min(1).optional(),
   returnSpacesAvailable: z.coerce.number().optional(),
   dropoffPreference: z.string(),
-
+  dropoffRadius: z.coerce.number().optional(),
+  
   pickupLocation: z.string().optional(),
   pickupLocationCity: z.string().optional(),
   pickupLocationPostcode: z.string().optional(),
@@ -64,6 +65,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   const { toast } = useToast();
   const [showPickupLocation, setShowPickupLocation] = useState(false);
   const [showReturnPreferences, setShowReturnPreferences] = useState(false);
+  const [showHomeRadiusSelector, setShowHomeRadiusSelector] = useState(false);
   const [estimatedDepartureTime, setEstimatedDepartureTime] = useState("");
 
   // Fetch party group details
@@ -112,8 +114,9 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
       canBoth: false,
       spacesAvailable: 1,
       returnSpacesAvailable: 1, // Default same as spaces available for going to party
-      dropoffPreference: "direct-home",
-
+      dropoffPreference: "direct-home-radius",
+      dropoffRadius: 5, // Default radius of 5 miles
+      
       pickupLocation: "",
       pickupLocationCity: "",
       pickupLocationPostcode: "",
@@ -156,6 +159,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
 
   const handleDropoffPreferenceChange = (value: string) => {
     setShowPickupLocation(value === "pickup-point");
+    setShowHomeRadiusSelector(value === "direct-home-radius");
     form.setValue("dropoffPreference", value);
   };
   
@@ -365,7 +369,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                               
                               // Set default dropoff preference when enabling this option
                               if (checked === true) {
-                                form.setValue("dropoffPreference", "direct-home");
+                                form.setValue("dropoffPreference", "direct-home-radius");
                               }
                             }}
                           />
@@ -477,10 +481,18 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                           >
                             <FormItem className="flex items-center space-x-3 space-y-0">
                               <FormControl>
-                                <RadioGroupItem value="direct-home" />
+                                <RadioGroupItem value="direct-home-radius" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                Directly to each child's home
+                                Directly to each child's home in a selected radius
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="my-address" />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                To my address
                               </FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0">
@@ -488,11 +500,45 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                                 <RadioGroupItem value="pickup-point" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                To a central pickup point
+                                To alternative central pickup point
                               </FormLabel>
                             </FormItem>
                           </RadioGroup>
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+              
+              {/* Show radius selector if direct-home-radius is selected */}
+              {showHomeRadiusSelector && (
+                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                  <h4 className="font-medium text-gray-800">Travel Radius</h4>
+                  
+                  <FormField
+                    control={form.control}
+                    name="dropoffRadius"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Maximum radius for dropoff (miles)</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(Number(value))} 
+                          defaultValue={String(field.value)}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select radius" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {[1, 2, 3, 5, 7, 10, 15, 20].map((num) => (
+                              <SelectItem key={num} value={String(num)}>
+                                {num} {num === 1 ? 'mile' : 'miles'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
