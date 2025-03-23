@@ -41,7 +41,7 @@ const carpoolFormSchema = z.object({
   spacesAvailable: z.coerce.number().min(1).optional(),
   returnSpacesAvailable: z.coerce.number().optional(),
   dropoffPreference: z.string(),
-  maxDistance: z.coerce.number().optional(),
+
   pickupLocation: z.string().optional(),
   pickupLocationCity: z.string().optional(),
   pickupLocationPostcode: z.string().optional(),
@@ -113,7 +113,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
       spacesAvailable: 1,
       returnSpacesAvailable: 1, // Default same as spaces available for going to party
       dropoffPreference: "direct-home",
-      maxDistance: 5, // Default max distance of 5 miles
+
       pickupLocation: "",
       pickupLocationCity: "",
       pickupLocationPostcode: "",
@@ -458,32 +458,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 />
               )}
               
-              <FormField
-                control={form.control}
-                name="maxDistance"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Maximum distance you're willing to travel (miles)</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(Number(value))} 
-                      defaultValue={String(field.value)}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select maximum distance" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {[1, 2, 3, 5, 7, 10, 15, 20].map((num) => (
-                          <SelectItem key={num} value={String(num)}>
-                            {num} {num === 1 ? 'mile' : 'miles'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
               
               {/* Show dropoff preference only if canDropoff or canBoth is selected */}
               {showReturnPreferences && (
