@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, ChevronUp, Users } from "lucide-react";
+import CarpoolRequestsList from "./carpool-requests-list";
 
 interface CarpoolListProps {
   onRequestSpot: (carpoolId: number) => void;
@@ -13,10 +16,18 @@ type FilterOption = "all" | "pickup" | "dropoff" | "both";
 
 export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
   const [filter, setFilter] = useState<FilterOption>("all");
+  const [openCarpoolIds, setOpenCarpoolIds] = useState<Record<number, boolean>>({});
   
   const { data: carpools, isLoading } = useQuery({
     queryKey: ["/api/carpools"],
   });
+  
+  const toggleCarpool = (carpoolId: number) => {
+    setOpenCarpoolIds(prev => ({
+      ...prev,
+      [carpoolId]: !prev[carpoolId]
+    }));
+  };
 
   const filteredCarpools = Array.isArray(carpools) 
     ? carpools.filter((carpool: any) => {
