@@ -57,6 +57,15 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export const insertCarpoolSchema = createInsertSchema(carpools).omit({
   id: true,
+}).transform((data) => {
+  // Ensure spacesAvailable is a number
+  if (typeof data.spacesAvailable === 'string') {
+    return {
+      ...data,
+      spacesAvailable: parseInt(data.spacesAvailable, 10),
+    };
+  }
+  return data;
 });
 
 export const insertCarpoolRequestSchema = createInsertSchema(carpoolRequests).omit({

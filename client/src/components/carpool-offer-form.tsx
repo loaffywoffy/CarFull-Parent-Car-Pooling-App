@@ -61,7 +61,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
       canPickup: false,
       canDropoff: false,
       canBoth: false,
-      spacesAvailable: 1,
+      spacesAvailable: "1",
       dropoffPreference: "direct-home",
       pickupLocation: "",
       additionalNotes: "",
@@ -400,7 +400,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Spaces Available in Car</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(Number(value))} defaultValue={String(field.value)}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value ? String(field.value) : undefined}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select number of spaces" />
