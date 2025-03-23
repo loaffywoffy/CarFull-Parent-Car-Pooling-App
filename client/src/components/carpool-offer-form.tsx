@@ -31,6 +31,7 @@ const carpoolFormSchema = z.object({
   canDropoff: z.boolean().default(false),
   canBoth: z.boolean().default(false),
   spacesAvailable: z.coerce.number().min(1), // Coerce ensures type conversion
+  returnSpacesAvailable: z.coerce.number().optional(),
   dropoffPreference: z.string(),
   maxDistance: z.coerce.number().optional(),
   pickupLocation: z.string().optional(),
@@ -66,6 +67,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
       canDropoff: false,
       canBoth: false,
       spacesAvailable: 1,
+      returnSpacesAvailable: 1, // Default same as spaces available for going to party
       dropoffPreference: "direct-home",
       maxDistance: 5, // Default max distance of 5 miles
       pickupLocation: "",
