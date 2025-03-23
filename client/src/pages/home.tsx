@@ -211,21 +211,54 @@ export default function Home() {
           </div>
         )}
         
-        {activeTab === "request" && (
+        {activeTab === "request" && selectedPartyGroup && selectedCarpoolId && (
           <CarpoolRequestForm 
             selectedCarpoolId={selectedCarpoolId}
             onSuccess={handleRequestSubmitSuccess} 
           />
         )}
         
-        {activeTab === "view" && (
+        {activeTab === "request" && (!selectedPartyGroup || !selectedCarpoolId) && (
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Request a Carpool Spot</h2>
+            <p className="text-neutral-600 mb-6">
+              {!selectedPartyGroup ? 
+                "Please select or join a party group first before requesting a carpool spot." : 
+                "Please select a carpool offer from the 'View All Carpools' tab before requesting a spot."}
+            </p>
+            <button
+              onClick={() => handleTabChange(!selectedPartyGroup ? "partyGroups" : "view")}
+              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
+            >
+              {!selectedPartyGroup ? "Go to Party Groups" : "View Available Carpools"}
+            </button>
+          </div>
+        )}
+        
+        {activeTab === "view" && selectedPartyGroup && (
           <CarpoolList 
+            partyGroupId={selectedPartyGroup.id}
             onRequestSpot={handleRequestSpot} 
             onManageCalendar={(carpoolId) => {
               setSelectedCarpoolId(carpoolId);
               setActiveTab("calendar");
             }}
           />
+        )}
+        
+        {activeTab === "view" && !selectedPartyGroup && (
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <h2 className="text-xl font-semibold mb-4">View Carpools</h2>
+            <p className="text-neutral-600 mb-6">
+              Please select or join a party group first to view available carpools.
+            </p>
+            <button
+              onClick={() => handleTabChange("partyGroups")}
+              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
+            >
+              Go to Party Groups
+            </button>
+          </div>
         )}
         
         {activeTab === "calendar" && (

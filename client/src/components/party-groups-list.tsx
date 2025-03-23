@@ -76,12 +76,8 @@ export default function PartyGroupsList({
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Party Groups</h2>
-        <div className="flex gap-2">
-          <Button onClick={onJoinPartyGroup} variant="outline" className="flex items-center gap-1">
-            <Share2Icon className="h-4 w-4" />
-            <span>Join Group</span>
-          </Button>
-          <Button onClick={onCreateNew} className="flex items-center gap-1">
+        <div>
+          <Button onClick={() => onCreateNew()} className="flex items-center gap-1">
             <PlusIcon className="h-4 w-4" />
             <span>Create New</span>
           </Button>
@@ -95,10 +91,10 @@ export default function PartyGroupsList({
             Create a new party group as an organizer or join an existing group with an access code
           </p>
           <div className="flex justify-center gap-3">
-            <Button onClick={onJoinPartyGroup} variant="outline">
+            <Button onClick={() => onJoinPartyGroup()} variant="outline">
               Join with Access Code
             </Button>
-            <Button onClick={onCreateNew} variant="default">
+            <Button onClick={() => onCreateNew()} variant="default">
               Create New Group
             </Button>
           </div>
