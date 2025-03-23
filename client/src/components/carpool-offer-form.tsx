@@ -448,7 +448,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
               
               {showReturnPreferences && (
                 <div className="space-y-3">
-                  <FormLabel>For pickup from party - Return preferences:</FormLabel>
+                  <FormLabel>For returning from party - preferences:</FormLabel>
                   
                   {/* Return journey spaces available */}
                   <FormField
@@ -456,7 +456,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                     name="returnSpacesAvailable"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Spaces Available for Return Journey</FormLabel>
+                        <FormLabel>Spaces Available from party</FormLabel>
                         <Select 
                           onValueChange={(value) => field.onChange(Number(value))} 
                           defaultValue={String(field.value)}>
@@ -474,7 +474,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                             <SelectItem value="6">6+</SelectItem>
                           </SelectContent>
                         </Select>
-                        <p className="text-xs text-gray-500 mt-1">If different from spaces available when traveling to the party</p>
+                        <p className="text-xs text-gray-500 mt-1">If different from spaces available to take to party</p>
                         <FormMessage />
                       </FormItem>
                     )}
