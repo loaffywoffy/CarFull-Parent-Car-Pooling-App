@@ -169,6 +169,28 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
                     <span className="font-medium">Notes:</span> {carpool.additionalNotes}
                   </p>
                 )}
+                
+                {/* Collapsible Passenger List */}
+                <Collapsible 
+                  open={openCarpoolIds[carpool.id]} 
+                  onOpenChange={() => toggleCarpool(carpool.id)}
+                  className="mt-3 border-t border-gray-100 pt-3"
+                >
+                  <CollapsibleTrigger asChild>
+                    <button className="flex items-center text-sm text-primary font-medium hover:text-primary-dark focus:outline-none">
+                      <Users size={16} className="mr-1" />
+                      View Passengers
+                      {openCarpoolIds[carpool.id] ? (
+                        <ChevronUp size={16} className="ml-1" />
+                      ) : (
+                        <ChevronDown size={16} className="ml-1" />
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <CarpoolRequestsList carpoolId={carpool.id} />
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
               <div className="mt-4 md:mt-0">
                 <Button 
