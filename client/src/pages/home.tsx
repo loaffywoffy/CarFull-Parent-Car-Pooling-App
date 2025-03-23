@@ -10,6 +10,7 @@ import PartyGroupsList from "@/components/party-groups-list";
 import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
 import { type PartyGroup } from "@shared/schema";
+import { getPartyGroupById } from "@/api/partyGroups";
 
 type Tab = "partyGroups" | "offer" | "request" | "view" | "calendar";
 type PartyGroupTab = "list" | "create" | "join" | "details";
@@ -59,12 +60,28 @@ export default function Home() {
   };
 
   const handlePartyGroupSuccess = (partyGroupId: number) => {
-    setSuccessInfo({
-      show: true,
-      title: "Party Group Created!",
-      message: "Your party group has been created successfully. Share the access code with other parents.",
-    });
-    setPartyGroupTab("list");
+    // Add the newly created group to the createdGroupIds array
+    setCreatedGroupIds(prev => [...prev, partyGroupId]);
+    
+    // Get the newly created party group and navigate to its details
+    const fetchPartyGroup = async () => {
+      try {
+        const partyGroup = await getPartyGroupById(partyGroupId);
+        setSelectedPartyGroup(partyGroup);
+        setPartyGroupTab("details");
+        
+        setSuccessInfo({
+          show: true,
+          title: "Party Group Created!",
+          message: "Your party group has been created successfully. Share the access code with other parents.",
+        });
+      } catch (error) {
+        console.error("Error fetching party group:", error);
+        setPartyGroupTab("list");
+      }
+    };
+    
+    fetchPartyGroup();
   };
 
   const handlePartyGroupJoinSuccess = (partyGroup: PartyGroup) => {
@@ -184,7 +201,8 @@ export default function Home() {
             {partyGroupTab === "details" && selectedPartyGroup && (
               <PartyGroupDetails 
                 partyGroup={selectedPartyGroup} 
-                onOfferCarpool={() => handleOfferCarpool(selectedPartyGroup.id)} 
+                onOfferCarpool={() => handleOfferCarpool(selectedPartyGroup.id)}
+                isCreator={createdGroupIds.includes(selectedPartyGroup.id)}
               />
             )}
           </>
