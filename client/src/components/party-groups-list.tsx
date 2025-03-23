@@ -143,8 +143,8 @@ export default function PartyGroupsList({
                     className="gap-1"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Pre-populate the join form with this party group's access code
-                      onJoinPartyGroup(partyGroup.accessCode);
+                      // Ask for access code, don't pre-populate
+                      onJoinPartyGroup();
                     }}
                   >
                     <Share2Icon className="h-3.5 w-3.5" />

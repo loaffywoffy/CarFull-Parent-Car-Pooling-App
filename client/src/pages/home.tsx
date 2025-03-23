@@ -31,6 +31,7 @@ export default function Home() {
   const [selectedCarpoolId, setSelectedCarpoolId] = useState<number | null>(null);
   const [selectedPartyGroup, setSelectedPartyGroup] = useState<PartyGroup | null>(null);
   const [joinAccessCode, setJoinAccessCode] = useState<string>("");
+  const [createdGroupIds, setCreatedGroupIds] = useState<number[]>([]);
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);

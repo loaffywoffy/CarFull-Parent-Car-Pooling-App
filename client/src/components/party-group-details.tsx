@@ -9,9 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 interface PartyGroupDetailsProps {
   partyGroup: PartyGroup;
   onOfferCarpool: (partyGroupId: number) => void;
+  isCreator?: boolean; // Flag to determine if the current user created this group
 }
 
-export default function PartyGroupDetails({ partyGroup, onOfferCarpool }: PartyGroupDetailsProps) {
+export default function PartyGroupDetails({ partyGroup, onOfferCarpool, isCreator = false }: PartyGroupDetailsProps) {
   const { toast } = useToast();
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -98,32 +99,35 @@ export default function PartyGroupDetails({ partyGroup, onOfferCarpool }: PartyG
             </div>
           )}
           
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <UserIcon className="h-5 w-5 text-primary-600" />
-                <p className="font-medium text-gray-900">Access Code</p>
+          {/* Only show access code to the creator */}
+          {isCreator && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <UserIcon className="h-5 w-5 text-primary-600" />
+                  <p className="font-medium text-gray-900">Access Code</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <code className="px-2 py-1 bg-gray-100 rounded text-sm font-mono">
+                    {partyGroup.accessCode}
+                  </code>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={copyAccessCode}
+                    className="h-8 w-8"
+                  >
+                    {copySuccess ? (
+                      <CheckIcon className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <CopyIcon className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <code className="px-2 py-1 bg-gray-100 rounded text-sm font-mono">
-                  {partyGroup.accessCode}
-                </code>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={copyAccessCode}
-                  className="h-8 w-8"
-                >
-                  {copySuccess ? (
-                    <CheckIcon className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <CopyIcon className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
+              <p className="text-xs text-gray-500 mt-1">Share this code with other parents to join this party group</p>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Share this code with other parents to join this party group</p>
-          </div>
+          )}
         </div>
       </CardContent>
       <CardFooter className="bg-gray-50 py-4 flex justify-end">
