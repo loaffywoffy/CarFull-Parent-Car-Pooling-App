@@ -7,7 +7,10 @@ import {
   type InsertCarpool,
   carpoolRequests,
   type CarpoolRequest,
-  type InsertCarpoolRequest
+  type InsertCarpoolRequest,
+  calendarEvents,
+  type CalendarEvent,
+  type InsertCalendarEvent
 } from "@shared/schema";
 
 export interface IStorage {
@@ -24,25 +27,36 @@ export interface IStorage {
   // Carpool request operations
   createCarpoolRequest(request: InsertCarpoolRequest): Promise<CarpoolRequest>;
   getCarpoolRequestsByCarpoolId(carpoolId: number): Promise<CarpoolRequest[]>;
+  
+  // Calendar event operations
+  createCalendarEvent(event: InsertCalendarEvent): Promise<CalendarEvent>;
+  getCalendarEventById(id: number): Promise<CalendarEvent | undefined>;
+  getCalendarEventsByCarpoolId(carpoolId: number): Promise<CalendarEvent[]>;
+  updateCalendarEvent(id: number, event: Partial<InsertCalendarEvent>): Promise<CalendarEvent | undefined>;
+  deleteCalendarEvent(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private carpools: Map<number, Carpool>;
   private carpoolRequests: Map<number, CarpoolRequest>;
+  private calendarEvents: Map<number, CalendarEvent>;
   
   private currentUserId: number;
   private currentCarpoolId: number;
   private currentRequestId: number;
+  private currentEventId: number;
 
   constructor() {
     this.users = new Map();
     this.carpools = new Map();
     this.carpoolRequests = new Map();
+    this.calendarEvents = new Map();
     
     this.currentUserId = 1;
     this.currentCarpoolId = 1;
     this.currentRequestId = 1;
+    this.currentEventId = 1;
   }
 
   // User methods
@@ -91,6 +105,37 @@ export class MemStorage implements IStorage {
     return Array.from(this.carpoolRequests.values()).filter(
       (request) => request.carpoolId === carpoolId
     );
+  }
+  
+  // Calendar event methods
+  async createCalendarEvent(insertEvent: InsertCalendarEvent): Promise<CalendarEvent> {
+    const id = this.currentEventId++;
+    const event: CalendarEvent = { ...insertEvent, id };
+    this.calendarEvents.set(id, event);
+    return event;
+  }
+  
+  async getCalendarEventById(id: number): Promise<CalendarEvent | undefined> {
+    return this.calendarEvents.get(id);
+  }
+  
+  async getCalendarEventsByCarpoolId(carpoolId: number): Promise<CalendarEvent[]> {
+    return Array.from(this.calendarEvents.values()).filter(
+      (event) => event.carpoolId === carpoolId
+    );
+  }
+  
+  async updateCalendarEvent(id: number, eventUpdate: Partial<InsertCalendarEvent>): Promise<CalendarEvent | undefined> {
+    const event = this.calendarEvents.get(id);
+    if (!event) return undefined;
+    
+    const updatedEvent = { ...event, ...eventUpdate };
+    this.calendarEvents.set(id, updatedEvent);
+    return updatedEvent;
+  }
+  
+  async deleteCalendarEvent(id: number): Promise<boolean> {
+    return this.calendarEvents.delete(id);
   }
 }
 

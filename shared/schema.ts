@@ -53,6 +53,20 @@ export const carpoolRequests = pgTable("carpool_requests", {
   specialRequirements: text("special_requirements"),
 });
 
+// Calendar Events schema for carpool scheduling
+export const calendarEvents = pgTable("calendar_events", {
+  id: serial("id").primaryKey(),
+  carpoolId: integer("carpool_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  startDate: text("start_date").notNull(), // ISO date string
+  endDate: text("end_date").notNull(),     // ISO date string
+  location: text("location"),
+  isRecurring: boolean("is_recurring").default(false),
+  recurrencePattern: text("recurrence_pattern"), // e.g., "weekly", "monthly"
+  reminderTime: integer("reminder_time"), // minutes before event
+});
+
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -86,6 +100,10 @@ export const insertCarpoolRequestSchema = createInsertSchema(carpoolRequests).om
   id: true,
 });
 
+export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit({
+  id: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -95,3 +113,6 @@ export type Carpool = typeof carpools.$inferSelect;
 
 export type InsertCarpoolRequest = z.infer<typeof insertCarpoolRequestSchema>;
 export type CarpoolRequest = typeof carpoolRequests.$inferSelect;
+
+export type InsertCalendarEvent = z.infer<typeof insertCalendarEventSchema>;
+export type CalendarEvent = typeof calendarEvents.$inferSelect;
