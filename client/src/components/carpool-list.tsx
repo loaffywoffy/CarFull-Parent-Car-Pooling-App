@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { getCarpoolsByPartyGroupId } from "@/api/partyGroups";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -9,18 +10,21 @@ import { ChevronDown, ChevronUp, Users } from "lucide-react";
 import CarpoolRequestsList from "./carpool-requests-list";
 
 interface CarpoolListProps {
+  partyGroupId: number;
   onRequestSpot: (carpoolId: number) => void;
   onManageCalendar?: (carpoolId: number) => void;
 }
 
 type FilterOption = "all" | "pickup" | "dropoff" | "both";
 
-export default function CarpoolList({ onRequestSpot, onManageCalendar }: CarpoolListProps) {
+export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalendar }: CarpoolListProps) {
   const [filter, setFilter] = useState<FilterOption>("all");
   const [openCarpoolIds, setOpenCarpoolIds] = useState<Record<number, boolean>>({});
   
+  // Query carpools for the specific party group
   const { data: carpools, isLoading } = useQuery({
-    queryKey: ["/api/carpools"],
+    queryKey: ["/api/party-groups", partyGroupId, "carpools"],
+    queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
   });
   
   const toggleCarpool = (carpoolId: number) => {

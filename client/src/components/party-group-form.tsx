@@ -119,6 +119,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                         placeholder="Brief description of the party" 
                         rows={2}
                         {...field} 
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -255,6 +256,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                         placeholder="Any other information parents should know about the party" 
                         rows={3}
                         {...field} 
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
