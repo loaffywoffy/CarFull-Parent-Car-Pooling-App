@@ -34,6 +34,7 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
     resolver: zodResolver(carpoolFormSchema),
     defaultValues: {
       parentName: "",
+      childName: "",
       address: "",
       city: "",
       postcode: "",
@@ -97,6 +98,20 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                     <FormLabel>Your Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Full Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="childName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Parent of (Child's Name)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Child's Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

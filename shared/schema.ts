@@ -13,6 +13,7 @@ export const users = pgTable("users", {
 export const carpools = pgTable("carpools", {
   id: serial("id").primaryKey(),
   parentName: text("parent_name").notNull(),
+  childName: text("child_name").notNull(),
   address: text("address").notNull(),
   city: text("city").notNull(),
   postcode: text("postcode").notNull(),

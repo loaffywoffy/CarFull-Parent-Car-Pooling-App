@@ -88,6 +88,9 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
             <div className="flex flex-col md:flex-row justify-between">
               <div>
                 <h3 className="font-semibold text-lg text-neutral-800">{carpool.parentName}</h3>
+                <p className="text-neutral-600 text-sm">
+                  <span className="font-medium">Parent of:</span> {carpool.childName}
+                </p>
                 <p className="text-neutral-600 text-sm mb-2">
                   Offers: {" "}
                   {carpool.canPickup && <Badge className="bg-primary-light mr-1">Pick up</Badge>}
