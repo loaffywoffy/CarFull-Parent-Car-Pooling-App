@@ -13,16 +13,28 @@ import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { type CheckedState } from "@radix-ui/react-checkbox";
 
 interface CarpoolOfferFormProps {
   onSuccess: () => void;
 }
 
-// Extend the insertCarpoolSchema with validation
-const carpoolFormSchema = insertCarpoolSchema
-  .extend({
-    spacesAvailable: z.string().transform((val) => parseInt(val, 10)), // Transform to number for API
-  });
+// Create the form schema
+const carpoolFormSchema = z.object({
+  parentName: z.string().min(1, "Name is required"),
+  childName: z.string().min(1, "Child's name is required"),
+  address: z.string().min(1, "Address is required"),
+  city: z.string().min(1, "City is required"),
+  postcode: z.string().min(1, "Postcode is required"),
+  phoneNumber: z.string().min(1, "Phone number is required"),
+  canPickup: z.boolean().default(false),
+  canDropoff: z.boolean().default(false),
+  canBoth: z.boolean().default(false),
+  spacesAvailable: z.string().transform((val) => parseInt(val, 10)), // Transform to number for API
+  dropoffPreference: z.string(),
+  pickupLocation: z.string().optional(),
+  additionalNotes: z.string().optional(),
+});
 
 type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 

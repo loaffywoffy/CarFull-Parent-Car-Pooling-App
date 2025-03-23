@@ -18,13 +18,15 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
     queryKey: ["/api/carpools"],
   });
 
-  const filteredCarpools = carpools?.filter((carpool: any) => {
-    if (filter === "all") return true;
-    if (filter === "pickup" && carpool.canPickup && !carpool.canDropoff && !carpool.canBoth) return true;
-    if (filter === "dropoff" && !carpool.canPickup && carpool.canDropoff && !carpool.canBoth) return true;
-    if (filter === "both" && carpool.canBoth) return true;
-    return false;
-  });
+  const filteredCarpools = Array.isArray(carpools) 
+    ? carpools.filter((carpool: any) => {
+        if (filter === "all") return true;
+        if (filter === "pickup" && carpool.canPickup && !carpool.canDropoff && !carpool.canBoth) return true;
+        if (filter === "dropoff" && !carpool.canPickup && carpool.canDropoff && !carpool.canBoth) return true;
+        if (filter === "both" && carpool.canBoth) return true;
+        return false;
+      }) 
+    : [];
 
   const handleFilterChange = (value: string) => {
     setFilter(value as FilterOption);
