@@ -12,6 +12,7 @@ import { type PartyGroup } from "@shared/schema";
 
 interface JoinPartyGroupProps {
   onJoinSuccess: (partyGroup: PartyGroup) => void;
+  initialAccessCode?: string; // Optional prop to pre-populate the access code
 }
 
 // Create the form schema
@@ -21,7 +22,7 @@ const joinPartyGroupSchema = z.object({
 
 type JoinPartyGroupFormValues = z.infer<typeof joinPartyGroupSchema>;
 
-export default function JoinPartyGroup({ onJoinSuccess }: JoinPartyGroupProps) {
+export default function JoinPartyGroup({ onJoinSuccess, initialAccessCode = "" }: JoinPartyGroupProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +30,7 @@ export default function JoinPartyGroup({ onJoinSuccess }: JoinPartyGroupProps) {
   const form = useForm<JoinPartyGroupFormValues>({
     resolver: zodResolver(joinPartyGroupSchema),
     defaultValues: {
-      accessCode: ""
+      accessCode: initialAccessCode
     },
   });
 

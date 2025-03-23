@@ -30,6 +30,7 @@ export default function Home() {
   });
   const [selectedCarpoolId, setSelectedCarpoolId] = useState<number | null>(null);
   const [selectedPartyGroup, setSelectedPartyGroup] = useState<PartyGroup | null>(null);
+  const [joinAccessCode, setJoinAccessCode] = useState<string>("");
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -161,7 +162,10 @@ export default function Home() {
               <PartyGroupsList
                 onSelectPartyGroup={handleSelectPartyGroup}
                 onCreateNew={() => setPartyGroupTab("create")}
-                onJoinPartyGroup={() => setPartyGroupTab("join")}
+                onJoinPartyGroup={(accessCode) => {
+                  setJoinAccessCode(accessCode || "");
+                  setPartyGroupTab("join");
+                }}
               />
             )}
             
@@ -170,7 +174,10 @@ export default function Home() {
             )}
             
             {partyGroupTab === "join" && (
-              <JoinPartyGroup onJoinSuccess={handlePartyGroupJoinSuccess} />
+              <JoinPartyGroup 
+                onJoinSuccess={handlePartyGroupJoinSuccess} 
+                initialAccessCode={joinAccessCode}
+              />
             )}
             
             {partyGroupTab === "details" && selectedPartyGroup && (

@@ -10,7 +10,7 @@ import { type PartyGroup } from "@shared/schema";
 interface PartyGroupsListProps {
   onSelectPartyGroup: (partyGroup: PartyGroup) => void;
   onCreateNew: () => void;
-  onJoinPartyGroup: () => void;
+  onJoinPartyGroup: (accessCode?: string) => void;
 }
 
 export default function PartyGroupsList({ 
@@ -106,11 +106,7 @@ export default function PartyGroupsList({
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {partyGroups.map((partyGroup) => (
-            <Card 
-              key={partyGroup.id} 
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => onSelectPartyGroup(partyGroup)}
-            >
+            <Card key={partyGroup.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">{partyGroup.name}</CardTitle>
                 <CardDescription>Organized by {partyGroup.createdBy}</CardDescription>
@@ -131,6 +127,33 @@ export default function PartyGroupsList({
                   <span className="text-gray-600 truncate">
                     {partyGroup.partyAddress}, {partyGroup.partyCity}
                   </span>
+                </div>
+                
+                <div className="flex justify-between mt-4 pt-3 border-t border-gray-100">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectPartyGroup(partyGroup);
+                    }}
+                  >
+                    View Details
+                  </Button>
+                  
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    className="gap-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Pre-populate the join form with this party group's access code
+                      onJoinPartyGroup(partyGroup.accessCode);
+                    }}
+                  >
+                    <Share2Icon className="h-3.5 w-3.5" />
+                    <span>Join Group</span>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
