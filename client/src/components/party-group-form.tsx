@@ -52,7 +52,9 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
       partyCity: "",
       partyPostcode: "",
       partyDate: "",
+      partyEndDate: "",
       targetArrivalTime: "",
+      endTime: "",
       createdBy: "",
       accessCode: "",
       additionalInformation: ""
