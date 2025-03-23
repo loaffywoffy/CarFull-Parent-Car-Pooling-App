@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { createPartyGroup } from "@/api/partyGroups";
 import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 
 interface PartyGroupFormProps {
   onSuccess: (partyGroupId: number) => void;
@@ -62,6 +63,9 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
     mutationFn: (values: PartyGroupFormValues) => 
       createPartyGroup(values),
     onSuccess: (data) => {
+      // Invalidate party groups query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
+      
       toast({
         title: "Success!",
         description: "Party group created successfully.",

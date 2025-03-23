@@ -64,8 +64,8 @@ type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOfferFormProps) {
   const { toast } = useToast();
   const [showPickupLocation, setShowPickupLocation] = useState(false);
+  const [showHomeRadiusSelector, setShowHomeRadiusSelector] = useState(true); // Default to true as "direct-home-radius" is the default
   const [showReturnPreferences, setShowReturnPreferences] = useState(false);
-  const [showHomeRadiusSelector, setShowHomeRadiusSelector] = useState(false);
   const [estimatedDepartureTime, setEstimatedDepartureTime] = useState("");
 
   // Fetch party group details
