@@ -244,7 +244,6 @@ export default function PartyGroupDetails({
         <Button 
           variant="outline" 
           onClick={onRequestSpot}
-          disabled={!onRequestSpot}
         >
           Request a Spot
         </Button>

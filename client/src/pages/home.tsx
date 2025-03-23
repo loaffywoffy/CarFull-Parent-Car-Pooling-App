@@ -322,7 +322,7 @@ export default function Home() {
                     <CarpoolList 
                       partyGroupId={selectedPartyGroup.id}
                       onRequestSpot={handleRequestSpot}
-                      onManageCalendar={null}
+                      onManageCalendar={undefined}
                     />
                   </div>
                 </>
@@ -335,10 +335,7 @@ export default function Home() {
           <CarpoolList 
             partyGroupId={selectedPartyGroup.id}
             onRequestSpot={handleRequestSpot} 
-            onManageCalendar={(carpoolId) => {
-              setSelectedCarpoolId(carpoolId);
-              setActiveTab("calendar");
-            }}
+            onManageCalendar={undefined}
           />
         )}
         
@@ -354,42 +351,6 @@ export default function Home() {
             >
               Go to Party Groups
             </button>
-          </div>
-        )}
-        
-        {activeTab === "calendar" && (
-          <div className="space-y-8">
-            {selectedCarpoolId ? (
-              <>
-                <CalendarEventForm 
-                  carpoolId={selectedCarpoolId} 
-                  onSuccess={() => {
-                    setSuccessInfo({
-                      show: true,
-                      title: "Calendar Event Created!",
-                      message: "Your event has been added to the calendar successfully.",
-                    });
-                  }} 
-                />
-                <CalendarEventsList 
-                  carpoolId={selectedCarpoolId} 
-                  onBackToList={() => handleTabChange("view")} 
-                />
-              </>
-            ) : (
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h2 className="text-lg font-semibold mb-4">Calendar Events</h2>
-                <p className="text-neutral-600 mb-4">
-                  Please select a carpool from the "View All Carpools" tab first to manage its calendar events.
-                </p>
-                <button
-                  onClick={() => handleTabChange("view")}
-                  className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
-                >
-                  Go to Carpools
-                </button>
-              </div>
-            )}
           </div>
         )}
         
