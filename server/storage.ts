@@ -2,6 +2,9 @@ import {
   users, 
   type User, 
   type InsertUser,
+  partyGroups,
+  type PartyGroup,
+  type InsertPartyGroup,
   carpools,
   type Carpool,
   type InsertCarpool,
@@ -19,9 +22,16 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
+  // Party group operations
+  createPartyGroup(partyGroup: InsertPartyGroup): Promise<PartyGroup>;
+  getPartyGroups(): Promise<PartyGroup[]>;
+  getPartyGroupById(id: number): Promise<PartyGroup | undefined>;
+  getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined>;
+  
   // Carpool operations
   createCarpool(carpool: InsertCarpool): Promise<Carpool>;
   getCarpools(): Promise<Carpool[]>;
+  getCarpoolsByPartyGroupId(partyGroupId: number): Promise<Carpool[]>;
   getCarpoolById(id: number): Promise<Carpool | undefined>;
   
   // Carpool request operations
@@ -38,22 +48,26 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
+  private partyGroups: Map<number, PartyGroup>;
   private carpools: Map<number, Carpool>;
   private carpoolRequests: Map<number, CarpoolRequest>;
   private calendarEvents: Map<number, CalendarEvent>;
   
   private currentUserId: number;
+  private currentPartyGroupId: number;
   private currentCarpoolId: number;
   private currentRequestId: number;
   private currentEventId: number;
 
   constructor() {
     this.users = new Map();
+    this.partyGroups = new Map();
     this.carpools = new Map();
     this.carpoolRequests = new Map();
     this.calendarEvents = new Map();
     
     this.currentUserId = 1;
+    this.currentPartyGroupId = 1;
     this.currentCarpoolId = 1;
     this.currentRequestId = 1;
     this.currentEventId = 1;
@@ -77,6 +91,34 @@ export class MemStorage implements IStorage {
     return user;
   }
   
+  // Party Group methods
+  async createPartyGroup(insertPartyGroup: InsertPartyGroup): Promise<PartyGroup> {
+    const id = this.currentPartyGroupId++;
+    // Ensure all nullable fields have proper null values instead of undefined
+    const partyGroup: PartyGroup = { 
+      ...insertPartyGroup, 
+      id,
+      description: insertPartyGroup.description ?? null,
+      additionalInformation: insertPartyGroup.additionalInformation ?? null
+    };
+    this.partyGroups.set(id, partyGroup);
+    return partyGroup;
+  }
+  
+  async getPartyGroups(): Promise<PartyGroup[]> {
+    return Array.from(this.partyGroups.values());
+  }
+  
+  async getPartyGroupById(id: number): Promise<PartyGroup | undefined> {
+    return this.partyGroups.get(id);
+  }
+  
+  async getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined> {
+    return Array.from(this.partyGroups.values()).find(
+      (group) => group.accessCode === accessCode
+    );
+  }
+  
   // Carpool methods
   async createCarpool(insertCarpool: InsertCarpool): Promise<Carpool> {
     const id = this.currentCarpoolId++;
@@ -93,10 +135,6 @@ export class MemStorage implements IStorage {
       pickupLocationCity: insertCarpool.pickupLocationCity ?? null,
       pickupLocationPostcode: insertCarpool.pickupLocationPostcode ?? null,
       additionalNotes: insertCarpool.additionalNotes ?? null,
-      partyAddress: insertCarpool.partyAddress ?? null,
-      partyCity: insertCarpool.partyCity ?? null,
-      partyPostcode: insertCarpool.partyPostcode ?? null,
-      targetArrivalTime: insertCarpool.targetArrivalTime ?? null,
       estimatedDepartureTime: insertCarpool.estimatedDepartureTime ?? null
     };
     this.carpools.set(id, carpool);
@@ -105,6 +143,12 @@ export class MemStorage implements IStorage {
   
   async getCarpools(): Promise<Carpool[]> {
     return Array.from(this.carpools.values());
+  }
+  
+  async getCarpoolsByPartyGroupId(partyGroupId: number): Promise<Carpool[]> {
+    return Array.from(this.carpools.values()).filter(
+      (carpool) => carpool.partyGroupId === partyGroupId
+    );
   }
   
   async getCarpoolById(id: number): Promise<Carpool | undefined> {

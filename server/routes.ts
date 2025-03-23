@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
+  insertPartyGroupSchema,
   insertCarpoolSchema, 
   insertCarpoolRequestSchema, 
   insertCalendarEventSchema 
@@ -9,6 +10,93 @@ import {
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // API routes for party groups
+  app.post("/api/party-groups", async (req, res) => {
+    try {
+      // Validate request body against schema
+      const validationResult = insertPartyGroupSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        const errorMessage = fromZodError(validationResult.error).message;
+        return res.status(400).json({ message: errorMessage });
+      }
+      
+      const newPartyGroup = await storage.createPartyGroup(validationResult.data);
+      res.status(201).json(newPartyGroup);
+    } catch (error) {
+      console.error("Error creating party group:", error);
+      res.status(500).json({ message: "Failed to create party group" });
+    }
+  });
+
+  app.get("/api/party-groups", async (req, res) => {
+    try {
+      const partyGroups = await storage.getPartyGroups();
+      res.json(partyGroups);
+    } catch (error) {
+      console.error("Error fetching party groups:", error);
+      res.status(500).json({ message: "Failed to fetch party groups" });
+    }
+  });
+
+  app.get("/api/party-groups/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid party group ID" });
+      }
+      
+      const partyGroup = await storage.getPartyGroupById(id);
+      if (!partyGroup) {
+        return res.status(404).json({ message: "Party group not found" });
+      }
+      
+      res.json(partyGroup);
+    } catch (error) {
+      console.error("Error fetching party group:", error);
+      res.status(500).json({ message: "Failed to fetch party group" });
+    }
+  });
+
+  app.get("/api/party-groups/code/:accessCode", async (req, res) => {
+    try {
+      const accessCode = req.params.accessCode;
+      if (!accessCode) {
+        return res.status(400).json({ message: "Access code is required" });
+      }
+      
+      const partyGroup = await storage.getPartyGroupByAccessCode(accessCode);
+      if (!partyGroup) {
+        return res.status(404).json({ message: "Party group not found" });
+      }
+      
+      res.json(partyGroup);
+    } catch (error) {
+      console.error("Error fetching party group by access code:", error);
+      res.status(500).json({ message: "Failed to fetch party group" });
+    }
+  });
+
+  app.get("/api/party-groups/:id/carpools", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid party group ID" });
+      }
+      
+      const partyGroup = await storage.getPartyGroupById(id);
+      if (!partyGroup) {
+        return res.status(404).json({ message: "Party group not found" });
+      }
+      
+      const carpools = await storage.getCarpoolsByPartyGroupId(id);
+      res.json(carpools);
+    } catch (error) {
+      console.error("Error fetching carpools for party group:", error);
+      res.status(500).json({ message: "Failed to fetch carpools" });
+    }
+  });
+
   // API routes for carpool operations
   app.get("/api/carpools", async (req, res) => {
     try {

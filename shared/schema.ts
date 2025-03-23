@@ -9,9 +9,25 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
 });
 
+// Party Group schema for events created by an admin
+export const partyGroups = pgTable("party_groups", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  partyAddress: text("party_address").notNull(),
+  partyCity: text("party_city").notNull(),
+  partyPostcode: text("party_postcode").notNull(),
+  partyDate: text("party_date").notNull(), // Date string
+  targetArrivalTime: text("target_arrival_time").notNull(),
+  createdBy: text("created_by").notNull(), // Admin name or email
+  accessCode: text("access_code").notNull(), // Code for parents to join
+  additionalInformation: text("additional_information"),
+});
+
 // Carpool schema for carpool offers
 export const carpools = pgTable("carpools", {
   id: serial("id").primaryKey(),
+  partyGroupId: integer("party_group_id").notNull(), // Reference to party group
   parentName: text("parent_name").notNull(),
   childName: text("child_name").notNull(),
   address: text("address").notNull(),
@@ -29,10 +45,6 @@ export const carpools = pgTable("carpools", {
   pickupLocationCity: text("pickup_location_city"),
   pickupLocationPostcode: text("pickup_location_postcode"),
   additionalNotes: text("additional_notes"),
-  partyAddress: text("party_address"),
-  partyCity: text("party_city"),
-  partyPostcode: text("party_postcode"),
-  targetArrivalTime: text("target_arrival_time"),
   estimatedDepartureTime: text("estimated_departure_time"),
 });
 
@@ -73,6 +85,10 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
+export const insertPartyGroupSchema = createInsertSchema(partyGroups).omit({
+  id: true,
+});
+
 export const insertCarpoolSchema = createInsertSchema(carpools).omit({
   id: true,
 }).transform((data) => {
@@ -107,6 +123,9 @@ export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export type InsertPartyGroup = z.infer<typeof insertPartyGroupSchema>;
+export type PartyGroup = typeof partyGroups.$inferSelect;
 
 export type InsertCarpool = z.infer<typeof insertCarpoolSchema>;
 export type Carpool = typeof carpools.$inferSelect;
