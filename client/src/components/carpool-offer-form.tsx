@@ -42,6 +42,9 @@ const carpoolFormSchema = z.object({
   returnSpacesAvailable: z.coerce.number().optional(),
   dropoffPreference: z.string(),
   
+  // Add maxDistance field for home radius feature
+  maxDistance: z.number().optional(),
+  
   pickupLocation: z.string().optional(),
   pickupLocationCity: z.string().optional(),
   pickupLocationPostcode: z.string().optional(),
@@ -162,6 +165,11 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     // If only canDropoff is selected (not canPickup or canBoth), set spacesAvailable to 0
     if (values.canDropoff && !values.canPickup && !values.canBoth) {
       values.spacesAvailable = 0;
+    }
+    
+    // Save the home radius value if direct-home is selected
+    if (values.dropoffPreference === "direct-home") {
+      values.maxDistance = homeRadius;
     }
     
     carpoolMutation.mutate(values);
