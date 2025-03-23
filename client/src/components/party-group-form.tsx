@@ -24,7 +24,34 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   partyPostcode: z.string().min(3, "Postcode is required"),
   targetArrivalTime: z.string().min(1, "Start time is required"),
   accessCode: z.string().min(4, "Access code must be at least 4 characters")
-});
+}).refine(
+  (data) => {
+    // If end date is provided, it must be >= start date
+    if (data.partyEndDate && data.partyDate) {
+      // Compare dates
+      return new Date(data.partyEndDate) >= new Date(data.partyDate);
+    }
+    return true; // No end date provided, so validation passes
+  },
+  {
+    message: "End date cannot be earlier than start date",
+    path: ["partyEndDate"]
+  }
+).refine(
+  (data) => {
+    // If both dates are the same and both times are provided, end time must be after start time
+    if (data.partyEndDate && data.partyDate && data.endTime && data.targetArrivalTime) {
+      if (data.partyEndDate === data.partyDate) {
+        return data.endTime > data.targetArrivalTime;
+      }
+    }
+    return true; // Different dates or missing times, validation passes
+  },
+  {
+    message: "End time must be after start time on the same day",
+    path: ["endTime"]
+  }
+);
 
 type PartyGroupFormValues = z.infer<typeof partyGroupFormSchema>;
 
