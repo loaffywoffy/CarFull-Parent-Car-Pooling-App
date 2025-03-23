@@ -125,12 +125,12 @@ export default function CarpoolList({ onRequestSpot }: CarpoolListProps) {
                       <div className="bg-gray-50 p-2 rounded border border-gray-200">
                         <div className="flex items-center mb-1">
                           <Badge className="bg-primary-light mr-2">From Party</Badge>
-                          <span className="text-xs">{carpool.spacesAvailable} spaces</span>
+                          <span className="text-xs">{carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces</span>
                         </div>
                         <p className="text-xs font-medium">Return arrangement:</p>
                         <p className="text-xs">{
                           carpool.dropoffPreference === "direct-home" 
-                            ? "Direct to child's home" 
+                            ? `Direct to child's home${carpool.maxDistance ? ` (within ${carpool.maxDistance} miles)` : ''}` 
                             : carpool.dropoffPreference === "my-home"
                               ? "Child to be collected from my home"
                               : "Meet at another location: " + (carpool.pickupLocation || "Contact for details")

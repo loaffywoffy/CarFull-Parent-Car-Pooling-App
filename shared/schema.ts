@@ -62,14 +62,24 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertCarpoolSchema = createInsertSchema(carpools).omit({
   id: true,
 }).transform((data) => {
+  const transformedData = { ...data };
+  
   // Ensure spacesAvailable is a number
   if (typeof data.spacesAvailable === 'string') {
-    return {
-      ...data,
-      spacesAvailable: parseInt(data.spacesAvailable, 10),
-    };
+    transformedData.spacesAvailable = parseInt(data.spacesAvailable, 10);
   }
-  return data;
+  
+  // Ensure returnSpacesAvailable is a number if present
+  if (typeof data.returnSpacesAvailable === 'string') {
+    transformedData.returnSpacesAvailable = parseInt(data.returnSpacesAvailable, 10);
+  } else if (data.returnSpacesAvailable === undefined && (data.canDropoff || data.canBoth)) {
+    // If not specified but offering return journey, default to same as outbound spaces
+    transformedData.returnSpacesAvailable = typeof transformedData.spacesAvailable === 'number' 
+      ? transformedData.spacesAvailable 
+      : parseInt(String(data.spacesAvailable), 10);
+  }
+  
+  return transformedData;
 });
 
 export const insertCarpoolRequestSchema = createInsertSchema(carpoolRequests).omit({

@@ -303,9 +303,26 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                                 <p className="text-sm text-neutral-600 mb-1">
                                   <span className="font-medium">Distance:</span> {distances[carpool.id]}
                                 </p>
-                                <p className="text-sm text-neutral-600">
-                                  <span className="font-medium">Spaces:</span> {carpool.spacesAvailable} available
-                                </p>
+                                {ridePreference === "pickup" && (
+                                  <p className="text-sm text-neutral-600">
+                                    <span className="font-medium">Spaces for going to party:</span> {carpool.spacesAvailable} available
+                                  </p>
+                                )}
+                                {ridePreference === "dropoff" && (
+                                  <p className="text-sm text-neutral-600">
+                                    <span className="font-medium">Spaces for return journey:</span> {carpool.returnSpacesAvailable || carpool.spacesAvailable} available
+                                  </p>
+                                )}
+                                {ridePreference === "both" && (
+                                  <>
+                                    <p className="text-sm text-neutral-600">
+                                      <span className="font-medium">Spaces to party:</span> {carpool.spacesAvailable} available
+                                    </p>
+                                    <p className="text-sm text-neutral-600">
+                                      <span className="font-medium">Spaces from party:</span> {carpool.returnSpacesAvailable || carpool.spacesAvailable} available
+                                    </p>
+                                  </>
+                                )}
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {carpool.canPickup && <Badge className="bg-green-100 text-green-800">To party</Badge>}
                                   {carpool.canDropoff && <Badge className="bg-blue-100 text-blue-800">From party</Badge>}
@@ -388,11 +405,19 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                           })
                           .map((carpool: any) => (
                             <SelectItem key={carpool.id} value={carpool.id.toString()}>
-                              {carpool.parentName} - {carpool.spacesAvailable} spaces
+                              {carpool.parentName} - {
+                                ridePreference === "pickup" 
+                                  ? `${carpool.spacesAvailable} spaces to party` 
+                                  : ridePreference === "dropoff"
+                                    ? `${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces from party`
+                                    : `${carpool.spacesAvailable}/${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces`
+                              }
                               {distances[carpool.id] ? ` (${distances[carpool.id]})` : ''}
                               {(ridePreference === "dropoff" || ridePreference === "both") && 
                                (carpool.canDropoff || carpool.canBoth) && carpool.dropoffPreference ? 
-                               ` - ${carpool.dropoffPreference}` : ''}
+                               ` - ${carpool.dropoffPreference === "direct-home" ? "Direct to home" : 
+                                    carpool.dropoffPreference === "my-home" ? "Collect from their home" : 
+                                    "Meeting point"}` : ''}
                               {(ridePreference === "dropoff" || ridePreference === "both") && 
                                carpool.dropoffPreference === "direct-home" && carpool.maxDistance ?
                                ` (max ${carpool.maxDistance} miles)` : ''}
