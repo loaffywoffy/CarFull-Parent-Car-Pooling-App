@@ -5,8 +5,15 @@ import CarpoolList from "@/components/carpool-list";
 import CalendarEventForm from "@/components/calendar-event-form";
 import CalendarEventsList from "@/components/calendar-events-list";
 import SuccessDialog from "@/components/success-dialog";
+import PartyGroupForm from "@/components/party-group-form";
+import PartyGroupsList from "@/components/party-groups-list";
+import PartyGroupDetails from "@/components/party-group-details";
+import JoinPartyGroup from "@/components/join-party-group";
+import { type PartyGroup } from "@shared/schema";
 
-type Tab = "offer" | "request" | "view" | "calendar";
+type Tab = "partyGroups" | "offer" | "request" | "view" | "calendar";
+type PartyGroupTab = "list" | "create" | "join" | "details";
+
 type SuccessInfo = {
   show: boolean;
   title: string;
@@ -14,13 +21,15 @@ type SuccessInfo = {
 };
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<Tab>("offer");
+  const [activeTab, setActiveTab] = useState<Tab>("partyGroups");
+  const [partyGroupTab, setPartyGroupTab] = useState<PartyGroupTab>("list");
   const [successInfo, setSuccessInfo] = useState<SuccessInfo>({
     show: false,
     title: "",
     message: "",
   });
   const [selectedCarpoolId, setSelectedCarpoolId] = useState<number | null>(null);
+  const [selectedPartyGroup, setSelectedPartyGroup] = useState<PartyGroup | null>(null);
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -47,6 +56,36 @@ export default function Home() {
     setActiveTab("request");
   };
 
+  const handlePartyGroupSuccess = (partyGroupId: number) => {
+    setSuccessInfo({
+      show: true,
+      title: "Party Group Created!",
+      message: "Your party group has been created successfully. Share the access code with other parents.",
+    });
+    setPartyGroupTab("list");
+  };
+
+  const handlePartyGroupJoinSuccess = (partyGroup: PartyGroup) => {
+    setSelectedPartyGroup(partyGroup);
+    setPartyGroupTab("details");
+    setSuccessInfo({
+      show: true,
+      title: "Joined Party Group!",
+      message: `You have successfully joined the "${partyGroup.name}" party group.`,
+    });
+  };
+
+  const handleSelectPartyGroup = (partyGroup: PartyGroup) => {
+    setSelectedPartyGroup(partyGroup);
+    setPartyGroupTab("details");
+  };
+
+  const handleOfferCarpool = (partyGroupId: number) => {
+    if (partyGroupId) {
+      setActiveTab("offer");
+    }
+  };
+
   const closeSuccessDialog = () => {
     setSuccessInfo({ ...successInfo, show: false });
   };
@@ -62,6 +101,16 @@ export default function Home() {
         {/* Navigation Tabs */}
         <div className="mb-8">
           <div className="flex flex-wrap border-b border-neutral-300 sm:space-x-4">
+            <button
+              onClick={() => handleTabChange("partyGroups")}
+              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
+                activeTab === "partyGroups"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-neutral-600"
+              }`}
+            >
+              Party Groups
+            </button>
             <button
               onClick={() => handleTabChange("offer")}
               className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
@@ -106,8 +155,53 @@ export default function Home() {
         </div>
 
         {/* Content based on active tab */}
-        {activeTab === "offer" && (
-          <CarpoolOfferForm onSuccess={handleCarpoolSubmitSuccess} />
+        {activeTab === "partyGroups" && (
+          <>
+            {partyGroupTab === "list" && (
+              <PartyGroupsList
+                onSelectPartyGroup={handleSelectPartyGroup}
+                onCreateNew={() => setPartyGroupTab("create")}
+                onJoinPartyGroup={() => setPartyGroupTab("join")}
+              />
+            )}
+            
+            {partyGroupTab === "create" && (
+              <PartyGroupForm onSuccess={handlePartyGroupSuccess} />
+            )}
+            
+            {partyGroupTab === "join" && (
+              <JoinPartyGroup onJoinSuccess={handlePartyGroupJoinSuccess} />
+            )}
+            
+            {partyGroupTab === "details" && selectedPartyGroup && (
+              <PartyGroupDetails 
+                partyGroup={selectedPartyGroup} 
+                onOfferCarpool={() => handleOfferCarpool(selectedPartyGroup.id)} 
+              />
+            )}
+          </>
+        )}
+        
+        {activeTab === "offer" && selectedPartyGroup && (
+          <CarpoolOfferForm 
+            onSuccess={handleCarpoolSubmitSuccess} 
+            partyGroupId={selectedPartyGroup.id} 
+          />
+        )}
+        
+        {activeTab === "offer" && !selectedPartyGroup && (
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Offer a Carpool</h2>
+            <p className="text-neutral-600 mb-6">
+              Please select or join a party group first before offering a carpool.
+            </p>
+            <button
+              onClick={() => handleTabChange("partyGroups")}
+              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
+            >
+              Go to Party Groups
+            </button>
+          </div>
         )}
         
         {activeTab === "request" && (

@@ -18,7 +18,7 @@ export default function PartyGroupsList({
   onCreateNew,
   onJoinPartyGroup 
 }: PartyGroupsListProps) {
-  const { data: partyGroups, isLoading, error } = useQuery({
+  const { data: partyGroups = [], isLoading, error } = useQuery({
     queryKey: ['/api/party-groups'],
     queryFn: getPartyGroups
   });
