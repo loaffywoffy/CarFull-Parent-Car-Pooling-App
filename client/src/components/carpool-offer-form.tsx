@@ -30,7 +30,8 @@ const carpoolFormSchema = z.object({
   canPickup: z.boolean().default(false),
   canDropoff: z.boolean().default(false),
   canBoth: z.boolean().default(false),
-  spacesAvailable: z.coerce.number().min(1), // Coerce ensures type conversion
+  // Make spacesAvailable optional so it can be conditionally required based on selected options
+  spacesAvailable: z.coerce.number().min(1).optional(),
   returnSpacesAvailable: z.coerce.number().optional(),
   dropoffPreference: z.string(),
   maxDistance: z.coerce.number().optional(),
@@ -43,6 +44,15 @@ const carpoolFormSchema = z.object({
   partyPostcode: z.string().optional(),
   targetArrivalTime: z.string().optional(),
   estimatedDepartureTime: z.string().optional(),
+}).refine((data) => {
+  // If canPickup or canBoth is selected, spacesAvailable is required
+  if ((data.canPickup || data.canBoth) && !data.spacesAvailable) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Spaces available to take to party is required",
+  path: ["spacesAvailable"]
 });
 
 type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
@@ -100,6 +110,11 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
     // If pickup-point is not selected, ensure pickupLocation is null/empty
     if (values.dropoffPreference !== "pickup-point") {
       values.pickupLocation = "";
+    }
+    
+    // If only canDropoff is selected (not canPickup or canBoth), set spacesAvailable to 0
+    if (values.canDropoff && !values.canPickup && !values.canBoth) {
+      values.spacesAvailable = 0;
     }
     
     carpoolMutation.mutate(values);
@@ -418,33 +433,36 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
                 </div>
               </div>
               
-              <FormField
-                control={form.control}
-                name="spacesAvailable"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Spaces Available to take to party</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(Number(value))} 
-                      defaultValue={String(field.value)}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select number of spaces" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
-                        <SelectItem value="3">3</SelectItem>
-                        <SelectItem value="4">4</SelectItem>
-                        <SelectItem value="5">5</SelectItem>
-                        <SelectItem value="6">6+</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Show spaces available only if canPickup or canBoth is selected */}
+              {(form.watch("canPickup") || form.watch("canBoth")) && (
+                <FormField
+                  control={form.control}
+                  name="spacesAvailable"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Spaces Available to take to party</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(Number(value))} 
+                        defaultValue={String(field.value)}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select number of spaces" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="1">1</SelectItem>
+                          <SelectItem value="2">2</SelectItem>
+                          <SelectItem value="3">3</SelectItem>
+                          <SelectItem value="4">4</SelectItem>
+                          <SelectItem value="5">5</SelectItem>
+                          <SelectItem value="6">6+</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               
               {showReturnPreferences && (
                 <div className="space-y-3">
