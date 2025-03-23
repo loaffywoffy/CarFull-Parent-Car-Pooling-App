@@ -449,6 +449,38 @@ export default function CarpoolOfferForm({ onSuccess }: CarpoolOfferFormProps) {
               {showReturnPreferences && (
                 <div className="space-y-3">
                   <FormLabel>For pickup from party - Return preferences:</FormLabel>
+                  
+                  {/* Return journey spaces available */}
+                  <FormField
+                    control={form.control}
+                    name="returnSpacesAvailable"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Spaces Available for Return Journey</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(Number(value))} 
+                          defaultValue={String(field.value)}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select number of spaces" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">1</SelectItem>
+                            <SelectItem value="2">2</SelectItem>
+                            <SelectItem value="3">3</SelectItem>
+                            <SelectItem value="4">4</SelectItem>
+                            <SelectItem value="5">5</SelectItem>
+                            <SelectItem value="6">6+</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-gray-500 mt-1">If different from spaces available when traveling to the party</p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormLabel className="mt-4">Drop-off Option:</FormLabel>
                   <RadioGroup 
                     defaultValue="direct-home"
                     onValueChange={handleDropoffPreferenceChange}
