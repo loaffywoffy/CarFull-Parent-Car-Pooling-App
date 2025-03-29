@@ -43,21 +43,21 @@ const carpoolFormSchema = z.object({
   
   // Outbound dropoff preferences (when taking TO the party)
   outboundDropoffPreference: z.string().optional(),
-  outboundMaxDistance: z.number().optional(),
+  outboundMaxDistance: z.coerce.number().optional(),
   outboundPickupLocation: z.string().optional(),
   outboundPickupLocationCity: z.string().optional(),
   outboundPickupLocationPostcode: z.string().optional(),
   
   // Return dropoff preferences (when picking up FROM the party)
   returnDropoffPreference: z.string().optional(),
-  returnMaxDistance: z.number().optional(),
+  returnMaxDistance: z.coerce.number().optional(),
   returnPickupLocation: z.string().optional(),
   returnPickupLocationCity: z.string().optional(),
   returnPickupLocationPostcode: z.string().optional(),
   
   // Legacy fields (for backward compatibility)
   dropoffPreference: z.string(),
-  maxDistance: z.number().optional(),
+  maxDistance: z.coerce.number().optional(),
   pickupLocation: z.string().optional(),
   pickupLocationCity: z.string().optional(),
   pickupLocationPostcode: z.string().optional(),
@@ -79,23 +79,24 @@ type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 
 export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOfferFormProps) {
   const { toast } = useToast();
-  // For outbound trip (TO party)
+  
+  // Show preferences based on selected options
+  const [showOutboundPreferences, setShowOutboundPreferences] = useState(false);
+  const [showReturnPreferences, setShowReturnPreferences] = useState(false);
+  
+  // Outbound (TO party) specific states
   const [outboundDropoffPreference, setOutboundDropoffPreference] = useState("direct-home");
   const [showOutboundPickupLocation, setShowOutboundPickupLocation] = useState(false);
   const [showOutboundHomeRadiusSelector, setShowOutboundHomeRadiusSelector] = useState(true);
   const [showOutboundMyAddressDisplay, setShowOutboundMyAddressDisplay] = useState(false);
   const [outboundHomeRadius, setOutboundHomeRadius] = useState(2); // Default 2-mile radius
-
-  // For return trip (FROM party)
+  
+  // Return (FROM party) specific states
   const [returnDropoffPreference, setReturnDropoffPreference] = useState("direct-home");
   const [showReturnPickupLocation, setShowReturnPickupLocation] = useState(false);
   const [showReturnHomeRadiusSelector, setShowReturnHomeRadiusSelector] = useState(true);
   const [showReturnMyAddressDisplay, setShowReturnMyAddressDisplay] = useState(false);
   const [returnHomeRadius, setReturnHomeRadius] = useState(2); // Default 2-mile radius
-
-  // Show preferences based on selected options
-  const [showOutboundPreferences, setShowOutboundPreferences] = useState(false);
-  const [showReturnPreferences, setShowReturnPreferences] = useState(false);
   
   // Legacy state for backward compatibility
   const [showPickupLocation, setShowPickupLocation] = useState(false);
@@ -167,7 +168,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
       
       // Legacy fields (for backward compatibility)
       dropoffPreference: "direct-home",
-      
+      maxDistance: 2,
       pickupLocation: "",
       pickupLocationCity: "",
       pickupLocationPostcode: "",
@@ -247,9 +248,9 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
       values.maxDistance = outboundHomeRadius;
     }
     if (values.dropoffPreference === "pickup-point") {
-      values.pickupLocation = values.outboundPickupLocation;
-      values.pickupLocationCity = values.outboundPickupLocationCity;
-      values.pickupLocationPostcode = values.outboundPickupLocationPostcode;
+      values.pickupLocation = values.outboundPickupLocation || "";
+      values.pickupLocationCity = values.outboundPickupLocationCity || "";
+      values.pickupLocationPostcode = values.outboundPickupLocationPostcode || "";
     } else {
       values.pickupLocation = "";
       values.pickupLocationCity = "";
@@ -510,7 +511,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                               
                               // Set default dropoff preference when enabling this option
                               if (checked === true) {
-                                form.setValue("dropoffPreference", "direct-home");
+                                form.setValue("returnDropoffPreference", "direct-home");
                               }
                               
                               // If checking this option and "Both" is selected, unselect "Both"
@@ -545,7 +546,8 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                                 form.setValue("canDropoff", false);
                                 
                                 // Set default dropoff preference
-                                form.setValue("dropoffPreference", "direct-home");
+                                form.setValue("outboundDropoffPreference", "direct-home");
+                                form.setValue("returnDropoffPreference", "direct-home");
                               }
                             }}
                           />
@@ -570,15 +572,16 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                         defaultValue={String(field.value)}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select number of spaces" />
+                            <SelectValue placeholder="Select" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {[1, 2, 3, 4, 5, 6].map((num) => (
-                            <SelectItem key={num} value={String(num)}>
-                              {num} {num === 1 ? 'space' : 'spaces'}
-                            </SelectItem>
-                          ))}
+                          <SelectItem value="1">1 space</SelectItem>
+                          <SelectItem value="2">2 spaces</SelectItem>
+                          <SelectItem value="3">3 spaces</SelectItem>
+                          <SelectItem value="4">4 spaces</SelectItem>
+                          <SelectItem value="5">5 spaces</SelectItem>
+                          <SelectItem value="6">6 spaces</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -588,27 +591,28 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
               )}
               
               {/* Show return spaces available only if canDropoff or canBoth is selected */}
-              {showReturnPreferences && (
+              {(form.watch("canDropoff") || form.watch("canBoth")) && (
                 <FormField
                   control={form.control}
                   name="returnSpacesAvailable"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Spaces Available to pick up from party</FormLabel>
+                      <FormLabel>Spaces Available to take from party</FormLabel>
                       <Select 
                         onValueChange={(value) => field.onChange(Number(value))} 
                         defaultValue={String(field.value)}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select number of spaces" />
+                            <SelectValue placeholder="Select" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {[1, 2, 3, 4, 5, 6].map((num) => (
-                            <SelectItem key={num} value={String(num)}>
-                              {num} {num === 1 ? 'space' : 'spaces'}
-                            </SelectItem>
-                          ))}
+                          <SelectItem value="1">1 space</SelectItem>
+                          <SelectItem value="2">2 spaces</SelectItem>
+                          <SelectItem value="3">3 spaces</SelectItem>
+                          <SelectItem value="4">4 spaces</SelectItem>
+                          <SelectItem value="5">5 spaces</SelectItem>
+                          <SelectItem value="6">6 spaces</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -616,8 +620,6 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                   )}
                 />
               )}
-              
-
               
               {/* Outbound dropoff preferences (TO party) */}
               {showOutboundPreferences && (
@@ -928,8 +930,6 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                   </FormItem>
                 )}
               />
-              
-              {/* Emergency Contact Section Removed */}
             </div>
           </div>
           

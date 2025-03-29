@@ -136,6 +136,21 @@ export const insertCarpoolSchema = createInsertSchema(carpools).omit({
       : parseInt(String(data.spacesAvailable), 10);
   }
   
+  // Ensure outboundMaxDistance is a number if present
+  if (typeof data.outboundMaxDistance === 'string') {
+    transformedData.outboundMaxDistance = parseInt(data.outboundMaxDistance, 10);
+  }
+  
+  // Ensure returnMaxDistance is a number if present
+  if (typeof data.returnMaxDistance === 'string') {
+    transformedData.returnMaxDistance = parseInt(data.returnMaxDistance, 10);
+  }
+  
+  // Ensure maxDistance is a number if present (legacy field)
+  if (typeof data.maxDistance === 'string') {
+    transformedData.maxDistance = parseInt(data.maxDistance, 10);
+  }
+  
   return transformedData;
 });
 
