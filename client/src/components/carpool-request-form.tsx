@@ -120,6 +120,25 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       form.setValue("carpoolId", selectedCarpoolId);
     }
   }, [selectedCarpoolId, form]);
+  
+  // Calculate distances automatically when user enters a postcode
+  useEffect(() => {
+    const watchPostcode = form.watch("postcode");
+    
+    // Only calculate if postcode has at least 3 characters
+    if (watchPostcode && watchPostcode.length >= 3 && carpools) {
+      // Calculate distances for all carpools
+      const newDistances: {[key: number]: string} = {};
+      if (Array.isArray(carpools)) {
+        carpools.forEach((carpool: any) => {
+          newDistances[carpool.id] = calculateDistance(watchPostcode, carpool.postcode);
+        });
+      }
+      
+      setDistances(newDistances);
+      setShowNearbyOptions(true);
+    }
+  }, [form.watch("postcode"), carpools]);
 
   // Fetch available carpools
   const { data: carpools, isLoading: carpoolsLoading } = useQuery({
@@ -206,19 +225,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Postcode</FormLabel>
-                      <div className="flex space-x-2">
-                        <FormControl>
-                          <Input placeholder="Postcode" {...field} />
-                        </FormControl>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={findNearbyCarpools}
-                          className="shrink-0"
-                        >
-                          Find Nearby
-                        </Button>
-                      </div>
+                      <FormControl>
+                        <Input placeholder="Postcode" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
