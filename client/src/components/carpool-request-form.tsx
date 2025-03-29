@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { insertCarpoolRequestSchema } from "@shared/schema";
+import { insertCarpoolRequestSchema, Carpool } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -61,15 +61,17 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   const [partyGroupId, setPartyGroupId] = useState<number | null>(null);
   
   // Fetch selected carpool details to get party group ID
-  useQuery({
-    queryKey: selectedCarpoolId ? [`/api/carpools/${selectedCarpoolId}`] : null,
-    enabled: !!selectedCarpoolId,
-    onSuccess: (data) => {
-      if (data && data.partyGroupId) {
-        setPartyGroupId(data.partyGroupId);
-      }
-    }
+  const { data: carpoolDetails } = useQuery({
+    queryKey: [`/api/carpools/${selectedCarpoolId || 0}`],
+    enabled: !!selectedCarpoolId
   });
+  
+  // Set party group ID when carpool details are loaded
+  useEffect(() => {
+    if (carpoolDetails && 'partyGroupId' in carpoolDetails) {
+      setPartyGroupId(carpoolDetails.partyGroupId);
+    }
+  }, [carpoolDetails]);
   
   // Fetch available carpools for the party group
   const { data: carpools, isLoading: carpoolsLoading } = useQuery({
@@ -356,21 +358,25 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                                 </p>
                                 {ridePreference === "pickup" && (
                                   <p className="text-sm text-neutral-600">
-                                    <span className="font-medium">Spaces for going to party:</span> {carpool.spacesAvailable} available
+                                    <span className="font-medium">Spaces for going to party:</span> {carpool.spacesAvailable} available 
+                                    <span className="text-xs text-gray-500 ml-1">(plus driver's child: {carpool.childName})</span>
                                   </p>
                                 )}
                                 {ridePreference === "dropoff" && (
                                   <p className="text-sm text-neutral-600">
                                     <span className="font-medium">Spaces for return journey:</span> {carpool.returnSpacesAvailable || carpool.spacesAvailable} available
+                                    <span className="text-xs text-gray-500 ml-1">(plus driver's child: {carpool.childName})</span>
                                   </p>
                                 )}
                                 {ridePreference === "both" && (
                                   <>
                                     <p className="text-sm text-neutral-600">
                                       <span className="font-medium">Spaces to party:</span> {carpool.spacesAvailable} available
+                                      <span className="text-xs text-gray-500 ml-1">(plus driver's child: {carpool.childName})</span>
                                     </p>
                                     <p className="text-sm text-neutral-600">
                                       <span className="font-medium">Spaces from party:</span> {carpool.returnSpacesAvailable || carpool.spacesAvailable} available
+                                      <span className="text-xs text-gray-500 ml-1">(plus driver's child: {carpool.childName})</span>
                                     </p>
                                   </>
                                 )}
@@ -442,10 +448,10 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                           <SelectItem key={carpool.id} value={carpool.id.toString()}>
                             {carpool.parentName} - {
                               ridePreference === "pickup" 
-                                ? `${carpool.spacesAvailable} spaces left` 
+                                ? `${carpool.spacesAvailable} spaces left (plus ${carpool.childName})` 
                                 : ridePreference === "dropoff"
-                                  ? `${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
-                                  : `${carpool.spacesAvailable}/${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                                  ? `${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left (plus ${carpool.childName})`
+                                  : `${carpool.spacesAvailable}/${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left (plus ${carpool.childName})`
                             }
                             {distances[carpool.id] ? ` (${distances[carpool.id]})` : ''}
                             {(ridePreference === "dropoff" || ridePreference === "both") && 

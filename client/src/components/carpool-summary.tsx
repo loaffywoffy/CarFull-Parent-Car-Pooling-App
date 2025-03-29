@@ -160,7 +160,7 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
                     <div>
                       <CardTitle className="text-base">{carpool.parentName}</CardTitle>
                       <CardDescription className="text-xs">
-                        {carpool.spacesAvailable} {carpool.spacesAvailable === 1 ? 'space' : 'spaces'} available
+                        {carpool.spacesAvailable} {carpool.spacesAvailable === 1 ? 'space' : 'spaces'} available (plus {carpool.childName})
                       </CardDescription>
                     </div>
                   </div>
@@ -221,7 +221,7 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
                       <div>
                         <CardTitle className="text-base">{carpool.parentName}</CardTitle>
                         <CardDescription className="text-xs">
-                          {carpool.returnSpacesAvailable || carpool.spacesAvailable} {(carpool.returnSpacesAvailable || carpool.spacesAvailable) === 1 ? 'space' : 'spaces'} available
+                          {carpool.returnSpacesAvailable || carpool.spacesAvailable} {(carpool.returnSpacesAvailable || carpool.spacesAvailable) === 1 ? 'space' : 'spaces'} available (plus {carpool.childName})
                         </CardDescription>
                       </div>
                     </div>
