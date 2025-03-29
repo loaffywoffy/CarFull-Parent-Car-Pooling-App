@@ -84,8 +84,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
       targetArrivalTime: "",
       endTime: "",
       createdBy: "",
-      accessCode: "",
-      additionalInformation: ""
+      accessCode: ""
     },
   });
 
@@ -206,7 +205,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                   name="partyEndDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>End Date (Optional)</FormLabel>
+                      <FormLabel>End Date</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} value={field.value || ''} />
                       </FormControl>
@@ -322,7 +321,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                     
                     return (
                       <FormItem>
-                        <FormLabel>End Time (Optional)</FormLabel>
+                        <FormLabel>End Time</FormLabel>
                         <div className="flex space-x-2">
                           {/* Hour Select */}
                           <div className="w-1/2">
@@ -414,24 +413,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="additionalInformation"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Additional Information (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Any other information parents should know about the party" 
-                        rows={3}
-                        {...field} 
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
             </div>
           </div>
 
