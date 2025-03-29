@@ -144,25 +144,6 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
               
               <FormField
                 control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Brief description of the party" 
-                        rows={2}
-                        {...field} 
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
                 name="partyAddress"
                 render={({ field }) => (
                   <FormItem>
