@@ -24,6 +24,8 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   partyCity: z.string().min(2, "City is required"),
   partyPostcode: z.string().min(3, "Postcode is required"),
   targetArrivalTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
+  partyEndDate: z.string().min(1, "End date is required"),
   accessCode: z.string().min(4, "Access code must be at least 4 characters")
 }).refine(
   (data) => {
@@ -220,26 +222,36 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                   control={form.control}
                   name="targetArrivalTime"
                   render={({ field }) => {
-                    // Split existing time value (if any)
-                    const timeComponents = field.value ? field.value.split(':') : ['', ''];
-                    const [hours, minutes] = timeComponents;
+                    // Parse the time value
+                    let hour = '';
+                    let minute = '';
                     
-                    // Handler to compose time value
-                    const handleTimeChange = (type: 'hour' | 'minute', value: string) => {
-                      let newHours = hours;
-                      let newMinutes = minutes;
-                      
-                      if (type === 'hour') {
-                        newHours = value;
-                      } else {
-                        newMinutes = value;
+                    if (field.value) {
+                      const parts = field.value.split(':');
+                      if (parts.length === 2) {
+                        hour = parts[0];
+                        minute = parts[1];
                       }
-                      
-                      // Only update if both values are set
-                      if (newHours && newMinutes) {
-                        field.onChange(`${newHours}:${newMinutes}`);
+                    }
+                    
+                    // Set hour
+                    const setHour = (newHour: string) => {
+                      if (newHour && minute) {
+                        field.onChange(`${newHour}:${minute}`);
+                      } else if (newHour) {
+                        field.onChange(`${newHour}:00`);
                       } else {
-                        // Allow clearing the field
+                        field.onChange('');
+                      }
+                    };
+                    
+                    // Set minute
+                    const setMinute = (newMinute: string) => {
+                      if (hour && newMinute) {
+                        field.onChange(`${hour}:${newMinute}`);
+                      } else if (hour) {
+                        field.onChange(`${hour}:00`);
+                      } else {
                         field.onChange('');
                       }
                     };
@@ -251,28 +263,31 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                           {/* Hour Select */}
                           <div className="w-1/2">
                             <Select
-                              value={hours || ""}
-                              onValueChange={(value) => handleTimeChange('hour', value)}
+                              value={hour || undefined}
+                              onValueChange={setHour}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Hour" />
                               </SelectTrigger>
                               <SelectContent>
                                 {Array.from({ length: 24 }).map((_, i) => {
-                                  const hour = i.toString().padStart(2, '0');
+                                  const hourValue = i.toString().padStart(2, '0');
                                   return (
-                                    <SelectItem key={hour} value={hour}>{hour}</SelectItem>
+                                    <SelectItem key={hourValue} value={hourValue}>
+                                      {hourValue}
+                                    </SelectItem>
                                   );
                                 })}
                               </SelectContent>
                             </Select>
                           </div>
-                          {/* Minute Select - Only 00, 15, 30, 45 */}
+                          
+                          {/* Minute Select */}
                           <div className="w-1/2">
                             <Select
-                              value={minutes || ""}
-                              onValueChange={(value) => handleTimeChange('minute', value)}
-                              disabled={!hours} // Disable if hour not selected
+                              value={minute || undefined}
+                              onValueChange={setMinute}
+                              disabled={!hour}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Minute" />
@@ -296,26 +311,36 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                   control={form.control}
                   name="endTime"
                   render={({ field }) => {
-                    // Split existing time value (if any)
-                    const timeComponents = field.value ? field.value.split(':') : ['', ''];
-                    const [hours, minutes] = timeComponents;
+                    // Parse the time value
+                    let hour = '';
+                    let minute = '';
                     
-                    // Handler to compose time value
-                    const handleTimeChange = (type: 'hour' | 'minute', value: string) => {
-                      let newHours = hours;
-                      let newMinutes = minutes;
-                      
-                      if (type === 'hour') {
-                        newHours = value;
-                      } else {
-                        newMinutes = value;
+                    if (field.value) {
+                      const parts = field.value.split(':');
+                      if (parts.length === 2) {
+                        hour = parts[0];
+                        minute = parts[1];
                       }
-                      
-                      // Only update if both values are set
-                      if (newHours && newMinutes) {
-                        field.onChange(`${newHours}:${newMinutes}`);
+                    }
+                    
+                    // Set hour
+                    const setHour = (newHour: string) => {
+                      if (newHour && minute) {
+                        field.onChange(`${newHour}:${minute}`);
+                      } else if (newHour) {
+                        field.onChange(`${newHour}:00`);
                       } else {
-                        // Allow clearing the field
+                        field.onChange('');
+                      }
+                    };
+                    
+                    // Set minute
+                    const setMinute = (newMinute: string) => {
+                      if (hour && newMinute) {
+                        field.onChange(`${hour}:${newMinute}`);
+                      } else if (hour) {
+                        field.onChange(`${hour}:00`);
+                      } else {
                         field.onChange('');
                       }
                     };
@@ -327,28 +352,31 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                           {/* Hour Select */}
                           <div className="w-1/2">
                             <Select
-                              value={hours || ""}
-                              onValueChange={(value) => handleTimeChange('hour', value)}
+                              value={hour || undefined}
+                              onValueChange={setHour}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Hour" />
                               </SelectTrigger>
                               <SelectContent>
                                 {Array.from({ length: 24 }).map((_, i) => {
-                                  const hour = i.toString().padStart(2, '0');
+                                  const hourValue = i.toString().padStart(2, '0');
                                   return (
-                                    <SelectItem key={hour} value={hour}>{hour}</SelectItem>
+                                    <SelectItem key={hourValue} value={hourValue}>
+                                      {hourValue}
+                                    </SelectItem>
                                   );
                                 })}
                               </SelectContent>
                             </Select>
                           </div>
-                          {/* Minute Select - Only 00, 15, 30, 45 */}
+                          
+                          {/* Minute Select */}
                           <div className="w-1/2">
                             <Select
-                              value={minutes || ""}
-                              onValueChange={(value) => handleTimeChange('minute', value)}
-                              disabled={!hours} // Disable if hour not selected
+                              value={minute || undefined}
+                              onValueChange={setMinute}
+                              disabled={!hour}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Minute" />
