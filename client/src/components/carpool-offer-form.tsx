@@ -40,14 +40,28 @@ const carpoolFormSchema = z.object({
   // Make spacesAvailable optional so it can be conditionally required based on selected options
   spacesAvailable: z.coerce.number().min(1).optional(),
   returnSpacesAvailable: z.coerce.number().optional(),
+  
+  // Outbound dropoff preferences (when taking TO the party)
+  outboundDropoffPreference: z.string().optional(),
+  outboundMaxDistance: z.number().optional(),
+  outboundPickupLocation: z.string().optional(),
+  outboundPickupLocationCity: z.string().optional(),
+  outboundPickupLocationPostcode: z.string().optional(),
+  
+  // Return dropoff preferences (when picking up FROM the party)
+  returnDropoffPreference: z.string().optional(),
+  returnMaxDistance: z.number().optional(),
+  returnPickupLocation: z.string().optional(),
+  returnPickupLocationCity: z.string().optional(),
+  returnPickupLocationPostcode: z.string().optional(),
+  
+  // Legacy fields (for backward compatibility)
   dropoffPreference: z.string(),
-  
-  // Add maxDistance field for home radius feature
   maxDistance: z.number().optional(),
-  
   pickupLocation: z.string().optional(),
   pickupLocationCity: z.string().optional(),
   pickupLocationPostcode: z.string().optional(),
+  
   additionalNotes: z.string().optional(),
   estimatedDepartureTime: z.string().optional(),
 }).refine((data) => {
@@ -65,12 +79,30 @@ type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 
 export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOfferFormProps) {
   const { toast } = useToast();
+  // For outbound trip (TO party)
+  const [outboundDropoffPreference, setOutboundDropoffPreference] = useState("direct-home");
+  const [showOutboundPickupLocation, setShowOutboundPickupLocation] = useState(false);
+  const [showOutboundHomeRadiusSelector, setShowOutboundHomeRadiusSelector] = useState(true);
+  const [showOutboundMyAddressDisplay, setShowOutboundMyAddressDisplay] = useState(false);
+  const [outboundHomeRadius, setOutboundHomeRadius] = useState(2); // Default 2-mile radius
+
+  // For return trip (FROM party)
+  const [returnDropoffPreference, setReturnDropoffPreference] = useState("direct-home");
+  const [showReturnPickupLocation, setShowReturnPickupLocation] = useState(false);
+  const [showReturnHomeRadiusSelector, setShowReturnHomeRadiusSelector] = useState(true);
+  const [showReturnMyAddressDisplay, setShowReturnMyAddressDisplay] = useState(false);
+  const [returnHomeRadius, setReturnHomeRadius] = useState(2); // Default 2-mile radius
+
+  // Show preferences based on selected options
+  const [showOutboundPreferences, setShowOutboundPreferences] = useState(false);
+  const [showReturnPreferences, setShowReturnPreferences] = useState(false);
+  
+  // Legacy state for backward compatibility
   const [showPickupLocation, setShowPickupLocation] = useState(false);
   const [showHomeRadiusSelector, setShowHomeRadiusSelector] = useState(false);
   const [showMyAddressDisplay, setShowMyAddressDisplay] = useState(false);
-  const [showReturnPreferences, setShowReturnPreferences] = useState(false);
   const [estimatedDepartureTime, setEstimatedDepartureTime] = useState("");
-  const [homeRadius, setHomeRadius] = useState(1); // Default 1-mile radius
+  const [homeRadius, setHomeRadius] = useState(2); // Default 2-mile radius
 
   // Fetch party group details
   const { data: partyGroup, isLoading: isLoadingPartyGroup } = useQuery({
@@ -118,6 +150,22 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
       canBoth: false,
       spacesAvailable: 1,
       returnSpacesAvailable: 1, // Default same as spaces available for going to party
+      
+      // Outbound dropoff preferences (when taking TO the party)
+      outboundDropoffPreference: "direct-home",
+      outboundMaxDistance: 2,
+      outboundPickupLocation: "",
+      outboundPickupLocationCity: "",
+      outboundPickupLocationPostcode: "",
+      
+      // Return dropoff preferences (when picking up FROM the party)
+      returnDropoffPreference: "direct-home",
+      returnMaxDistance: 2,
+      returnPickupLocation: "",
+      returnPickupLocationCity: "",
+      returnPickupLocationPostcode: "",
+      
+      // Legacy fields (for backward compatibility)
       dropoffPreference: "direct-home",
       
       pickupLocation: "",
@@ -145,26 +193,94 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   });
 
   const onSubmit = (values: CarpoolFormValues) => {
-    // If pickup-point is not selected, ensure pickupLocation is null/empty
-    if (values.dropoffPreference !== "pickup-point") {
+    // Handle outbound preferences (TO party)
+    if (values.canPickup || values.canBoth) {
+      // Set outbound dropoff preferences
+      if (values.outboundDropoffPreference === "direct-home") {
+        values.outboundMaxDistance = outboundHomeRadius;
+      } else if (values.outboundDropoffPreference !== "pickup-point") {
+        // Clear outbound pickup location if not needed
+        values.outboundPickupLocation = "";
+        values.outboundPickupLocationCity = "";
+        values.outboundPickupLocationPostcode = "";
+      }
+    } else {
+      // Not offering outbound ride, clear all outbound fields
+      values.outboundDropoffPreference = "";
+      values.outboundMaxDistance = 0;
+      values.outboundPickupLocation = "";
+      values.outboundPickupLocationCity = "";
+      values.outboundPickupLocationPostcode = "";
+    }
+    
+    // Handle return preferences (FROM party)
+    if (values.canDropoff || values.canBoth) {
+      // Set return dropoff preferences
+      if (values.returnDropoffPreference === "direct-home") {
+        values.returnMaxDistance = returnHomeRadius;
+      } else if (values.returnDropoffPreference !== "pickup-point") {
+        // Clear return pickup location if not needed
+        values.returnPickupLocation = "";
+        values.returnPickupLocationCity = "";
+        values.returnPickupLocationPostcode = "";
+      }
+    } else {
+      // Not offering return ride, clear all return fields
+      values.returnDropoffPreference = "";
+      values.returnMaxDistance = 0;
+      values.returnPickupLocation = "";
+      values.returnPickupLocationCity = "";
+      values.returnPickupLocationPostcode = "";
+      
+      // If only offering pickup (TO party), set returnSpacesAvailable to 0
+      values.returnSpacesAvailable = 0;
+    }
+    
+    // If only offering dropoff (FROM party), set spacesAvailable to 0
+    if (values.canDropoff && !values.canPickup && !values.canBoth) {
+      values.spacesAvailable = 0;
+    }
+    
+    // Legacy compatibility - copy outbound preference to legacy field
+    values.dropoffPreference = values.outboundDropoffPreference || "direct-home";
+    if (values.dropoffPreference === "direct-home") {
+      values.maxDistance = outboundHomeRadius;
+    }
+    if (values.dropoffPreference === "pickup-point") {
+      values.pickupLocation = values.outboundPickupLocation;
+      values.pickupLocationCity = values.outboundPickupLocationCity;
+      values.pickupLocationPostcode = values.outboundPickupLocationPostcode;
+    } else {
       values.pickupLocation = "";
       values.pickupLocationCity = "";
       values.pickupLocationPostcode = "";
     }
     
-    // If only canDropoff is selected (not canPickup or canBoth), set spacesAvailable to 0
-    if (values.canDropoff && !values.canPickup && !values.canBoth) {
-      values.spacesAvailable = 0;
-    }
-    
-    // Save the home radius value if direct-home is selected
-    if (values.dropoffPreference === "direct-home") {
-      values.maxDistance = homeRadius;
-    }
-    
     carpoolMutation.mutate(values);
   };
 
+  // Handle outbound dropoff preference changes (TO party)
+  const handleOutboundDropoffPreferenceChange = (value: string) => {
+    setOutboundDropoffPreference(value);
+    setShowOutboundPickupLocation(value === "pickup-point");
+    setShowOutboundMyAddressDisplay(value === "my-address");
+    setShowOutboundHomeRadiusSelector(value === "direct-home");
+    form.setValue("outboundDropoffPreference", value);
+    
+    // For legacy compatibility
+    form.setValue("dropoffPreference", value);
+  };
+  
+  // Handle return dropoff preference changes (FROM party)
+  const handleReturnDropoffPreferenceChange = (value: string) => {
+    setReturnDropoffPreference(value);
+    setShowReturnPickupLocation(value === "pickup-point");
+    setShowReturnMyAddressDisplay(value === "my-address");
+    setShowReturnHomeRadiusSelector(value === "direct-home");
+    form.setValue("returnDropoffPreference", value);
+  };
+  
+  // Legacy handler for backward compatibility
   const handleDropoffPreferenceChange = (value: string) => {
     // Handle different dropoff preference options
     setShowPickupLocation(value === "pickup-point");
@@ -172,6 +288,13 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     setShowHomeRadiusSelector(value === "direct-home");
     form.setValue("dropoffPreference", value);
   };
+  
+  // Update showOutboundPreferences whenever canPickup or canBoth changes
+  useEffect(() => {
+    const canPickup = form.getValues("canPickup");
+    const canBoth = form.getValues("canBoth");
+    setShowOutboundPreferences(canPickup || canBoth);
+  }, [form.watch("canPickup"), form.watch("canBoth")]);
   
   // Update showReturnPreferences whenever canDropoff or canBoth changes
   useEffect(() => {
@@ -496,18 +619,68 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
               
 
               
-              {/* Show dropoff preference only if canDropoff or canBoth is selected */}
-              {showReturnPreferences && (
-                <div className="space-y-3">
-                  <FormLabel>Dropoff Preference:</FormLabel>
+              {/* Outbound dropoff preferences (TO party) */}
+              {showOutboundPreferences && (
+                <div className="space-y-3 border-t border-gray-100 pt-4 mt-4">
+                  <h4 className="font-medium text-primary-700">Outbound Trip Preferences (TO Party)</h4>
+                  <FormLabel>Dropoff Preference when taking TO the party:</FormLabel>
                   <FormField
                     control={form.control}
-                    name="dropoffPreference"
+                    name="outboundDropoffPreference"
                     render={({ field }) => (
                       <FormItem className="space-y-3">
                         <FormControl>
                           <RadioGroup
-                            onValueChange={(value) => handleDropoffPreferenceChange(value)}
+                            onValueChange={(value) => handleOutboundDropoffPreferenceChange(value)}
+                            defaultValue={field.value}
+                            className="flex flex-col space-y-1"
+                          >
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="direct-home" />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                Directly to the party location
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="my-address" />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                Parents drop kids at my address first
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="pickup-point" />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                Alternative central pickup point
+                              </FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+              
+              {/* Return dropoff preferences (FROM party) */}
+              {showReturnPreferences && (
+                <div className="space-y-3 border-t border-gray-100 pt-4 mt-4">
+                  <h4 className="font-medium text-primary-700">Return Trip Preferences (FROM Party)</h4>
+                  <FormLabel>Dropoff Preference when picking up FROM the party:</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="returnDropoffPreference"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={(value) => handleReturnDropoffPreferenceChange(value)}
                             defaultValue={field.value}
                             className="flex flex-col space-y-1"
                           >
@@ -524,7 +697,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                                 <RadioGroupItem value="my-address" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                To my address
+                                To my address (parents pick up)
                               </FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0">
@@ -544,24 +717,29 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 </div>
               )}
               
-              {/* Show parent's address when "my address" is selected */}
-              {showMyAddressDisplay && (
-                <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200">
-                  <h4 className="font-medium text-gray-800">Dropoff to Your Address</h4>
+              {/* For backward compatibility - hidden field */}
+              <input type="hidden" name="dropoffPreference" value={outboundDropoffPreference} />
+              
+              {/* OUTBOUND TRIP - TO PARTY */}
+              
+              {/* Show parent's address when "my address" is selected for outbound */}
+              {showOutboundMyAddressDisplay && (
+                <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                  <h4 className="font-medium text-gray-800">TO Party: Parents drop kids at your address</h4>
                   <div className="text-sm text-gray-600">
                     <p><strong>Address:</strong> {form.getValues("address")}</p>
                     <p><strong>City:</strong> {form.getValues("city")}</p>
                     <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Other parents will be asked to pick up their children from this address</p>
+                  <p className="text-xs text-gray-500 mt-2">Parents will be asked to drop their children at this address before you take them to the party</p>
                 </div>
               )}
               
-              {/* Show home radius selector when "direct-home" is selected */}
-              {showHomeRadiusSelector && (
-                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200">
-                  <h4 className="font-medium text-gray-800">Home Delivery Radius</h4>
-                  <p className="text-sm text-gray-600 mb-2">Set the maximum distance you're willing to travel from your home (or alternative pickup point) to drop off children</p>
+              {/* Show home radius selector when "direct-home" is selected for outbound */}
+              {showOutboundHomeRadiusSelector && (
+                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                  <h4 className="font-medium text-gray-800">TO Party: Pickup Radius</h4>
+                  <p className="text-sm text-gray-600 mb-2">Set the maximum distance you're willing to travel from your home to pick up children</p>
                   
                   <div className="flex items-center gap-2">
                     <Input 
@@ -569,24 +747,28 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                       min="0" 
                       max="5" 
                       step="0.5" 
-                      value={homeRadius} 
-                      onChange={(e) => setHomeRadius(parseFloat(e.target.value))}
+                      value={outboundHomeRadius} 
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        setOutboundHomeRadius(value);
+                        form.setValue("outboundMaxDistance", value);
+                      }}
                       className="w-2/3"
                     />
-                    <span className="text-sm font-medium">{homeRadius} {homeRadius === 1 ? 'mile' : 'miles'}</span>
+                    <span className="text-sm font-medium">{outboundHomeRadius} {outboundHomeRadius === 1 ? 'mile' : 'miles'}</span>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">You will only be matched with passengers within this radius of your home</p>
                 </div>
               )}
               
-              {/* Show pickup location fields if pickup-point is selected */}
-              {showPickupLocation && (
-                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200">
-                  <h4 className="font-medium text-gray-800">Central Pickup Point</h4>
+              {/* Show pickup location fields if pickup-point is selected for outbound */}
+              {showOutboundPickupLocation && (
+                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                  <h4 className="font-medium text-gray-800">TO Party: Central Pickup Point</h4>
                   
                   <FormField
                     control={form.control}
-                    name="pickupLocation"
+                    name="outboundPickupLocation"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Location Address</FormLabel>
@@ -601,7 +783,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="pickupLocationCity"
+                      name="outboundPickupLocationCity"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>City</FormLabel>
@@ -614,7 +796,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                     />
                     <FormField
                       control={form.control}
-                      name="pickupLocationPostcode"
+                      name="outboundPickupLocationPostcode"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Postcode</FormLabel>
@@ -628,6 +810,105 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                   </div>
                 </div>
               )}
+
+              {/* RETURN TRIP - FROM PARTY */}
+              
+              {/* Show parent's address when "my address" is selected for return */}
+              {showReturnMyAddressDisplay && (
+                <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                  <h4 className="font-medium text-gray-800">FROM Party: Dropoff to Your Address</h4>
+                  <div className="text-sm text-gray-600">
+                    <p><strong>Address:</strong> {form.getValues("address")}</p>
+                    <p><strong>City:</strong> {form.getValues("city")}</p>
+                    <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Parents will be asked to pick up their children from this address after the party</p>
+                </div>
+              )}
+              
+              {/* Show home radius selector when "direct-home" is selected for return */}
+              {showReturnHomeRadiusSelector && (
+                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                  <h4 className="font-medium text-gray-800">FROM Party: Home Delivery Radius</h4>
+                  <p className="text-sm text-gray-600 mb-2">Set the maximum distance you're willing to travel from the party to drop off children</p>
+                  
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      type="range" 
+                      min="0" 
+                      max="5" 
+                      step="0.5" 
+                      value={returnHomeRadius} 
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        setReturnHomeRadius(value);
+                        form.setValue("returnMaxDistance", value);
+                      }}
+                      className="w-2/3"
+                    />
+                    <span className="text-sm font-medium">{returnHomeRadius} {returnHomeRadius === 1 ? 'mile' : 'miles'}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">You will only be matched with passengers within this radius of their homes</p>
+                </div>
+              )}
+              
+              {/* Show pickup location fields if pickup-point is selected for return */}
+              {showReturnPickupLocation && (
+                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                  <h4 className="font-medium text-gray-800">FROM Party: Central Pickup Point</h4>
+                  
+                  <FormField
+                    control={form.control}
+                    name="returnPickupLocation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Location Address</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Pickup Point Address" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="returnPickupLocationCity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>City</FormLabel>
+                          <FormControl>
+                            <Input placeholder="City" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="returnPickupLocationPostcode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Postcode</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Postcode" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Legacy fields - hidden for backward compatibility */}
+              <div className="hidden">
+                <input type="hidden" name="pickupLocation" value={form.getValues("outboundPickupLocation") || ""} />
+                <input type="hidden" name="pickupLocationCity" value={form.getValues("outboundPickupLocationCity") || ""} />
+                <input type="hidden" name="pickupLocationPostcode" value={form.getValues("outboundPickupLocationPostcode") || ""} />
+                <input type="hidden" name="maxDistance" value={String(outboundHomeRadius || 2)} />
+              </div>
               
               <FormField
                 control={form.control}

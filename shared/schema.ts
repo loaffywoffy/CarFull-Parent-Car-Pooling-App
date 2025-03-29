@@ -41,7 +41,22 @@ export const carpools = pgTable("carpools", {
   canBoth: boolean("can_both").default(false),
   spacesAvailable: integer("spaces_available").notNull(),
   returnSpacesAvailable: integer("return_spaces_available"),
-  dropoffPreference: text("dropoff_preference").notNull(),
+  // Outbound dropoff preferences (when taking TO the party)
+  outboundDropoffPreference: text("outbound_dropoff_preference"),
+  outboundMaxDistance: integer("outbound_max_distance"),
+  outboundPickupLocation: text("outbound_pickup_location"),
+  outboundPickupLocationCity: text("outbound_pickup_location_city"),
+  outboundPickupLocationPostcode: text("outbound_pickup_location_postcode"),
+  
+  // Return dropoff preferences (when picking up FROM the party)
+  returnDropoffPreference: text("return_dropoff_preference"),
+  returnMaxDistance: integer("return_max_distance"),
+  returnPickupLocation: text("return_pickup_location"),
+  returnPickupLocationCity: text("return_pickup_location_city"),
+  returnPickupLocationPostcode: text("return_pickup_location_postcode"),
+  
+  // Legacy fields (for backward compatibility)
+  dropoffPreference: text("dropoff_preference"),
   maxDistance: integer("max_distance"),
   pickupLocation: text("pickup_location"),
   pickupLocationCity: text("pickup_location_city"),
