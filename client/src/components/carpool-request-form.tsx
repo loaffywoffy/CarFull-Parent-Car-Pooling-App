@@ -6,7 +6,6 @@ import { insertCarpoolRequestSchema } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +13,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { getCarpools } from "@/api/carpools";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface CarpoolRequestFormProps {
@@ -40,6 +38,36 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   const [distances, setDistances] = useState<{[key: number]: string}>({});
   const [showNearbyOptions, setShowNearbyOptions] = useState(false);
   
+  // State to track ride preference for filtering carpools
+  const [ridePreference, setRidePreference] = useState<string | null>("pickup");
+  
+  const form = useForm<CarpoolRequestFormValues>({
+    resolver: zodResolver(carpoolRequestFormSchema),
+    defaultValues: {
+      parentName: "",
+      address: "",
+      city: "",
+      postcode: "",
+      phoneNumber: "",
+      childName: "",
+      childPhone: "",
+      carpoolId: selectedCarpoolId || 0,
+      needsPickup: false,
+      needsDropoff: false,
+      needsBoth: false,
+      specialRequirements: "",
+      ridePreference: "pickup", // Default to "pickup" (to party)
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      emergencyContactRelationship: ""
+    },
+  });
+
+  // Fetch available carpools
+  const { data: carpools, isLoading: carpoolsLoading } = useQuery({
+    queryKey: ["/api/carpools"],
+  });
+
   // Calculate distance between two postcodes (simplified demo version)
   const calculateDistance = (postcode1: string, postcode2: string) => {
     // In a real application, you would use a mapping API to calculate actual distance
@@ -63,56 +91,6 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
     if (distanceStr === "Unknown") return 999; // Large number for unknown distances
     return parseFloat(distanceStr.split(" ")[0]);
   };
-  
-  // Find nearby carpools when user enters their postcode
-  const findNearbyCarpools = () => {
-    const userPostcode = form.getValues("postcode");
-    
-    if (!userPostcode || !carpools) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter your postcode first to find nearby carpools.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Calculate distances for all carpools
-    const newDistances: {[key: number]: string} = {};
-    if (Array.isArray(carpools)) {
-      carpools.forEach((carpool: any) => {
-        newDistances[carpool.id] = calculateDistance(userPostcode, carpool.postcode);
-      });
-    }
-    
-    setDistances(newDistances);
-    setShowNearbyOptions(true);
-  };
-  
-  // State to track ride preference for filtering carpools
-  const [ridePreference, setRidePreference] = useState<string | null>(null);
-  
-  const form = useForm<CarpoolRequestFormValues>({
-    resolver: zodResolver(carpoolRequestFormSchema),
-    defaultValues: {
-      parentName: "",
-      address: "",
-      city: "",
-      postcode: "",
-      phoneNumber: "",
-      childName: "",
-      childPhone: "",
-      carpoolId: selectedCarpoolId || 0,
-      needsPickup: false,
-      needsDropoff: false,
-      needsBoth: false,
-      specialRequirements: "",
-      ridePreference: "pickup", // Default to "pickup" (to party)
-      emergencyContactName: "",
-      emergencyContactPhone: "",
-      emergencyContactRelationship: ""
-    },
-  });
 
   // Set selected carpool ID when it changes
   useEffect(() => {
@@ -140,11 +118,6 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
     }
   }, [form.watch("postcode"), carpools]);
 
-  // Fetch available carpools
-  const { data: carpools, isLoading: carpoolsLoading } = useQuery({
-    queryKey: ["/api/carpools"],
-  });
-
   const requestMutation = useMutation({
     mutationFn: (values: CarpoolRequestFormValues) => 
       apiRequest("POST", "/api/carpool-requests", values),
@@ -164,6 +137,21 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   const onSubmit = (values: CarpoolRequestFormValues) => {
     requestMutation.mutate(values);
   };
+  
+  // Count available carpools for different ride preferences
+  const getAvailableCarpoolCounts = () => {
+    if (!carpools || !Array.isArray(carpools)) return { pickup: 0, dropoff: 0, both: 0 };
+    
+    const counts = {
+      pickup: carpools.filter(c => c.canPickup || c.canBoth).length,
+      dropoff: carpools.filter(c => c.canDropoff || c.canBoth).length,
+      both: carpools.filter(c => c.canBoth).length
+    };
+    
+    return counts;
+  };
+  
+  const carpoolCounts = getAvailableCarpoolCounts();
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -348,7 +336,13 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                                 {(ridePreference === "dropoff" || ridePreference === "both") && 
                                  (carpool.canDropoff || carpool.canBoth) && carpool.dropoffPreference && (
                                   <p className="text-xs text-gray-600 mt-2 bg-gray-100 p-1.5 rounded">
-                                    <span className="font-medium">Drop-off preference:</span> {carpool.dropoffPreference}
+                                    <span className="font-medium">Drop-off preference:</span> {
+                                      carpool.dropoffPreference === "direct-home" 
+                                        ? "Direct to each child's home" 
+                                        : carpool.dropoffPreference === "my-home" 
+                                          ? "Collection from driver's home" 
+                                          : "Central meeting point"
+                                    }
                                     {carpool.dropoffPreference === "direct-home" && carpool.maxDistance && (
                                       <span className="ml-1 text-xs text-blue-600"> (max {carpool.maxDistance} miles from their address)</span>
                                     )}
@@ -484,6 +478,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">
                               Ride TO the party (pickup from home)
+                              <span className="ml-2 text-xs text-green-700 bg-green-50 rounded px-1">
+                                {carpoolCounts.pickup} carpools available
+                              </span>
                             </FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-3 space-y-0">
@@ -492,6 +489,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">
                               Ride FROM the party (return home)
+                              <span className="ml-2 text-xs text-blue-700 bg-blue-50 rounded px-1">
+                                {carpoolCounts.dropoff} carpools available
+                              </span>
                             </FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-3 space-y-0">
@@ -500,6 +500,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">
                               Both TO and FROM the party
+                              <span className="ml-2 text-xs text-purple-700 bg-purple-50 rounded px-1">
+                                {carpoolCounts.both} carpools available
+                              </span>
                             </FormLabel>
                           </FormItem>
                         </RadioGroup>
@@ -515,75 +518,67 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                 name="specialRequirements"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Special Requirements</FormLabel>
+                    <FormLabel>Special Requirements or Notes</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Any special requirements or information" 
-                        rows={3}
+                        placeholder="Any allergies, medical conditions, or additional information the driver should know" 
+                        className="h-24 resize-none"
+                        {...field}
                         value={field.value || ""}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
+            
+            {/* Emergency Contact Information */}
+            <div className="space-y-4 md:col-span-2">
+              <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Emergency Contact</h3>
               
-              {/* Emergency Contact Information */}
-              <div className="mt-8 space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-1">Emergency Contact</h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    This information will only be used in case of emergency through our one-tap emergency notification system.
-                  </p>
-                </div>
+              <FormField
+                control={form.control}
+                name="emergencyContactName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emergency Contact Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="emergencyContactPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Emergency Contact Phone</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Phone Number" type="tel" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
-                <div className="p-4 border border-red-100 rounded-md bg-red-50 space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="emergencyContactName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Emergency Contact Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Full name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="emergencyContactPhone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Emergency Contact Phone</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Phone number" type="tel" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="emergencyContactRelationship"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Relationship to Child</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Parent, Guardian, Relative" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="emergencyContactRelationship"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Relationship to Child</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Parent, Grandparent, Guardian" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
           </div>
@@ -591,7 +586,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
           <div className="mt-8 flex justify-end">
             <Button 
               type="submit" 
-              className="px-6 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
+              className="px-6 py-2 bg-primary text-white font-medium rounded-md"
               disabled={requestMutation.isPending}
             >
               {requestMutation.isPending ? "Submitting..." : "Submit Request"}
