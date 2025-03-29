@@ -50,11 +50,6 @@ const carpoolFormSchema = z.object({
   pickupLocationPostcode: z.string().optional(),
   additionalNotes: z.string().optional(),
   estimatedDepartureTime: z.string().optional(),
-  
-  // Emergency contact information
-  emergencyContactName: z.string().min(1, "Emergency contact name is required"),
-  emergencyContactPhone: z.string().min(1, "Emergency contact phone is required"),
-  emergencyContactRelationship: z.string().min(1, "Relationship to child is required"),
 }).refine((data) => {
   // If canPickup or canBoth is selected, spacesAvailable is required
   if ((data.canPickup || data.canBoth) && !data.spacesAvailable) {
@@ -130,11 +125,6 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
       pickupLocationPostcode: "",
       additionalNotes: "",
       estimatedDepartureTime: "",
-      
-      // Emergency contact information
-      emergencyContactName: "",
-      emergencyContactPhone: "",
-      emergencyContactRelationship: "",
     },
   });
 
@@ -365,7 +355,14 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                         <FormControl>
                           <Checkbox
                             checked={field.value}
-                            onCheckedChange={field.onChange}
+                            onCheckedChange={(checked: CheckedState) => {
+                              field.onChange(checked);
+                              
+                              // If checking this option and "Both" is selected, unselect "Both"
+                              if (checked === true && form.getValues("canBoth")) {
+                                form.setValue("canBoth", false);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormLabel className="cursor-pointer">To take to the party</FormLabel>
@@ -383,6 +380,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                             checked={field.value}
                             onCheckedChange={(checked: CheckedState) => {
                               field.onChange(checked);
+                              
                               // Update showReturnPreferences directly based on current state
                               const canBoth = form.getValues("canBoth");
                               setShowReturnPreferences(checked === true || canBoth);
@@ -390,6 +388,11 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                               // Set default dropoff preference when enabling this option
                               if (checked === true) {
                                 form.setValue("dropoffPreference", "direct-home");
+                              }
+                              
+                              // If checking this option and "Both" is selected, unselect "Both"
+                              if (checked === true && form.getValues("canBoth")) {
+                                form.setValue("canBoth", false);
                               }
                             }}
                           />
@@ -409,9 +412,18 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                             checked={field.value}
                             onCheckedChange={(checked: CheckedState) => {
                               field.onChange(checked);
+                              
                               // Update showReturnPreferences directly based on current state
-                              const canDropoff = form.getValues("canDropoff");
-                              setShowReturnPreferences(checked === true || canDropoff);
+                              setShowReturnPreferences(checked === true || form.getValues("canDropoff"));
+                              
+                              // If selecting "Both", unselect the other two options
+                              if (checked === true) {
+                                form.setValue("canPickup", false);
+                                form.setValue("canDropoff", false);
+                                
+                                // Set default dropoff preference
+                                form.setValue("dropoffPreference", "direct-home");
+                              }
                             }}
                           />
                         </FormControl>
@@ -636,59 +648,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 )}
               />
               
-              {/* Emergency Contact Information */}
-              <div className="mt-8 space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-1">Emergency Contact</h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    This information will only be used in case of emergency through our one-tap emergency notification system.
-                  </p>
-                </div>
-                
-                <div className="p-4 border border-red-100 rounded-md bg-red-50 space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="emergencyContactName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Emergency Contact Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Full name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="emergencyContactPhone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Emergency Contact Phone</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Phone number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="emergencyContactRelationship"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Relationship to You</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Spouse, Parent, Friend" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+              {/* Emergency Contact Section Removed */}
             </div>
           </div>
           
