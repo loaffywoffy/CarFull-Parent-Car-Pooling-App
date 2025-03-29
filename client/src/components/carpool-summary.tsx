@@ -6,15 +6,23 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { 
   Car, ArrowRight, ArrowLeft, MapPin, User, Calendar, Clock, 
-  Users, HomeIcon, Building, Share2
+  Users, HomeIcon, Building, Share2, Phone, MailIcon, Printer,
+  Download, ChevronRight, Baby
 } from "lucide-react";
-import { type PartyGroup } from "@shared/schema";
+import { type PartyGroup, type Carpool, type CarpoolRequest } from "@shared/schema";
+import { getCarpoolRequests } from "@/api/carpools";
+import { toast } from "@/hooks/use-toast";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useEffect, useRef, useState } from "react";
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
 }
 
 export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
+  const [activeTab, setActiveTab] = useState<'summary' | 'detailed'>('summary');
+  const printRef = useRef<HTMLDivElement>(null);
+  
   // Fetch carpool data
   const { data: carpools, isLoading: carpoolsLoading } = useQuery({
     queryKey: [`/api/party-groups/${partyGroupId}/carpools`],
@@ -25,6 +33,136 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
     queryKey: [`/api/party-groups/${partyGroupId}`],
     enabled: !!partyGroupId,
   });
+
+  // Fetch carpool requests for each carpool
+  const carpoolsArray = Array.isArray(carpools) ? carpools : [];
+  
+  // Create a map to store requests by carpool ID
+  const [carpoolRequestsMap, setCarpoolRequestsMap] = useState<Record<number, CarpoolRequest[]>>({});
+  
+  // Fetch requests for each carpool
+  useEffect(() => {
+    async function fetchRequests() {
+      const requests: Record<number, CarpoolRequest[]> = {};
+      
+      for (const carpool of carpoolsArray) {
+        try {
+          const carpoolRequests = await getCarpoolRequests(carpool.id);
+          requests[carpool.id] = carpoolRequests;
+        } catch (error) {
+          console.error(`Failed to fetch requests for carpool ${carpool.id}:`, error);
+          requests[carpool.id] = [];
+        }
+      }
+      
+      setCarpoolRequestsMap(requests);
+    }
+    
+    if (carpoolsArray.length > 0) {
+      fetchRequests();
+    }
+  }, [carpoolsArray]);
+
+  const handlePrint = () => {
+    const content = printRef.current;
+    if (!content) return;
+    
+    const originalContents = document.body.innerHTML;
+    const printContents = content.innerHTML;
+    
+    document.body.innerHTML = `
+      <div style="padding: 20px;">
+        <h1 style="text-align: center; margin-bottom: 20px;">${partyGroup?.name || 'Party'} - Carpool Arrangements</h1>
+        ${printContents}
+      </div>
+    `;
+    
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload();
+  };
+  
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${partyGroup?.name || 'Party'} - Carpool Arrangements`,
+          text: `Here are the carpool arrangements for ${partyGroup?.name || 'the party'} on ${partyGroup?.partyDate ? new Date(partyGroup.partyDate).toLocaleDateString() : 'the scheduled date'}.`,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        toast({
+          title: "Sharing failed",
+          description: "Unable to share the carpool information.",
+          variant: "destructive"
+        });
+      }
+    } else {
+      toast({
+        title: "Sharing not supported",
+        description: "Your browser doesn't support the Web Share API.",
+      });
+    }
+  };
+  
+  const handleSendEmail = () => {
+    // Create email body with carpool information
+    const subject = encodeURIComponent(`${partyGroup?.name || 'Party'} - Carpool Arrangements`);
+    
+    let body = `Carpool Arrangements for ${partyGroup?.name || 'Party'}\n\n`;
+    body += `Date: ${partyGroup?.partyDate ? new Date(partyGroup.partyDate).toLocaleDateString() : 'TBD'}\n`;
+    body += `Time: ${partyGroup?.targetArrivalTime || 'TBD'}${partyGroup?.endTime ? ` - ${partyGroup.endTime}` : ''}\n`;
+    body += `Location: ${partyGroup ? `${partyGroup.partyAddress}, ${partyGroup.partyCity}` : 'TBD'}\n\n`;
+    
+    // TO party carpools
+    body += `TO PARTY ARRANGEMENTS:\n`;
+    const toPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canPickup || c.canBoth);
+    if (toPartyCarpools.length === 0) {
+      body += `No carpools available for transportation to the party.\n\n`;
+    } else {
+      toPartyCarpools.forEach((carpool: Carpool) => {
+        body += `Driver: ${carpool.parentName} - ${carpool.phoneNumber}\n`;
+        const requests = carpoolRequestsMap[carpool.id] || [];
+        if (requests.length > 0) {
+          body += `Passengers:\n`;
+          requests
+            .filter(req => req.needsPickup || req.needsBoth)
+            .forEach(req => {
+              body += `- ${req.childName} (${req.parentName}) - ${req.phoneNumber}\n`;
+            });
+        } else {
+          body += `No passengers assigned yet.\n`;
+        }
+        body += `\n`;
+      });
+    }
+    
+    // FROM party carpools
+    body += `FROM PARTY ARRANGEMENTS:\n`;
+    const fromPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canDropoff || c.canBoth);
+    if (fromPartyCarpools.length === 0) {
+      body += `No carpools available for transportation from the party.\n`;
+    } else {
+      fromPartyCarpools.forEach((carpool: Carpool) => {
+        body += `Driver: ${carpool.parentName} - ${carpool.phoneNumber}\n`;
+        const requests = carpoolRequestsMap[carpool.id] || [];
+        if (requests.length > 0) {
+          body += `Passengers:\n`;
+          requests
+            .filter(req => req.needsDropoff || req.needsBoth)
+            .forEach(req => {
+              body += `- ${req.childName} (${req.parentName}) - ${req.phoneNumber}\n`;
+            });
+        } else {
+          body += `No passengers assigned yet.\n`;
+        }
+        body += `\n`;
+      });
+    }
+    
+    const encodedBody = encodeURIComponent(body);
+    window.location.href = `mailto:?subject=${subject}&body=${encodedBody}`;
+  };
 
   if (carpoolsLoading) {
     return (
@@ -37,8 +175,6 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
     );
   }
 
-  const carpoolsArray = Array.isArray(carpools) ? carpools : [];
-
   if (carpoolsArray.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -49,11 +185,12 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
   }
 
   // Group carpools by direction
-  const toPartyCarpools = carpoolsArray.filter((c: any) => c.canPickup || c.canBoth);
-  const fromPartyCarpools = carpoolsArray.filter((c: any) => c.canDropoff || c.canBoth);
+  const toPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canPickup || c.canBoth);
+  const fromPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canDropoff || c.canBoth);
 
   // Function to get initials from a name
   const getInitials = (name: string) => {
+    if (!name) return "?";
     return name
       .split(' ')
       .map(part => part[0])
@@ -77,194 +214,388 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h2 className="text-xl font-semibold text-neutral-800">Carpool Summary</h2>
           <p className="text-neutral-600 text-sm mt-1">
             {partyGroup?.name || "Party"} - {partyGroup?.partyDate ? new Date(partyGroup.partyDate).toLocaleDateString() : ""}
           </p>
         </div>
-        <Button variant="outline" size="sm" className="flex items-center gap-1">
-          <Share2 className="h-4 w-4" />
-          <span>Share</span>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={handleShare}>
+            <Share2 className="h-4 w-4" />
+            <span>Share</span>
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={handlePrint}>
+            <Printer className="h-4 w-4" />
+            <span>Print</span>
+          </Button>
+          <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={handleSendEmail}>
+            <MailIcon className="h-4 w-4" />
+            <span>Email</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Party Details Card */}
-      <Card className="mb-6 bg-gray-50">
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="h-4 w-4 text-neutral-500" />
-                <span className="text-sm font-medium">
-                  {partyGroup?.partyDate ? new Date(partyGroup.partyDate).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  }) : "Date not specified"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-neutral-500" />
-                <span className="text-sm">
-                  {partyGroup?.targetArrivalTime || "Time not specified"}
-                  {partyGroup?.endTime ? ` - ${partyGroup.endTime}` : ""}
-                </span>
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="h-4 w-4 text-neutral-500" />
-                <span className="text-sm">
-                  {partyGroup ? `${partyGroup.partyAddress}, ${partyGroup.partyCity}` : "Location not specified"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-neutral-500" />
-                <span className="text-sm">
-                  {carpoolsArray.length > 0 ? `${carpoolsArray.length} carpool${carpoolsArray.length !== 1 ? 's' : ''} arranged` : "No carpools arranged"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* TO Party Carpools */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200 px-3 py-1">
-            <ArrowRight className="h-4 w-4 mr-1" />
-            <span>TO Party</span>
-          </Badge>
-          <h3 className="text-lg font-medium text-neutral-700">Pickup Arrangements</h3>
-        </div>
-
-        {toPartyCarpools.length === 0 ? (
-          <Card className="mb-4">
-            <CardContent className="p-4 text-center text-neutral-600">
-              No carpools available for transportation to the party.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {toPartyCarpools.map((carpool: any) => (
-              <Card key={`to-${carpool.id}`} className="overflow-hidden">
-                <CardHeader className="bg-green-50 p-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9 bg-green-100 text-green-800">
-                      <AvatarFallback>{getInitials(carpool.parentName)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-base">{carpool.parentName}</CardTitle>
-                      <CardDescription className="text-xs">
-                        {carpool.spacesAvailable} {carpool.spacesAvailable === 1 ? 'space' : 'spaces'} available (plus {carpool.childName})
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-3 text-sm">
-                  <div className="flex items-start gap-3 mb-2">
-                    <Car className="h-4 w-4 mt-1 text-neutral-500" />
-                    <div>
-                      <p className="font-medium mb-1">Pickup Information</p>
-                      <p className="text-neutral-600 mb-1">
-                        Driver will pick up children from their homes.
-                      </p>
-                      <p className="text-neutral-600">
-                        <span className="font-medium">Arrival Time:</span> Approximately 15-20 minutes before party starts
-                      </p>
-                    </div>
-                  </div>
-                  <Separator className="my-2" />
-                  <div className="flex items-start gap-3">
-                    <User className="h-4 w-4 mt-1 text-neutral-500" />
-                    <div>
-                      <p className="font-medium mb-1">Contact Details</p>
-                      <p className="text-neutral-600">{carpool.phoneNumber}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+      {/* View toggles */}
+      <div className="flex border-b mb-6">
+        <button
+          className={`py-2 px-4 font-medium text-sm ${activeTab === 'summary' ? 'border-b-2 border-primary text-primary' : 'text-neutral-500'}`}
+          onClick={() => setActiveTab('summary')}
+        >
+          Summary View
+        </button>
+        <button
+          className={`py-2 px-4 font-medium text-sm ${activeTab === 'detailed' ? 'border-b-2 border-primary text-primary' : 'text-neutral-500'}`}
+          onClick={() => setActiveTab('detailed')}
+        >
+          Detailed View
+        </button>
       </div>
 
-      {/* FROM Party Carpools */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200 px-3 py-1">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            <span>FROM Party</span>
-          </Badge>
-          <h3 className="text-lg font-medium text-neutral-700">Dropoff Arrangements</h3>
-        </div>
+      <div ref={printRef}>
+        {/* Party Details Card */}
+        <Card className="mb-6 bg-gray-50 print:bg-white print:border">
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-neutral-500" />
+                  <span className="text-sm font-medium">
+                    {partyGroup?.partyDate ? new Date(partyGroup.partyDate).toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    }) : "Date not specified"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-neutral-500" />
+                  <span className="text-sm">
+                    {partyGroup?.targetArrivalTime || "Time not specified"}
+                    {partyGroup?.endTime ? ` - ${partyGroup.endTime}` : ""}
+                  </span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="h-4 w-4 text-neutral-500" />
+                  <span className="text-sm">
+                    {partyGroup ? `${partyGroup.partyAddress}, ${partyGroup.partyCity}` : "Location not specified"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-neutral-500" />
+                  <span className="text-sm">
+                    {carpoolsArray.length > 0 ? `${carpoolsArray.length} carpool${carpoolsArray.length !== 1 ? 's' : ''} arranged` : "No carpools arranged"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {fromPartyCarpools.length === 0 ? (
-          <Card className="mb-4">
-            <CardContent className="p-4 text-center text-neutral-600">
-              No carpools available for transportation from the party.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {fromPartyCarpools.map((carpool: any) => (
-                <Card key={`from-${carpool.id}`} className="overflow-hidden">
-                  <CardHeader className="bg-blue-50 p-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9 bg-blue-100 text-blue-800">
-                        <AvatarFallback>{getInitials(carpool.parentName)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-base">{carpool.parentName}</CardTitle>
-                        <CardDescription className="text-xs">
-                          {carpool.returnSpacesAvailable || carpool.spacesAvailable} {(carpool.returnSpacesAvailable || carpool.spacesAvailable) === 1 ? 'space' : 'spaces'} available (plus {carpool.childName})
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-3 text-sm">
-                    <div className="flex items-start gap-3 mb-2">
-                      <Car className="h-4 w-4 mt-1 text-neutral-500" />
-                      <div>
-                        <p className="font-medium mb-1">Dropoff Information</p>
-                        <div className="flex items-center gap-1 mb-1">
-                          {carpool.dropoffPreference === 'direct-home' ? (
-                            <HomeIcon className="h-3.5 w-3.5 text-neutral-500" />
-                          ) : carpool.dropoffPreference === 'my-home' ? (
-                            <HomeIcon className="h-3.5 w-3.5 text-neutral-500" />
-                          ) : (
-                            <Building className="h-3.5 w-3.5 text-neutral-500" />
-                          )}
-                          <p className="text-neutral-600">
-                            {getDropoffPreferenceDescription(carpool.dropoffPreference || 'not-specified')}
-                          </p>
-                        </div>
-                        {carpool.dropoffPreference === 'direct-home' && carpool.maxDistance && (
-                          <p className="text-neutral-600 text-xs ml-4">
-                            (Maximum {carpool.maxDistance} miles from driver's location)
-                          </p>
-                        )}
-                        <p className="text-neutral-600 mt-1">
-                          <span className="font-medium">Departure Time:</span> Right after the party ends
-                        </p>
-                      </div>
-                    </div>
-                    <Separator className="my-2" />
-                    <div className="flex items-start gap-3">
-                      <User className="h-4 w-4 mt-1 text-neutral-500" />
-                      <div>
-                        <p className="font-medium mb-1">Contact Details</p>
-                        <p className="text-neutral-600">{carpool.phoneNumber}</p>
-                      </div>
-                    </div>
+        {activeTab === 'summary' && (
+          <>
+            {/* TO Party Carpools - Summary View */}
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200 px-3 py-1">
+                  <ArrowRight className="h-4 w-4 mr-1" />
+                  <span>TO Party</span>
+                </Badge>
+                <h3 className="text-lg font-medium text-neutral-700">Pickup Arrangements</h3>
+              </div>
+
+              {toPartyCarpools.length === 0 ? (
+                <Card className="mb-4">
+                  <CardContent className="p-4 text-center text-neutral-600">
+                    No carpools available for transportation to the party.
                   </CardContent>
                 </Card>
-            ))}
-          </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {toPartyCarpools.map((carpool: Carpool) => {
+                    const requests = carpoolRequestsMap[carpool.id] || [];
+                    const pickupRequests = requests.filter(req => req.needsPickup || req.needsBoth);
+                    
+                    return (
+                      <Card key={`to-${carpool.id}`} className="overflow-hidden">
+                        <CardHeader className="bg-green-50 p-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9 bg-green-100 text-green-800">
+                              <AvatarFallback>{getInitials(carpool.parentName)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <CardTitle className="text-base">{carpool.parentName}</CardTitle>
+                              <CardDescription className="text-xs">
+                                Driver - {carpool.phoneNumber}
+                              </CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-3 text-sm">
+                          <div className="mb-2">
+                            <p className="font-medium mb-1">Passengers</p>
+                            <ul className="space-y-1 text-neutral-600">
+                              <li className="flex items-center gap-1">
+                                <Baby className="h-3.5 w-3.5 text-neutral-500" />
+                                <span>{carpool.childName} (driver's child)</span>
+                              </li>
+                              {pickupRequests.length > 0 ? (
+                                pickupRequests.map((request, idx) => (
+                                  <li key={idx} className="flex items-center gap-1">
+                                    <Baby className="h-3.5 w-3.5 text-neutral-500" />
+                                    <span>{request.childName} ({request.parentName}: {request.phoneNumber})</span>
+                                  </li>
+                                ))
+                              ) : (
+                                <li className="text-neutral-400 italic">No additional passengers</li>
+                              )}
+                            </ul>
+                          </div>
+                          
+                          <Separator className="my-2" />
+                          
+                          <div className="flex items-start gap-2">
+                            <Car className="h-4 w-4 mt-1 text-neutral-500" />
+                            <div>
+                              <p className="font-medium mb-1">Vehicle</p>
+                              <p className="text-neutral-600">Not specified</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* FROM Party Carpools - Summary View */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200 px-3 py-1">
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  <span>FROM Party</span>
+                </Badge>
+                <h3 className="text-lg font-medium text-neutral-700">Dropoff Arrangements</h3>
+              </div>
+
+              {fromPartyCarpools.length === 0 ? (
+                <Card className="mb-4">
+                  <CardContent className="p-4 text-center text-neutral-600">
+                    No carpools available for transportation from the party.
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {fromPartyCarpools.map((carpool: Carpool) => {
+                    const requests = carpoolRequestsMap[carpool.id] || [];
+                    const dropoffRequests = requests.filter(req => req.needsDropoff || req.needsBoth);
+                    
+                    return (
+                      <Card key={`from-${carpool.id}`} className="overflow-hidden">
+                        <CardHeader className="bg-blue-50 p-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9 bg-blue-100 text-blue-800">
+                              <AvatarFallback>{getInitials(carpool.parentName)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <CardTitle className="text-base">{carpool.parentName}</CardTitle>
+                              <CardDescription className="text-xs">
+                                Driver - {carpool.phoneNumber}
+                              </CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-3 text-sm">
+                          <div className="mb-2">
+                            <p className="font-medium mb-1">Passengers</p>
+                            <ul className="space-y-1 text-neutral-600">
+                              <li className="flex items-center gap-1">
+                                <Baby className="h-3.5 w-3.5 text-neutral-500" />
+                                <span>{carpool.childName} (driver's child)</span>
+                              </li>
+                              {dropoffRequests.length > 0 ? (
+                                dropoffRequests.map((request, idx) => (
+                                  <li key={idx} className="flex items-center gap-1">
+                                    <Baby className="h-3.5 w-3.5 text-neutral-500" />
+                                    <span>{request.childName} ({request.parentName}: {request.phoneNumber})</span>
+                                  </li>
+                                ))
+                              ) : (
+                                <li className="text-neutral-400 italic">No additional passengers</li>
+                              )}
+                            </ul>
+                          </div>
+                          
+                          <Separator className="my-2" />
+                          
+                          <div className="flex items-start gap-3">
+                            <Car className="h-4 w-4 mt-1 text-neutral-500" />
+                            <div>
+                              <p className="font-medium mb-1">Dropoff Information</p>
+                              <div className="flex items-center gap-1 mb-1">
+                                {carpool.dropoffPreference === 'direct-home' ? (
+                                  <HomeIcon className="h-3.5 w-3.5 text-neutral-500" />
+                                ) : carpool.dropoffPreference === 'my-home' ? (
+                                  <HomeIcon className="h-3.5 w-3.5 text-neutral-500" />
+                                ) : (
+                                  <Building className="h-3.5 w-3.5 text-neutral-500" />
+                                )}
+                                <p className="text-neutral-600">
+                                  {getDropoffPreferenceDescription(carpool.dropoffPreference || 'not-specified')}
+                                </p>
+                              </div>
+                              {carpool.dropoffPreference === 'direct-home' && carpool.maxDistance && (
+                                <p className="text-neutral-600 text-xs ml-4">
+                                  (Maximum {carpool.maxDistance} miles from driver's location)
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'detailed' && (
+          <>
+            {/* Detailed view with tables */}
+            <div className="mb-8">
+              <h3 className="text-lg font-medium text-neutral-700 mb-3">Complete Carpool Details</h3>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[180px]">Driver</TableHead>
+                    <TableHead>Passengers</TableHead>
+                    <TableHead>Direction</TableHead>
+                    <TableHead className="w-[150px]">Contact</TableHead>
+                    <TableHead>Notes</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {carpoolsArray.map((carpool: Carpool) => {
+                    const requests = carpoolRequestsMap[carpool.id] || [];
+                    const direction = 
+                      carpool.canBoth ? "To & From" :
+                      carpool.canPickup ? "To Party" :
+                      carpool.canDropoff ? "From Party" : "Unknown";
+                    
+                    let passengers = [
+                      { 
+                        name: carpool.childName, 
+                        parentName: carpool.parentName, 
+                        phone: carpool.phoneNumber,
+                        isDriversChild: true
+                      }
+                    ];
+                    
+                    // Add passengers from requests
+                    requests.forEach(req => {
+                      passengers.push({
+                        name: req.childName,
+                        parentName: req.parentName,
+                        phone: req.phoneNumber,
+                        isDriversChild: false
+                      });
+                    });
+                    
+                    return (
+                      <TableRow key={carpool.id}>
+                        <TableCell className="font-medium">{carpool.parentName}</TableCell>
+                        <TableCell>
+                          <ul className="space-y-1">
+                            {passengers.map((passenger, idx) => (
+                              <li key={idx} className="flex items-start gap-1">
+                                <Baby className="h-3.5 w-3.5 mt-1 text-neutral-500" />
+                                <div>
+                                  <span>{passenger.name} </span>
+                                  {passenger.isDriversChild && (
+                                    <Badge variant="outline" className="text-xs ml-1">Driver's child</Badge>
+                                  )}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant="outline" 
+                            className={
+                              direction === "To & From" ? "bg-purple-50 text-purple-800 border-purple-200" :
+                              direction === "To Party" ? "bg-green-50 text-green-800 border-green-200" :
+                              "bg-blue-50 text-blue-800 border-blue-200"
+                            }
+                          >
+                            {direction}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 mb-1">
+                            <Phone className="h-3.5 w-3.5 text-neutral-500" />
+                            <span className="text-sm">{carpool.phoneNumber}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {carpool.canDropoff && carpool.dropoffPreference && (
+                            <div className="text-sm text-neutral-600">
+                              <span className="font-medium">Dropoff:</span> {getDropoffPreferenceDescription(carpool.dropoffPreference)}
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+              
+              {/* Emergency Contact Information */}
+              <Card className="mt-6 border border-amber-200">
+                <CardHeader className="bg-amber-50 pb-2">
+                  <CardTitle className="text-sm font-medium text-amber-800">Emergency Contact Information</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 text-sm">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Child</TableHead>
+                        <TableHead>Parent</TableHead>
+                        <TableHead>Phone</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {carpoolsArray.map((carpool: Carpool) => (
+                        <TableRow key={`driver-${carpool.id}`}>
+                          <TableCell>{carpool.childName}</TableCell>
+                          <TableCell>{carpool.parentName}</TableCell>
+                          <TableCell>{carpool.phoneNumber}</TableCell>
+                        </TableRow>
+                      ))}
+                      
+                      {Object.values(carpoolRequestsMap)
+                        .flat()
+                        .map((request, idx) => (
+                          <TableRow key={`passenger-${idx}`}>
+                            <TableCell>{request.childName}</TableCell>
+                            <TableCell>{request.parentName}</TableCell>
+                            <TableCell>{request.phoneNumber}</TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
       </div>
     </div>

@@ -9,6 +9,7 @@ import PartyGroupForm from "@/components/party-group-form";
 import PartyGroupsList from "@/components/party-groups-list";
 import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
+import CarpoolSummary from "@/components/carpool-summary";
 
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroupByAccessCode } from "@/api/partyGroups";
@@ -186,7 +187,7 @@ export default function Home() {
               Party Groups
             </button>
             <button
-              onClick={() => handleTabChange("offer")}
+              onClick={() => selectedPartyGroup ? handleTabChange("offer") : handleTabChange("partyGroups")}
               className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
                 activeTab === "offer"
                   ? "border-b-2 border-primary text-primary"
@@ -196,7 +197,7 @@ export default function Home() {
               Offer a Carpool
             </button>
             <button
-              onClick={() => handleTabChange("request")}
+              onClick={() => selectedPartyGroup ? handleTabChange("request") : handleTabChange("partyGroups")}
               className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
                 activeTab === "request"
                   ? "border-b-2 border-primary text-primary"
@@ -323,11 +324,7 @@ export default function Home() {
         )}
         
         {activeTab === "view" && selectedPartyGroup && (
-          <CarpoolList 
-            partyGroupId={selectedPartyGroup.id}
-            onRequestSpot={handleRequestSpot} 
-            onManageCalendar={undefined}
-          />
+          <CarpoolSummary partyGroupId={selectedPartyGroup.id} />
         )}
         
         {activeTab === "view" && !selectedPartyGroup && (

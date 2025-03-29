@@ -57,7 +57,9 @@ export const carpools = pgTable("carpools", {
 // CarpoolRequest schema for requests to join carpool
 export const carpoolRequests = pgTable("carpool_requests", {
   id: serial("id").primaryKey(),
-  carpoolId: integer("carpool_id").notNull(),
+  carpoolId: integer("carpool_id").notNull(), // Main carpool ID (used when ride preference is "both")
+  pickupCarpoolId: integer("pickup_carpool_id"), // Optional separate carpool ID for pickup (to party)
+  dropoffCarpoolId: integer("dropoff_carpool_id"), // Optional separate carpool ID for dropoff (from party) 
   parentName: text("parent_name").notNull(),
   address: text("address").notNull(),
   city: text("city").notNull(),

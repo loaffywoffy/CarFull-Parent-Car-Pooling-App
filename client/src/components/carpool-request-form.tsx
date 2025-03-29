@@ -38,6 +38,10 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   // State to track ride preference for filtering carpools
   const [ridePreference, setRidePreference] = useState<string | null>("pickup");
   
+  // State for separate carpool IDs for TO and FROM journeys
+  const [pickupCarpoolId, setPickupCarpoolId] = useState<number | null>(null);
+  const [dropoffCarpoolId, setDropoffCarpoolId] = useState<number | null>(null);
+  
   const form = useForm<CarpoolRequestFormValues>({
     resolver: zodResolver(carpoolRequestFormSchema),
     defaultValues: {
@@ -49,6 +53,8 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       childName: "",
       childPhone: "",
       carpoolId: selectedCarpoolId || 0,
+      pickupCarpoolId: 0, // New field for TO party carpool
+      dropoffCarpoolId: 0, // New field for FROM party carpool
       needsPickup: false,
       needsDropoff: false,
       needsBoth: false,
@@ -68,8 +74,8 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   
   // Set party group ID when carpool details are loaded
   useEffect(() => {
-    if (carpoolDetails && 'partyGroupId' in carpoolDetails) {
-      setPartyGroupId(carpoolDetails.partyGroupId);
+    if (carpoolDetails && typeof carpoolDetails === 'object' && 'partyGroupId' in carpoolDetails) {
+      setPartyGroupId(Number(carpoolDetails.partyGroupId));
     }
   }, [carpoolDetails]);
   
@@ -145,6 +151,20 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   });
 
   const onSubmit = (values: CarpoolRequestFormValues) => {
+    // Set the appropriate carpool IDs based on ride preference
+    if (values.ridePreference === "pickup") {
+      values.pickupCarpoolId = values.carpoolId;
+      values.dropoffCarpoolId = 0;
+    } else if (values.ridePreference === "dropoff") {
+      values.pickupCarpoolId = 0;
+      values.dropoffCarpoolId = values.carpoolId;
+    } else if (values.ridePreference === "both") {
+      // If "both" is selected, we can use separate carpools if they've been selected
+      values.pickupCarpoolId = pickupCarpoolId || values.carpoolId;
+      values.dropoffCarpoolId = dropoffCarpoolId || values.carpoolId;
+    }
+    
+    // Submit the request with updated fields
     requestMutation.mutate(values);
   };
   
@@ -214,6 +234,80 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Ride Preference Selection - Moved to top for better UX */}
+          <div className="space-y-3 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="font-medium text-lg text-neutral-700 mb-2">What ride do you need?</h3>
+            <FormField
+              control={form.control}
+              name="ridePreference"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Update ride preference state for filtering carpools
+                        setRidePreference(value);
+                        
+                        // Also update the individual need fields to maintain compatibility
+                        if (value === "pickup") {
+                          form.setValue("needsPickup", true);
+                          form.setValue("needsDropoff", false);
+                          form.setValue("needsBoth", false);
+                        } else if (value === "dropoff") {
+                          form.setValue("needsPickup", false);
+                          form.setValue("needsDropoff", true);
+                          form.setValue("needsBoth", false);
+                        } else if (value === "both") {
+                          form.setValue("needsPickup", false);
+                          form.setValue("needsDropoff", false);
+                          form.setValue("needsBoth", true);
+                        }
+                      }}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-3"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0 p-3 bg-white rounded-md border border-gray-200 hover:border-primary/50 transition-colors">
+                        <FormControl>
+                          <RadioGroupItem value="pickup" />
+                        </FormControl>
+                        <FormLabel className="font-medium cursor-pointer w-full">
+                          Ride TO the party (pickup from home)
+                          <span className="ml-2 text-xs text-green-700 bg-green-50 rounded px-1">
+                            {carpoolCounts.pickup} carpools available
+                          </span>
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0 p-3 bg-white rounded-md border border-gray-200 hover:border-primary/50 transition-colors">
+                        <FormControl>
+                          <RadioGroupItem value="dropoff" />
+                        </FormControl>
+                        <FormLabel className="font-medium cursor-pointer w-full">
+                          Ride FROM the party (dropoff to home)
+                          <span className="ml-2 text-xs text-green-700 bg-green-50 rounded px-1">
+                            {carpoolCounts.dropoff} carpools available
+                          </span>
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0 p-3 bg-white rounded-md border border-gray-200 hover:border-primary/50 transition-colors">
+                        <FormControl>
+                          <RadioGroupItem value="both" />
+                        </FormControl>
+                        <FormLabel className="font-medium cursor-pointer w-full">
+                          Ride BOTH ways (to and from party)
+                          <span className="ml-2 text-xs text-green-700 bg-green-50 rounded px-1">
+                            {carpoolCounts.both} carpools available
+                          </span>
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Parent Information */}
             <div className="space-y-4 md:col-span-2">
