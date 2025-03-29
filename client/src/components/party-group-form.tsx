@@ -230,7 +230,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       let newMinutes = minutes;
                       
                       if (type === 'hour') {
-                        newHours = value === '_none' ? '' : value;
+                        newHours = value;
                       } else {
                         newMinutes = value;
                       }
@@ -238,7 +238,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       // Only update if both values are set
                       if (newHours && newMinutes) {
                         field.onChange(`${newHours}:${newMinutes}`);
-                      } else if (newHours === '' || newHours === '_none') {
+                      } else {
                         // Allow clearing the field
                         field.onChange('');
                       }
@@ -251,7 +251,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                           {/* Hour Select */}
                           <div className="w-1/2">
                             <Select
-                              value={hours}
+                              value={hours || ""}
                               onValueChange={(value) => handleTimeChange('hour', value)}
                             >
                               <SelectTrigger>
@@ -270,8 +270,9 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                           {/* Minute Select - Only 00, 15, 30, 45 */}
                           <div className="w-1/2">
                             <Select
-                              value={minutes}
+                              value={minutes || ""}
                               onValueChange={(value) => handleTimeChange('minute', value)}
+                              disabled={!hours} // Disable if hour not selected
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Minute" />
@@ -305,7 +306,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       let newMinutes = minutes;
                       
                       if (type === 'hour') {
-                        newHours = value === '_none' ? '' : value;
+                        newHours = value;
                       } else {
                         newMinutes = value;
                       }
@@ -313,7 +314,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       // Only update if both values are set
                       if (newHours && newMinutes) {
                         field.onChange(`${newHours}:${newMinutes}`);
-                      } else if (newHours === '' || newHours === '_none') {
+                      } else {
                         // Allow clearing the field
                         field.onChange('');
                       }
@@ -326,14 +327,13 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                           {/* Hour Select */}
                           <div className="w-1/2">
                             <Select
-                              value={hours}
+                              value={hours || ""}
                               onValueChange={(value) => handleTimeChange('hour', value)}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Hour" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="_none">None</SelectItem>
                                 {Array.from({ length: 24 }).map((_, i) => {
                                   const hour = i.toString().padStart(2, '0');
                                   return (
@@ -346,7 +346,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                           {/* Minute Select - Only 00, 15, 30, 45 */}
                           <div className="w-1/2">
                             <Select
-                              value={minutes}
+                              value={minutes || ""}
                               onValueChange={(value) => handleTimeChange('minute', value)}
                               disabled={!hours} // Disable if hour not selected
                             >
