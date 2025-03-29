@@ -25,10 +25,7 @@ const carpoolRequestFormSchema = insertCarpoolRequestSchema
   .extend({
     carpoolId: z.number().or(z.string().transform(val => parseInt(val, 10))),
     ridePreference: z.enum(["pickup", "dropoff", "both"]),
-    specialRequirements: z.string().optional().default(""),
-    emergencyContactName: z.string().min(1, "Emergency contact name is required"),
-    emergencyContactPhone: z.string().min(1, "Emergency contact phone is required"),
-    emergencyContactRelationship: z.string().min(1, "Relationship to child is required")
+    specialRequirements: z.string().optional().default("")
   });
 
 type CarpoolRequestFormValues = z.infer<typeof carpoolRequestFormSchema>;
@@ -56,10 +53,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       needsDropoff: false,
       needsBoth: false,
       specialRequirements: "",
-      ridePreference: "pickup", // Default to "pickup" (to party)
-      emergencyContactName: "",
-      emergencyContactPhone: "",
-      emergencyContactRelationship: ""
+      ridePreference: "pickup" // Default to "pickup" (to party)
     },
   });
 
@@ -142,16 +136,61 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   const getAvailableCarpoolCounts = () => {
     if (!carpools || !Array.isArray(carpools)) return { pickup: 0, dropoff: 0, both: 0 };
     
+    // Get user's postcode to filter by distance constraints
+    const userPostcode = form.getValues("postcode");
+    
+    // Filter carpools based on distance constraints for direct-to-home dropoffs
+    const filteredCarpools = userPostcode ? carpools.filter(c => {
+      // If carpool has direct-to-home dropoff preference with distance limit
+      if (c.dropoffPreference === "direct-home" && c.maxDistance) {
+        const distance = calculateDistance(userPostcode, c.postcode);
+        const numericDistance = getNumericDistance(distance);
+        // Only include this carpool if user is within max distance range
+        return numericDistance <= c.maxDistance;
+      }
+      return true; // Include all others
+    }) : carpools;
+    
     const counts = {
-      pickup: carpools.filter(c => c.canPickup || c.canBoth).length,
-      dropoff: carpools.filter(c => c.canDropoff || c.canBoth).length,
-      both: carpools.filter(c => c.canBoth).length
+      pickup: filteredCarpools.filter(c => c.canPickup || c.canBoth).length,
+      dropoff: filteredCarpools.filter(c => c.canDropoff || c.canBoth).length,
+      both: filteredCarpools.filter(c => c.canBoth).length
     };
     
     return counts;
   };
   
   const carpoolCounts = getAvailableCarpoolCounts();
+
+  // Filter carpools based on ride preference
+  const getFilteredCarpools = () => {
+    if (!carpools || !Array.isArray(carpools)) return [];
+    
+    return carpools.filter((carpool: any) => {
+      // Match by ride preference
+      let matches = true;
+      
+      if (ridePreference === "pickup") {
+        matches = carpool.canPickup || carpool.canBoth;
+      } else if (ridePreference === "dropoff") {
+        matches = carpool.canDropoff || carpool.canBoth;
+      } else if (ridePreference === "both") {
+        matches = carpool.canBoth;
+      }
+      
+      // Check the max distance constraint for direct-to-home dropoffs
+      if (matches && (ridePreference === "dropoff" || ridePreference === "both") && 
+          carpool.dropoffPreference === "direct-home" && carpool.maxDistance) {
+        const numericDistance = getNumericDistance(distances[carpool.id]);
+        // Only include this carpool if user is within max distance range
+        return numericDistance <= carpool.maxDistance;
+      }
+      
+      return matches; // Return true if matches ride preference and other conditions
+    });
+  };
+
+  const filteredCarpools = getFilteredCarpools();
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -272,32 +311,27 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
               {/* Nearby Carpools Section */}
               {showNearbyOptions && Object.keys(distances).length > 0 && (
                 <div className="bg-gray-50 p-4 rounded-md mb-4 border border-gray-200">
-                  <h4 className="font-medium text-neutral-700 mb-3">Carpools Near You</h4>
+                  <h4 className="font-medium text-neutral-700 mb-3">
+                    Carpools Near You
+                    {ridePreference && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        Showing {ridePreference === "pickup" ? "TO party" : 
+                                ridePreference === "dropoff" ? "FROM party" : "BOTH ways"} options
+                      </span>
+                    )}
+                  </h4>
                   <div className="space-y-3">
-                    {Array.isArray(carpools) && carpools
-                      .filter((carpool: any) => {
-                        // Filter carpools based on ride preference
-                        let matches = true;
-                        
-                        if (ridePreference === "pickup") {
-                          matches = carpool.canPickup || carpool.canBoth;
-                        } else if (ridePreference === "dropoff") {
-                          matches = carpool.canDropoff || carpool.canBoth;
-                        } else if (ridePreference === "both") {
-                          matches = carpool.canBoth;
-                        }
-                        
-                        // Check the max distance constraint for direct-to-home dropoffs
-                        if (matches && (ridePreference === "dropoff" || ridePreference === "both") && 
-                            carpool.dropoffPreference === "direct-home" && carpool.maxDistance) {
-                          const numericDistance = getNumericDistance(distances[carpool.id]);
-                          // Only include this carpool if user is within max distance range
-                          return numericDistance <= carpool.maxDistance;
-                        }
-                        
-                        return matches; // Return true if matches ride preference and other conditions
-                      })
-                      .map((carpool: any) => (
+                    {filteredCarpools.length === 0 ? (
+                      <div className="text-center p-6 bg-gray-100 rounded-md">
+                        <p className="text-gray-600">No carpools available matching your preferences.</p>
+                        {ridePreference === "both" && carpoolCounts.pickup > 0 && (
+                          <p className="text-sm text-blue-600 mt-2">
+                            Try selecting "Ride TO the party" or "Ride FROM the party" separately for more options.
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      filteredCarpools.map((carpool: any) => (
                         <Card key={carpool.id} className="overflow-hidden border-l-4 border-l-primary">
                           <CardContent className="p-4">
                             <div className="flex justify-between items-start">
@@ -367,7 +401,8 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
+                      ))
+                    )}
                   </div>
                 </div>
               )}
@@ -389,50 +424,26 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Array.isArray(carpools) && carpools
-                          .filter((carpool: any) => {
-                            // Filter carpools based on ride preference
-                            let matches = true;
-                            
-                            if (ridePreference === "pickup") {
-                              matches = carpool.canPickup || carpool.canBoth;
-                            } else if (ridePreference === "dropoff") {
-                              matches = carpool.canDropoff || carpool.canBoth;
-                            } else if (ridePreference === "both") {
-                              matches = carpool.canBoth;
+                        {filteredCarpools.map((carpool: any) => (
+                          <SelectItem key={carpool.id} value={carpool.id.toString()}>
+                            {carpool.parentName} - {
+                              ridePreference === "pickup" 
+                                ? `${carpool.spacesAvailable} spaces left` 
+                                : ridePreference === "dropoff"
+                                  ? `${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                                  : `${carpool.spacesAvailable}/${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
                             }
-                            
-                            // Check the max distance constraint for direct-to-home dropoffs
-                            if (matches && (ridePreference === "dropoff" || ridePreference === "both") && 
-                                carpool.dropoffPreference === "direct-home" && carpool.maxDistance) {
-                              const numericDistance = getNumericDistance(distances[carpool.id]);
-                              // Only include this carpool if user is within max distance range
-                              return numericDistance <= carpool.maxDistance;
-                            }
-                            
-                            return matches; // Return true if matches ride preference and other conditions
-                          })
-                          .map((carpool: any) => (
-                            <SelectItem key={carpool.id} value={carpool.id.toString()}>
-                              {carpool.parentName} - {
-                                ridePreference === "pickup" 
-                                  ? `${carpool.spacesAvailable} spaces left` 
-                                  : ridePreference === "dropoff"
-                                    ? `${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
-                                    : `${carpool.spacesAvailable}/${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
-                              }
-                              {distances[carpool.id] ? ` (${distances[carpool.id]})` : ''}
-                              {(ridePreference === "dropoff" || ridePreference === "both") && 
-                               (carpool.canDropoff || carpool.canBoth) && carpool.dropoffPreference ? 
-                               ` - ${carpool.dropoffPreference === "direct-home" ? "Direct to home" : 
-                                    carpool.dropoffPreference === "my-home" ? "Collect from their home" : 
-                                    "Meeting point"}` : ''}
-                              {(ridePreference === "dropoff" || ridePreference === "both") && 
-                               carpool.dropoffPreference === "direct-home" && carpool.maxDistance ?
-                               ` (max ${carpool.maxDistance} miles)` : ''}
-                            </SelectItem>
-                          ))
-                        }
+                            {distances[carpool.id] ? ` (${distances[carpool.id]})` : ''}
+                            {(ridePreference === "dropoff" || ridePreference === "both") && 
+                             (carpool.canDropoff || carpool.canBoth) && carpool.dropoffPreference ? 
+                             ` - ${carpool.dropoffPreference === "direct-home" ? "Direct to home" : 
+                                  carpool.dropoffPreference === "my-home" ? "Collect from their home" : 
+                                  "Meeting point"}` : ''}
+                            {(ridePreference === "dropoff" || ridePreference === "both") && 
+                             carpool.dropoffPreference === "direct-home" && carpool.maxDistance ?
+                             ` (max ${carpool.maxDistance} miles)` : ''}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -531,55 +542,6 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   </FormItem>
                 )}
               />
-            </div>
-            
-            {/* Emergency Contact Information */}
-            <div className="space-y-4 md:col-span-2">
-              <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Emergency Contact</h3>
-              
-              <FormField
-                control={form.control}
-                name="emergencyContactName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Emergency Contact Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Full Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="emergencyContactPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Emergency Contact Phone</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Phone Number" type="tel" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="emergencyContactRelationship"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Relationship to Child</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Parent, Grandparent, Guardian" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
             </div>
           </div>
 
