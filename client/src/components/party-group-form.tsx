@@ -250,7 +250,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       let newMinutes = minutes;
                       
                       if (type === 'hour') {
-                        newHours = value;
+                        newHours = value === '_none' ? '' : value;
                       } else {
                         newMinutes = value;
                       }
@@ -258,6 +258,9 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       // Only update if both values are set
                       if (newHours && newMinutes) {
                         field.onChange(`${newHours}:${newMinutes}`);
+                      } else if (newHours === '' || newHours === '_none') {
+                        // Allow clearing the field
+                        field.onChange('');
                       }
                     };
                     
@@ -322,7 +325,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       let newMinutes = minutes;
                       
                       if (type === 'hour') {
-                        newHours = value;
+                        newHours = value === '_none' ? '' : value;
                       } else {
                         newMinutes = value;
                       }
@@ -330,7 +333,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       // Only update if both values are set
                       if (newHours && newMinutes) {
                         field.onChange(`${newHours}:${newMinutes}`);
-                      } else if (newHours === '' && newMinutes === '') {
+                      } else if (newHours === '' || newHours === '_none') {
                         // Allow clearing the field
                         field.onChange('');
                       }
@@ -350,7 +353,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                                 <SelectValue placeholder="Hour" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="">None</SelectItem>
+                                <SelectItem value="_none">None</SelectItem>
                                 {Array.from({ length: 24 }).map((_, i) => {
                                   const hour = i.toString().padStart(2, '0');
                                   return (
