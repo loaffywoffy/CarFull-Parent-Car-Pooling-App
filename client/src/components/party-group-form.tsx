@@ -239,44 +239,150 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                 <FormField
                   control={form.control}
                   name="targetArrivalTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Time</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="time" 
-                          step="900"  // 15-minute increments (15 min * 60 sec = 900 sec)
-                          {...field} 
-                        />
-                      </FormControl>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Time is in 15-minute increments (00, 15, 30, 45)
-                      </p>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    // Split existing time value (if any)
+                    const timeComponents = field.value ? field.value.split(':') : ['', ''];
+                    const [hours, minutes] = timeComponents;
+                    
+                    // Handler to compose time value
+                    const handleTimeChange = (type: 'hour' | 'minute', value: string) => {
+                      let newHours = hours;
+                      let newMinutes = minutes;
+                      
+                      if (type === 'hour') {
+                        newHours = value;
+                      } else {
+                        newMinutes = value;
+                      }
+                      
+                      // Only update if both values are set
+                      if (newHours && newMinutes) {
+                        field.onChange(`${newHours}:${newMinutes}`);
+                      }
+                    };
+                    
+                    return (
+                      <FormItem>
+                        <FormLabel>Start Time</FormLabel>
+                        <div className="flex space-x-2">
+                          {/* Hour Select */}
+                          <div className="w-1/2">
+                            <Select
+                              value={hours}
+                              onValueChange={(value) => handleTimeChange('hour', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Hour" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 24 }).map((_, i) => {
+                                  const hour = i.toString().padStart(2, '0');
+                                  return (
+                                    <SelectItem key={hour} value={hour}>{hour}</SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          {/* Minute Select - Only 00, 15, 30, 45 */}
+                          <div className="w-1/2">
+                            <Select
+                              value={minutes}
+                              onValueChange={(value) => handleTimeChange('minute', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Minute" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="00">00</SelectItem>
+                                <SelectItem value="15">15</SelectItem>
+                                <SelectItem value="30">30</SelectItem>
+                                <SelectItem value="45">45</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                 
                 <FormField
                   control={form.control}
                   name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Time (Optional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="time" 
-                          step="900"  // 15-minute increments (15 min * 60 sec = 900 sec)
-                          {...field} 
-                          value={field.value || ''} 
-                        />
-                      </FormControl>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Time is in 15-minute increments (00, 15, 30, 45)
-                      </p>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    // Split existing time value (if any)
+                    const timeComponents = field.value ? field.value.split(':') : ['', ''];
+                    const [hours, minutes] = timeComponents;
+                    
+                    // Handler to compose time value
+                    const handleTimeChange = (type: 'hour' | 'minute', value: string) => {
+                      let newHours = hours;
+                      let newMinutes = minutes;
+                      
+                      if (type === 'hour') {
+                        newHours = value;
+                      } else {
+                        newMinutes = value;
+                      }
+                      
+                      // Only update if both values are set
+                      if (newHours && newMinutes) {
+                        field.onChange(`${newHours}:${newMinutes}`);
+                      } else if (newHours === '' && newMinutes === '') {
+                        // Allow clearing the field
+                        field.onChange('');
+                      }
+                    };
+                    
+                    return (
+                      <FormItem>
+                        <FormLabel>End Time (Optional)</FormLabel>
+                        <div className="flex space-x-2">
+                          {/* Hour Select */}
+                          <div className="w-1/2">
+                            <Select
+                              value={hours}
+                              onValueChange={(value) => handleTimeChange('hour', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Hour" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="">None</SelectItem>
+                                {Array.from({ length: 24 }).map((_, i) => {
+                                  const hour = i.toString().padStart(2, '0');
+                                  return (
+                                    <SelectItem key={hour} value={hour}>{hour}</SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          {/* Minute Select - Only 00, 15, 30, 45 */}
+                          <div className="w-1/2">
+                            <Select
+                              value={minutes}
+                              onValueChange={(value) => handleTimeChange('minute', value)}
+                              disabled={!hours} // Disable if hour not selected
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Minute" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="00">00</SelectItem>
+                                <SelectItem value="15">15</SelectItem>
+                                <SelectItem value="30">30</SelectItem>
+                                <SelectItem value="45">45</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </div>
             </div>
