@@ -57,9 +57,23 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
     },
   });
 
-  // Fetch available carpools
+  // Extract party group ID from the carpool ID if available
+  const [partyGroupId, setPartyGroupId] = useState<number | null>(null);
+  
+  // Fetch selected carpool details to get party group ID
+  useQuery({
+    queryKey: selectedCarpoolId ? [`/api/carpools/${selectedCarpoolId}`] : null,
+    enabled: !!selectedCarpoolId,
+    onSuccess: (data) => {
+      if (data && data.partyGroupId) {
+        setPartyGroupId(data.partyGroupId);
+      }
+    }
+  });
+  
+  // Fetch available carpools for the party group
   const { data: carpools, isLoading: carpoolsLoading } = useQuery({
-    queryKey: ["/api/carpools"],
+    queryKey: partyGroupId ? [`/api/party-groups/${partyGroupId}/carpools`] : ["/api/carpools"],
   });
 
   // Calculate distance between two postcodes (simplified demo version)
