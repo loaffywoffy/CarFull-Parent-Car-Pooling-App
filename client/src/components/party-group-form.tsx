@@ -5,6 +5,7 @@ import { z } from "zod";
 import { insertPartyGroupSchema } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
@@ -242,8 +243,15 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                     <FormItem>
                       <FormLabel>Start Time</FormLabel>
                       <FormControl>
-                        <Input type="time" step="900" {...field} />
+                        <Input 
+                          type="time" 
+                          step="900"  // 15-minute increments (15 min * 60 sec = 900 sec)
+                          {...field} 
+                        />
                       </FormControl>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Time is in 15-minute increments (00, 15, 30, 45)
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -256,8 +264,16 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                     <FormItem>
                       <FormLabel>End Time (Optional)</FormLabel>
                       <FormControl>
-                        <Input type="time" step="900" {...field} value={field.value || ''} />
+                        <Input 
+                          type="time" 
+                          step="900"  // 15-minute increments (15 min * 60 sec = 900 sec)
+                          {...field} 
+                          value={field.value || ''} 
+                        />
                       </FormControl>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Time is in 15-minute increments (00, 15, 30, 45)
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
