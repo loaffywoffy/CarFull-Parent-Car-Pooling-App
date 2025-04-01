@@ -87,16 +87,12 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   // Outbound (TO party) specific states
   const [outboundDropoffPreference, setOutboundDropoffPreference] = useState("direct-home");
   const [showOutboundPickupLocation, setShowOutboundPickupLocation] = useState(false);
-  const [showOutboundHomeRadiusSelector, setShowOutboundHomeRadiusSelector] = useState(true);
   const [showOutboundMyAddressDisplay, setShowOutboundMyAddressDisplay] = useState(false);
-  const [outboundHomeRadius, setOutboundHomeRadius] = useState(2); // Default 2-mile radius
   
   // Return (FROM party) specific states
   const [returnDropoffPreference, setReturnDropoffPreference] = useState("direct-home");
   const [showReturnPickupLocation, setShowReturnPickupLocation] = useState(false);
-  const [showReturnHomeRadiusSelector, setShowReturnHomeRadiusSelector] = useState(true);
   const [showReturnMyAddressDisplay, setShowReturnMyAddressDisplay] = useState(false);
-  const [returnHomeRadius, setReturnHomeRadius] = useState(2); // Default 2-mile radius
   
   // Legacy state for backward compatibility
   const [showPickupLocation, setShowPickupLocation] = useState(false);
@@ -194,12 +190,15 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   });
 
   const onSubmit = (values: CarpoolFormValues) => {
+    // Set a fixed max distance for all locations - no radius picker
+    const DEFAULT_MAX_DISTANCE = 5;
+    
     // Handle outbound preferences (TO party)
     if (values.canPickup || values.canBoth) {
       // Set outbound dropoff preferences
-      if (values.outboundDropoffPreference === "direct-home") {
-        values.outboundMaxDistance = outboundHomeRadius;
-      } else if (values.outboundDropoffPreference !== "pickup-point") {
+      values.outboundMaxDistance = DEFAULT_MAX_DISTANCE;
+      
+      if (values.outboundDropoffPreference !== "pickup-point") {
         // Clear outbound pickup location if not needed
         values.outboundPickupLocation = "";
         values.outboundPickupLocationCity = "";
@@ -216,10 +215,10 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     
     // Handle return preferences (FROM party)
     if (values.canDropoff || values.canBoth) {
-      // Set return dropoff preferences
-      if (values.returnDropoffPreference === "direct-home") {
-        values.returnMaxDistance = returnHomeRadius;
-      } else if (values.returnDropoffPreference !== "pickup-point") {
+      // Set return dropoff preferences with fixed distance
+      values.returnMaxDistance = DEFAULT_MAX_DISTANCE;
+      
+      if (values.returnDropoffPreference !== "pickup-point") {
         // Clear return pickup location if not needed
         values.returnPickupLocation = "";
         values.returnPickupLocationCity = "";
@@ -244,9 +243,8 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     
     // Legacy compatibility - copy outbound preference to legacy field
     values.dropoffPreference = values.outboundDropoffPreference || "direct-home";
-    if (values.dropoffPreference === "direct-home") {
-      values.maxDistance = outboundHomeRadius;
-    }
+    values.maxDistance = DEFAULT_MAX_DISTANCE;
+    
     if (values.dropoffPreference === "pickup-point") {
       values.pickupLocation = values.outboundPickupLocation || "";
       values.pickupLocationCity = values.outboundPickupLocationCity || "";
@@ -265,7 +263,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     setOutboundDropoffPreference(value);
     setShowOutboundPickupLocation(value === "pickup-point");
     setShowOutboundMyAddressDisplay(value === "my-address");
-    setShowOutboundHomeRadiusSelector(value === "direct-home");
+    // No longer using radius selector
     form.setValue("outboundDropoffPreference", value);
     
     // For legacy compatibility
@@ -277,7 +275,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     setReturnDropoffPreference(value);
     setShowReturnPickupLocation(value === "pickup-point");
     setShowReturnMyAddressDisplay(value === "my-address");
-    setShowReturnHomeRadiusSelector(value === "direct-home");
+    // No longer using radius selector
     form.setValue("returnDropoffPreference", value);
   };
   
@@ -625,7 +623,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
               {showOutboundPreferences && (
                 <div className="space-y-3 border-t border-gray-100 pt-4 mt-4">
                   <h4 className="font-medium text-primary-700">Outbound Trip Preferences (TO Party)</h4>
-                  <FormLabel>Dropoff Preference when taking TO the party:</FormLabel>
+                  <FormLabel>Pickup Preference when taking children TO the party:</FormLabel>
                   <FormField
                     control={form.control}
                     name="outboundDropoffPreference"
@@ -642,7 +640,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                                 <RadioGroupItem value="direct-home" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                Directly to the party location
+                                I'll pick children up directly from their homes
                               </FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0">
@@ -737,31 +735,8 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 </div>
               )}
               
-              {/* Show home radius selector when "direct-home" is selected for outbound */}
-              {showOutboundHomeRadiusSelector && (
-                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
-                  <h4 className="font-medium text-gray-800">TO Party: Pickup Radius</h4>
-                  <p className="text-sm text-gray-600 mb-2">Set the maximum distance you're willing to travel from your home to pick up children</p>
-                  
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      type="range" 
-                      min="0" 
-                      max="5" 
-                      step="0.5" 
-                      value={outboundHomeRadius} 
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value);
-                        setOutboundHomeRadius(value);
-                        form.setValue("outboundMaxDistance", value);
-                      }}
-                      className="w-2/3"
-                    />
-                    <span className="text-sm font-medium">{outboundHomeRadius} {outboundHomeRadius === 1 ? 'mile' : 'miles'}</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">You will only be matched with passengers within this radius of your home</p>
-                </div>
-              )}
+              {/* Hidden field for outbound max distance - default value */}
+              <input type="hidden" name="outboundMaxDistance" value="5" />
               
               {/* Show pickup location fields if pickup-point is selected for outbound */}
               {showOutboundPickupLocation && (
@@ -828,31 +803,8 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 </div>
               )}
               
-              {/* Show home radius selector when "direct-home" is selected for return */}
-              {showReturnHomeRadiusSelector && (
-                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
-                  <h4 className="font-medium text-gray-800">FROM Party: Home Delivery Radius</h4>
-                  <p className="text-sm text-gray-600 mb-2">Set the maximum distance you're willing to travel from the party to drop off children</p>
-                  
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      type="range" 
-                      min="0" 
-                      max="5" 
-                      step="0.5" 
-                      value={returnHomeRadius} 
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value);
-                        setReturnHomeRadius(value);
-                        form.setValue("returnMaxDistance", value);
-                      }}
-                      className="w-2/3"
-                    />
-                    <span className="text-sm font-medium">{returnHomeRadius} {returnHomeRadius === 1 ? 'mile' : 'miles'}</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">You will only be matched with passengers within this radius of their homes</p>
-                </div>
-              )}
+              {/* Hidden field for return max distance - default value */}
+              <input type="hidden" name="returnMaxDistance" value="5" />
               
               {/* Show pickup location fields if pickup-point is selected for return */}
               {showReturnPickupLocation && (
@@ -909,7 +861,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 <input type="hidden" name="pickupLocation" value={form.getValues("outboundPickupLocation") || ""} />
                 <input type="hidden" name="pickupLocationCity" value={form.getValues("outboundPickupLocationCity") || ""} />
                 <input type="hidden" name="pickupLocationPostcode" value={form.getValues("outboundPickupLocationPostcode") || ""} />
-                <input type="hidden" name="maxDistance" value={String(outboundHomeRadius || 2)} />
+                <input type="hidden" name="maxDistance" value="5" />
               </div>
               
               <FormField
