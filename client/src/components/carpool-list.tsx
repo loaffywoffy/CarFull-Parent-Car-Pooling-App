@@ -96,12 +96,21 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
             )}
           </div>
 
-          <Button 
-            onClick={() => onRequestSpot(carpool.id)}
-            className="ml-4"
-          >
-            Request Spot
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button 
+              onClick={() => onRequestSpot(carpool.id)}
+              className="ml-4"
+              variant="default"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Request Spot
+            </Button>
+            {carpool.spacesAvailable <= 2 && (
+              <span className="text-xs text-amber-600 whitespace-nowrap">
+                Only {carpool.spacesAvailable} {carpool.spacesAvailable === 1 ? 'space' : 'spaces'} left
+              </span>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
