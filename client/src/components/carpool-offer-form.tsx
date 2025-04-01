@@ -644,6 +644,73 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                       </FormItem>
                     )}
                   />
+                  
+                  {/* OUTBOUND TRIP - TO PARTY - Show address fields if needed */}
+                  {/* The pickup location fields specifically for outbound trip */}
+                  {showOutboundMyAddressDisplay && (
+                    <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                      <h4 className="font-medium text-gray-800">TO Party: Parents drop kids at your address</h4>
+                      <div className="text-sm text-gray-600">
+                        <p><strong>Address:</strong> {form.getValues("address")}</p>
+                        <p><strong>City:</strong> {form.getValues("city")}</p>
+                        <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">Parents will be asked to drop their children at this address before you take them to the party</p>
+                    </div>
+                  )}
+                  
+                  {/* Hidden field for outbound max distance - default value */}
+                  <input type="hidden" name="outboundMaxDistance" value="5" />
+                  
+                  {/* Show pickup location fields if pickup-point is selected for outbound */}
+                  {showOutboundPickupLocation && (
+                    <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                      <h4 className="font-medium text-gray-800">TO Party: Central Pickup Point</h4>
+                      
+                      <FormField
+                        control={form.control}
+                        name="outboundPickupLocation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Location Address</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Pickup Point Address" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="outboundPickupLocationCity"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>City</FormLabel>
+                              <FormControl>
+                                <Input placeholder="City" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="outboundPickupLocationPostcode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Postcode</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Postcode" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -698,74 +765,6 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
               
               {/* For backward compatibility - hidden field */}
               <input type="hidden" name="dropoffPreference" value={outboundDropoffPreference} />
-              
-              {/* OUTBOUND TRIP - TO PARTY */}
-              
-              {/* Show parent's address when "my address" is selected for outbound */}
-              {showOutboundMyAddressDisplay && (
-                <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
-                  <h4 className="font-medium text-gray-800">TO Party: Parents drop kids at your address</h4>
-                  <div className="text-sm text-gray-600">
-                    <p><strong>Address:</strong> {form.getValues("address")}</p>
-                    <p><strong>City:</strong> {form.getValues("city")}</p>
-                    <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Parents will be asked to drop their children at this address before you take them to the party</p>
-                </div>
-              )}
-              
-              {/* Hidden field for outbound max distance - default value */}
-              <input type="hidden" name="outboundMaxDistance" value="5" />
-              
-              {/* Show pickup location fields if pickup-point is selected for outbound */}
-              {showOutboundPickupLocation && (
-                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
-                  <h4 className="font-medium text-gray-800">TO Party: Central Pickup Point</h4>
-                  
-                  <FormField
-                    control={form.control}
-                    name="outboundPickupLocation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Location Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Pickup Point Address" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="outboundPickupLocationCity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>City</FormLabel>
-                          <FormControl>
-                            <Input placeholder="City" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="outboundPickupLocationPostcode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Postcode</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Postcode" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* RETURN TRIP - FROM PARTY */}
               
