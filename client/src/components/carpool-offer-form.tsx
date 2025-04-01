@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -851,12 +852,40 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                   
                   {/* Collection Time Field */}
                   <div className="mb-4">
+                    <div className="mb-3">
+                      <FormLabel>Collection Time (when picking up from the event)</FormLabel>
+                      
+                      {/* Radio selection for end time or custom time */}
+                      <RadioGroup 
+                        className="flex space-x-4 mt-2 mb-3"
+                        defaultValue={partyGroup?.endTime ? "event-end" : "custom"}
+                        onValueChange={(value) => {
+                          if (value === "event-end" && partyGroup?.endTime) {
+                            // Use the event end time
+                            const newTime = partyGroup.endTime;
+                            form.setValue("returnCollectionTime", newTime);
+                            setReturnCollectionTime(newTime);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="event-end" id="event-end" disabled={!partyGroup?.endTime} />
+                          <Label htmlFor="event-end" className={!partyGroup?.endTime ? "text-gray-400" : ""}>
+                            Event end time ({partyGroup?.endTime || "Not specified"})
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="custom" id="custom-time" />
+                          <Label htmlFor="custom-time">Specify another time</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
                     <FormField
                       control={form.control}
                       name="returnCollectionTime"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Collection Time (when picking up from the event)</FormLabel>
                           <div className="flex space-x-2">
                             {/* Hour Select */}
                             <div className="w-1/2">
