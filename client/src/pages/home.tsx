@@ -102,8 +102,8 @@ export default function Home() {
   const handleSelectPartyGroup = (partyGroup: PartyGroup) => {
     setSelectedPartyGroup(partyGroup);
     setPartyGroupTab("details");
-    // Navigate to view tab automatically for better user experience
-    setActiveTab("view");
+    // Stay on the current tab and show the party group details
+    // Don't automatically navigate to the view tab
   };
 
   // Check URL for access code when the component mounts
