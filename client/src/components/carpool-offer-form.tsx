@@ -623,17 +623,61 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Departure Time (when the carpool is leaving)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="time" 
-                              placeholder="Departure Time" 
-                              {...field}
-                              onChange={(e) => {
-                                field.onChange(e);
-                                setOutboundDepartureTime(e.target.value);
-                              }}
-                            />
-                          </FormControl>
+                          <div className="flex space-x-2">
+                            {/* Hour Select */}
+                            <div className="w-1/2">
+                              <Select
+                                value={(field.value || '').split(':')[0] || undefined}
+                                onValueChange={(hour) => {
+                                  const minute = (field.value || '').split(':')[1] || '00';
+                                  const newTime = `${hour}:${minute}`;
+                                  field.onChange(newTime);
+                                  setOutboundDepartureTime(newTime);
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Hour" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {Array.from({ length: 24 }).map((_, i) => {
+                                    const hourValue = i.toString().padStart(2, '0');
+                                    return (
+                                      <SelectItem key={hourValue} value={hourValue}>
+                                        {hourValue}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            {/* Minute Select */}
+                            <div className="w-1/2">
+                              <Select
+                                value={(field.value || '').split(':')[1] || undefined}
+                                onValueChange={(minute) => {
+                                  const hour = (field.value || '').split(':')[0] || '00';
+                                  const newTime = `${hour}:${minute}`;
+                                  field.onChange(newTime);
+                                  setOutboundDepartureTime(newTime);
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Minute" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="00">00</SelectItem>
+                                  <SelectItem value="15">15</SelectItem>
+                                  <SelectItem value="30">30</SelectItem>
+                                  <SelectItem value="45">45</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             When parents should have their children ready to leave for the party
                           </p>
@@ -758,6 +802,79 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
               {showReturnPreferences && (
                 <div className="space-y-3 border-t border-gray-100 pt-4 mt-4">
                   <h4 className="font-medium text-primary-700">Return Trip Preferences (FROM Party)</h4>
+                  
+                  {/* Collection Time Field */}
+                  <div className="mb-4">
+                    <FormField
+                      control={form.control}
+                      name="returnCollectionTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Collection Time (when picking up from the event)</FormLabel>
+                          <div className="flex space-x-2">
+                            {/* Hour Select */}
+                            <div className="w-1/2">
+                              <Select
+                                value={(field.value || '').split(':')[0] || undefined}
+                                onValueChange={(hour) => {
+                                  const minute = (field.value || '').split(':')[1] || '00';
+                                  const newTime = `${hour}:${minute}`;
+                                  field.onChange(newTime);
+                                  setReturnCollectionTime(newTime);
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Hour" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {Array.from({ length: 24 }).map((_, i) => {
+                                    const hourValue = i.toString().padStart(2, '0');
+                                    return (
+                                      <SelectItem key={hourValue} value={hourValue}>
+                                        {hourValue}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            {/* Minute Select */}
+                            <div className="w-1/2">
+                              <Select
+                                value={(field.value || '').split(':')[1] || undefined}
+                                onValueChange={(minute) => {
+                                  const hour = (field.value || '').split(':')[0] || '00';
+                                  const newTime = `${hour}:${minute}`;
+                                  field.onChange(newTime);
+                                  setReturnCollectionTime(newTime);
+                                }}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Minute" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="00">00</SelectItem>
+                                  <SelectItem value="15">15</SelectItem>
+                                  <SelectItem value="30">30</SelectItem>
+                                  <SelectItem value="45">45</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            When you'll be picking up children from the event
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
                   <FormLabel>Dropoff Preference when picking up FROM the party:</FormLabel>
                   <FormField
                     control={form.control}
