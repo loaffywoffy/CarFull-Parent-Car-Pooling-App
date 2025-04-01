@@ -19,6 +19,8 @@ import { getPartyGroupById } from "@/api/partyGroups";
 import { type PartyGroup } from "@shared/schema";
 import { CalendarIcon, MapPinIcon, ClockIcon, CalculatorIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import LocationMap from "@/components/location-map";
+import { geocodeAddress } from "@/lib/geocoding";
 
 interface CarpoolOfferFormProps {
   onSuccess: () => void;
@@ -103,6 +105,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   const [showHomeRadiusSelector, setShowHomeRadiusSelector] = useState(false);
   const [showMyAddressDisplay, setShowMyAddressDisplay] = useState(false);
   const [homeRadius, setHomeRadius] = useState(2); // Default 2-mile radius
+  const [showMap, setShowMap] = useState(false); // State for showing/hiding map
 
   // Fetch party group details
   const { data: partyGroup, isLoading: isLoadingPartyGroup } = useQuery({
@@ -283,6 +286,28 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     const canBoth = form.getValues("canBoth");
     setShowReturnPreferences(canDropoff || canBoth);
   }, [form.watch("canDropoff"), form.watch("canBoth")]);
+  
+  // State for event location coordinates
+  const [eventLocation, setEventLocation] = useState<[number, number]>([51.5074, -0.1278]);
+  
+  // Geocode the event address when partyGroup data is loaded
+  useEffect(() => {
+    if (partyGroup) {
+      // Create a complete address from the partyGroup details
+      const fullAddress = `${partyGroup.partyAddress}, ${partyGroup.partyCity}, ${partyGroup.partyPostcode}`;
+      
+      // Geocode the address
+      geocodeAddress(partyGroup.partyAddress, partyGroup.partyCity, partyGroup.partyPostcode)
+        .then(coordinates => {
+          setEventLocation(coordinates);
+        })
+        .catch(error => {
+          console.error("Error geocoding event location:", error);
+          // Use default coordinates if geocoding fails
+          setEventLocation([51.5074, -0.1278]);
+        });
+    }
+  }, [partyGroup]);
 
   // Format date for display
   const formatDate = (dateStr?: string) => {
@@ -326,20 +351,41 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
               </div>
               <div className="flex items-center">
                 <ClockIcon className="mr-2 h-4 w-4 text-primary-600" />
-                Start: {partyGroup.targetArrivalTime}
-              </div>
-              <div className="flex items-center">
-                <ClockIcon className="mr-2 h-4 w-4 text-primary-600" />
-                End: {partyGroup.endTime || "Not specified"}
+                <span>Time: {partyGroup.targetArrivalTime} - {partyGroup.endTime || "Not specified"}</span>
               </div>
             </div>
             
             <div className="bg-white p-3 rounded-md border border-primary-200 mb-2">
-              <p className="text-gray-700 mb-1">
-                <strong>Location:</strong> {partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}
-              </p>
+              <div className="flex justify-between items-center">
+                <p className="text-gray-700">
+                  <strong>Location:</strong> {partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1"
+                  onClick={() => setShowMap(!showMap)}
+                >
+                  <MapPinIcon className="h-3.5 w-3.5" />
+                  {showMap ? 'Hide Map' : 'Show Map'}
+                </Button>
+              </div>
               
-              {/* No estimated departure time since we don't know the driver's location yet */}
+              {/* Collapsible map section */}
+              {showMap && (
+                <div className="mt-3">
+                  <LocationMap
+                    locations={[{
+                      label: partyGroup.name,
+                      position: eventLocation,
+                      type: 'party'
+                    }]}
+                    height="240px"
+                    initialZoom={14}
+                  />
+                </div>
+              )}
             </div>
             
             {partyGroup.additionalInformation && (
