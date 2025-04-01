@@ -47,6 +47,7 @@ const carpoolFormSchema = z.object({
   outboundPickupLocation: z.string().optional(),
   outboundPickupLocationCity: z.string().optional(),
   outboundPickupLocationPostcode: z.string().optional(),
+  outboundDepartureTime: z.string().optional(),
   
   // Return dropoff preferences (when picking up FROM the party)
   returnDropoffPreference: z.string().optional(),
@@ -54,6 +55,7 @@ const carpoolFormSchema = z.object({
   returnPickupLocation: z.string().optional(),
   returnPickupLocationCity: z.string().optional(),
   returnPickupLocationPostcode: z.string().optional(),
+  returnCollectionTime: z.string().optional(),
   
   // Legacy fields (for backward compatibility)
   dropoffPreference: z.string(),
@@ -88,11 +90,13 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   const [outboundDropoffPreference, setOutboundDropoffPreference] = useState("direct-home");
   const [showOutboundPickupLocation, setShowOutboundPickupLocation] = useState(false);
   const [showOutboundMyAddressDisplay, setShowOutboundMyAddressDisplay] = useState(false);
+  const [outboundDepartureTime, setOutboundDepartureTime] = useState("");
   
   // Return (FROM party) specific states
   const [returnDropoffPreference, setReturnDropoffPreference] = useState("direct-home");
   const [showReturnPickupLocation, setShowReturnPickupLocation] = useState(false);
   const [showReturnMyAddressDisplay, setShowReturnMyAddressDisplay] = useState(false);
+  const [returnCollectionTime, setReturnCollectionTime] = useState("");
   
   // Legacy state for backward compatibility
   const [showPickupLocation, setShowPickupLocation] = useState(false);
@@ -459,6 +463,14 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                             onCheckedChange={(checked: CheckedState) => {
                               field.onChange(checked);
                               
+                              // Update outbound preferences visibility
+                              setShowOutboundPreferences(checked === true || form.getValues("canBoth"));
+                              
+                              // Set default dropoff preference when enabling this option
+                              if (checked === true) {
+                                form.setValue("outboundDropoffPreference", "direct-home");
+                              }
+                              
                               // If checking this option and "Both" is selected, unselect "Both"
                               if (checked === true && form.getValues("canBoth")) {
                                 form.setValue("canBoth", false);
@@ -514,15 +526,16 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                             onCheckedChange={(checked: CheckedState) => {
                               field.onChange(checked);
                               
-                              // Update showReturnPreferences directly based on current state
-                              setShowReturnPreferences(checked === true || form.getValues("canDropoff"));
+                              // Update both preference sections when "Both" is selected
+                              setShowOutboundPreferences(checked === true);
+                              setShowReturnPreferences(checked === true);
                               
                               // If selecting "Both", unselect the other two options
                               if (checked === true) {
                                 form.setValue("canPickup", false);
                                 form.setValue("canDropoff", false);
                                 
-                                // Set default dropoff preference
+                                // Set default dropoff preference for both directions
                                 form.setValue("outboundDropoffPreference", "direct-home");
                                 form.setValue("returnDropoffPreference", "direct-home");
                               }
@@ -603,6 +616,33 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 <div className="space-y-3 border-t border-gray-100 pt-4 mt-4">
                   <h4 className="font-medium text-primary-700">Outbound Trip Preferences (TO Party)</h4>
                   <FormLabel>Pickup Preference when taking children TO the party:</FormLabel>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <FormField
+                      control={form.control}
+                      name="outboundDepartureTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Departure Time (when the carpool is leaving)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="time" 
+                              placeholder="Departure Time" 
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                setOutboundDepartureTime(e.target.value);
+                              }}
+                            />
+                          </FormControl>
+                          <p className="text-xs text-muted-foreground">
+                            When parents should have their children ready to leave for the party
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
                   <FormField
                     control={form.control}
                     name="outboundDropoffPreference"
@@ -760,79 +800,78 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                       </FormItem>
                     )}
                   />
+                  
+                  {/* RETURN TRIP - FROM PARTY - Show address fields if needed */}
+                  {/* Show parent's address when "my address" is selected for return */}
+                  {showReturnMyAddressDisplay && (
+                    <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                      <h4 className="font-medium text-gray-800">FROM Party: Dropoff to Your Address</h4>
+                      <div className="text-sm text-gray-600">
+                        <p><strong>Address:</strong> {form.getValues("address")}</p>
+                        <p><strong>City:</strong> {form.getValues("city")}</p>
+                        <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">Parents will be asked to pick up their children from this address after the party</p>
+                    </div>
+                  )}
+                  
+                  {/* Hidden field for return max distance - default value */}
+                  <input type="hidden" name="returnMaxDistance" value="5" />
+                  
+                  {/* Show pickup location fields if pickup-point is selected for return */}
+                  {showReturnPickupLocation && (
+                    <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                      <h4 className="font-medium text-gray-800">FROM Party: Central Pickup Point</h4>
+                      
+                      <FormField
+                        control={form.control}
+                        name="returnPickupLocation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Location Address</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Pickup Point Address" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="returnPickupLocationCity"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>City</FormLabel>
+                              <FormControl>
+                                <Input placeholder="City" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="returnPickupLocationPostcode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Postcode</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Postcode" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               
               {/* For backward compatibility - hidden field */}
               <input type="hidden" name="dropoffPreference" value={outboundDropoffPreference} />
-
-              {/* RETURN TRIP - FROM PARTY */}
-              
-              {/* Show parent's address when "my address" is selected for return */}
-              {showReturnMyAddressDisplay && (
-                <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
-                  <h4 className="font-medium text-gray-800">FROM Party: Dropoff to Your Address</h4>
-                  <div className="text-sm text-gray-600">
-                    <p><strong>Address:</strong> {form.getValues("address")}</p>
-                    <p><strong>City:</strong> {form.getValues("city")}</p>
-                    <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Parents will be asked to pick up their children from this address after the party</p>
-                </div>
-              )}
-              
-              {/* Hidden field for return max distance - default value */}
-              <input type="hidden" name="returnMaxDistance" value="5" />
-              
-              {/* Show pickup location fields if pickup-point is selected for return */}
-              {showReturnPickupLocation && (
-                <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
-                  <h4 className="font-medium text-gray-800">FROM Party: Central Pickup Point</h4>
-                  
-                  <FormField
-                    control={form.control}
-                    name="returnPickupLocation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Location Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Pickup Point Address" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="returnPickupLocationCity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>City</FormLabel>
-                          <FormControl>
-                            <Input placeholder="City" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="returnPickupLocationPostcode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Postcode</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Postcode" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              )}
               
               {/* Legacy fields - hidden for backward compatibility */}
               <div className="hidden">

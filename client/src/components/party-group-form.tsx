@@ -195,7 +195,20 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                     <FormItem>
                       <FormLabel>Party Date</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input 
+                          type="date" 
+                          {...field} 
+                          onChange={(e) => {
+                            field.onChange(e);
+                            
+                            // If end date is before the new start date, update end date
+                            const endDate = form.getValues("partyEndDate");
+                            if (endDate && new Date(endDate) < new Date(e.target.value)) {
+                              form.setValue("partyEndDate", e.target.value);
+                            }
+                          }}
+                          min={new Date().toISOString().split('T')[0]} // Set min to today
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -209,7 +222,12 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                     <FormItem>
                       <FormLabel>End Date</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} value={field.value || ''} />
+                        <Input 
+                          type="date" 
+                          {...field} 
+                          value={field.value || ''} 
+                          min={form.getValues("partyDate") || new Date().toISOString().split('T')[0]} // Min is party date or today
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -234,7 +252,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       }
                     }
                     
-                    // Set hour
+                    // Set hour for start time
                     const setHour = (newHour: string) => {
                       if (newHour && minute) {
                         field.onChange(`${newHour}:${minute}`);
@@ -243,9 +261,28 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                       } else {
                         field.onChange('');
                       }
+                      
+                      // If on same day, check if end time should be adjusted
+                      const partyDate = form.getValues("partyDate");
+                      const partyEndDate = form.getValues("partyEndDate");
+                      if (partyDate && partyEndDate && partyDate === partyEndDate) {
+                        const endTime = form.getValues("endTime");
+                        if (endTime) {
+                          const startTimeParts = `${newHour}:${minute || '00'}`.split(':');
+                          const endTimeParts = endTime.split(':');
+                          
+                          const startHour = parseInt(startTimeParts[0], 10);
+                          const endHour = parseInt(endTimeParts[0], 10);
+                          
+                          if (endHour < startHour || (endHour === startHour && parseInt(endTimeParts[1], 10) <= parseInt(startTimeParts[1], 10))) {
+                            // End time is before or equal to start time, adjust it
+                            form.setValue("endTime", `${(startHour + 1).toString().padStart(2, '0')}:${startTimeParts[1]}`);
+                          }
+                        }
+                      }
                     };
                     
-                    // Set minute
+                    // Set minute for start time
                     const setMinute = (newMinute: string) => {
                       if (hour && newMinute) {
                         field.onChange(`${hour}:${newMinute}`);
@@ -253,6 +290,27 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                         field.onChange(`${hour}:00`);
                       } else {
                         field.onChange('');
+                      }
+                      
+                      // Check end time for same day events
+                      const partyDate = form.getValues("partyDate");
+                      const partyEndDate = form.getValues("partyEndDate");
+                      if (partyDate && partyEndDate && partyDate === partyEndDate) {
+                        const endTime = form.getValues("endTime");
+                        if (endTime) {
+                          const startTimeParts = `${hour}:${newMinute}`.split(':');
+                          const endTimeParts = endTime.split(':');
+                          
+                          const startHour = parseInt(startTimeParts[0], 10);
+                          const startMinute = parseInt(startTimeParts[1], 10);
+                          const endHour = parseInt(endTimeParts[0], 10);
+                          const endMinute = parseInt(endTimeParts[1], 10);
+                          
+                          if (endHour < startHour || (endHour === startHour && endMinute <= startMinute)) {
+                            // End time is before or equal to start time, adjust it
+                            form.setValue("endTime", `${(startHour + 1).toString().padStart(2, '0')}:${newMinute}`);
+                          }
+                        }
                       }
                     };
                     
