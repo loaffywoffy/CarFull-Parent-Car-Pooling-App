@@ -58,19 +58,135 @@ export class MemStorage implements IStorage {
   private currentCarpoolId: number;
   private currentRequestId: number;
   private currentEventId: number;
-
+  
+  // Persistent storage keys
+  private readonly STORAGE_KEY_PREFIX = 'carpool_app_';
+  private readonly USERS_KEY = this.STORAGE_KEY_PREFIX + 'users';
+  private readonly PARTY_GROUPS_KEY = this.STORAGE_KEY_PREFIX + 'party_groups';
+  private readonly CARPOOLS_KEY = this.STORAGE_KEY_PREFIX + 'carpools';
+  private readonly REQUESTS_KEY = this.STORAGE_KEY_PREFIX + 'requests';
+  private readonly EVENTS_KEY = this.STORAGE_KEY_PREFIX + 'events';
+  private readonly COUNTERS_KEY = this.STORAGE_KEY_PREFIX + 'counters';
+  
   constructor() {
+    // Initialize maps
     this.users = new Map();
     this.partyGroups = new Map();
     this.carpools = new Map();
     this.carpoolRequests = new Map();
     this.calendarEvents = new Map();
     
+    // Initialize IDs
     this.currentUserId = 1;
     this.currentPartyGroupId = 1;
     this.currentCarpoolId = 1;
     this.currentRequestId = 1;
     this.currentEventId = 1;
+    
+    // Load data from persistent storage
+    this.loadFromPersistentStorage();
+    
+    console.log("[MemStorage] Initialized with:", {
+      users: this.users.size,
+      partyGroups: this.partyGroups.size,
+      carpools: this.carpools.size,
+      requests: this.carpoolRequests.size,
+      events: this.calendarEvents.size
+    });
+  }
+  
+  // Load data from session/local storage
+  private loadFromPersistentStorage() {
+    try {
+      // For server-side storage, we'll use a simpler approach with localStorage simulation
+      let storedData: any = {};
+      
+      // Check if there's a global object that we can use for persistent storage
+      if (typeof global !== 'undefined' && (global as any).__persistentStorage) {
+        storedData = (global as any).__persistentStorage;
+      }
+      
+      // Load users
+      if (storedData.users) {
+        this.users = new Map(storedData.users.map((user: User) => [user.id, user]));
+      }
+      
+      // Load party groups
+      if (storedData.partyGroups) {
+        this.partyGroups = new Map(storedData.partyGroups.map((group: PartyGroup) => [group.id, group]));
+      }
+      
+      // Load carpools
+      if (storedData.carpools) {
+        this.carpools = new Map(storedData.carpools.map((carpool: Carpool) => [carpool.id, carpool]));
+      }
+      
+      // Load carpool requests
+      if (storedData.carpoolRequests) {
+        this.carpoolRequests = new Map(storedData.carpoolRequests.map((request: CarpoolRequest) => [request.id, request]));
+      }
+      
+      // Load calendar events
+      if (storedData.calendarEvents) {
+        this.calendarEvents = new Map(storedData.calendarEvents.map((event: CalendarEvent) => [event.id, event]));
+      }
+      
+      // Load counters
+      if (storedData.counters) {
+        this.currentUserId = storedData.counters.userId || 1;
+        this.currentPartyGroupId = storedData.counters.partyGroupId || 1;
+        this.currentCarpoolId = storedData.counters.carpoolId || 1;
+        this.currentRequestId = storedData.counters.requestId || 1;
+        this.currentEventId = storedData.counters.eventId || 1;
+      }
+      
+      console.log("[MemStorage] Loaded data from persistent storage");
+    } catch (error) {
+      console.error("[MemStorage] Error loading from persistent storage:", error);
+      // Initialize with empty data if loading fails
+      this.users = new Map();
+      this.partyGroups = new Map();
+      this.carpools = new Map();
+      this.carpoolRequests = new Map();
+      this.calendarEvents = new Map();
+      
+      this.currentUserId = 1;
+      this.currentPartyGroupId = 1;
+      this.currentCarpoolId = 1;
+      this.currentRequestId = 1;
+      this.currentEventId = 1;
+    }
+  }
+  
+  // Save data to session/local storage
+  private saveToPersistentStorage() {
+    try {
+      // For server-side storage, we'll use a simpler approach with localStorage simulation
+      const storedData = {
+        users: Array.from(this.users.values()),
+        partyGroups: Array.from(this.partyGroups.values()),
+        carpools: Array.from(this.carpools.values()),
+        carpoolRequests: Array.from(this.carpoolRequests.values()),
+        calendarEvents: Array.from(this.calendarEvents.values()),
+        counters: {
+          userId: this.currentUserId,
+          partyGroupId: this.currentPartyGroupId,
+          carpoolId: this.currentCarpoolId,
+          requestId: this.currentRequestId,
+          eventId: this.currentEventId
+        }
+      };
+      
+      // Save to global object if available
+      if (typeof global !== 'undefined') {
+        // Cast to any to avoid TypeScript errors
+        (global as any).__persistentStorage = storedData;
+      }
+      
+      console.log("[MemStorage] Saved data to persistent storage");
+    } catch (error) {
+      console.error("[MemStorage] Error saving to persistent storage:", error);
+    }
   }
 
   // User methods
@@ -88,6 +204,7 @@ export class MemStorage implements IStorage {
     const id = this.currentUserId++;
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
+    this.saveToPersistentStorage();
     return user;
   }
   
@@ -111,6 +228,7 @@ export class MemStorage implements IStorage {
       additionalInformation: insertPartyGroup.additionalInformation ?? null
     };
     this.partyGroups.set(id, partyGroup);
+    this.saveToPersistentStorage();
     return partyGroup;
   }
   
@@ -147,9 +265,16 @@ export class MemStorage implements IStorage {
       estimatedDepartureTime: insertCarpool.estimatedDepartureTime ?? null,
       emergencyContactName: insertCarpool.emergencyContactName ?? null,
       emergencyContactPhone: insertCarpool.emergencyContactPhone ?? null,
-      emergencyContactRelationship: insertCarpool.emergencyContactRelationship ?? null
-    };
+      emergencyContactRelationship: insertCarpool.emergencyContactRelationship ?? null,
+      // Ensure all dynamically added properties are properly typed
+      outboundDropoffPreference: insertCarpool.outboundDropoffPreference ?? null,
+      returnPickupPreference: insertCarpool.returnPickupPreference ?? null,
+      pickupTime: insertCarpool.pickupTime ?? null,
+      dropoffPreference: insertCarpool.dropoffPreference ?? null
+    } as Carpool; // Type assertion to handle dynamically added properties
+    
     this.carpools.set(id, carpool);
+    this.saveToPersistentStorage();
     return carpool;
   }
   
@@ -181,9 +306,14 @@ export class MemStorage implements IStorage {
       specialRequirements: insertRequest.specialRequirements ?? null,
       emergencyContactName: insertRequest.emergencyContactName ?? null,
       emergencyContactPhone: insertRequest.emergencyContactPhone ?? null,
-      emergencyContactRelationship: insertRequest.emergencyContactRelationship ?? null
-    };
+      emergencyContactRelationship: insertRequest.emergencyContactRelationship ?? null,
+      // Handle dynamic properties that might be added by the client
+      pickupCarpoolId: insertRequest.pickupCarpoolId ?? null,
+      dropoffCarpoolId: insertRequest.dropoffCarpoolId ?? null
+    } as CarpoolRequest; // Type assertion to handle dynamically added properties
+    
     this.carpoolRequests.set(id, request);
+    this.saveToPersistentStorage();
     return request;
   }
   
@@ -207,6 +337,7 @@ export class MemStorage implements IStorage {
       reminderTime: insertEvent.reminderTime ?? null
     };
     this.calendarEvents.set(id, event);
+    this.saveToPersistentStorage();
     return event;
   }
   
@@ -241,11 +372,16 @@ export class MemStorage implements IStorage {
     
     const updatedEvent = { ...event, ...processedUpdate };
     this.calendarEvents.set(id, updatedEvent);
+    this.saveToPersistentStorage();
     return updatedEvent;
   }
   
   async deleteCalendarEvent(id: number): Promise<boolean> {
-    return this.calendarEvents.delete(id);
+    const deleted = this.calendarEvents.delete(id);
+    if (deleted) {
+      this.saveToPersistentStorage();
+    }
+    return deleted;
   }
 }
 

@@ -57,6 +57,10 @@ export const carpools = pgTable("carpools", {
   returnPickupLocationPostcode: text("return_pickup_location_postcode"),
   returnCollectionTime: text("return_collection_time"), // Time the carpool is collecting
   
+  // Additional fields added during development
+  returnPickupPreference: text("return_pickup_preference"),
+  pickupTime: text("pickup_time"),
+  
   // Legacy fields (for backward compatibility)
   dropoffPreference: text("dropoff_preference"),
   maxDistance: integer("max_distance"),
