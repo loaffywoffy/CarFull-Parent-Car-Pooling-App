@@ -669,7 +669,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                                 <RadioGroupItem value="direct-home" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                Directly to party location
+                                Directly to each child's home then to party
                               </FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0">
@@ -677,7 +677,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                                 <RadioGroupItem value="my-address" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                To my address (group pickup)
+                                To my address first (group pickup)
                               </FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0">
