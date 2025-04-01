@@ -14,6 +14,7 @@ import LocationMap from "./location-map";
 import { geocodeAddress } from "@/lib/geocoding";
 import { type PartyGroup, type Carpool, type CarpoolRequest } from "@shared/schema";
 import { getCarpoolRequests } from "@/api/carpools";
+import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups";
 import { toast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useEffect, useRef, useState } from "react";
@@ -37,11 +38,13 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
   // Fetch carpool data
   const { data: carpools, isLoading: carpoolsLoading } = useQuery({
     queryKey: [`/api/party-groups/${partyGroupId}/carpools`],
+    queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
   });
 
   // Fetch party group data
   const { data: partyGroup } = useQuery<PartyGroup>({
     queryKey: [`/api/party-groups/${partyGroupId}`],
+    queryFn: () => getPartyGroupById(partyGroupId),
     enabled: !!partyGroupId,
   });
 
