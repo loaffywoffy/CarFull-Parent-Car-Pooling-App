@@ -74,8 +74,8 @@ export default function Home() {
         
         setSuccessInfo({
           show: true,
-          title: "Party Group Created!",
-          message: "Your party group has been created successfully. Share the access code with other parents.",
+          title: "Event Created!",
+          message: "Your event has been created successfully. Share the access code with other parents.",
         });
       } catch (error) {
         console.error("Error fetching party group:", error);
@@ -91,8 +91,8 @@ export default function Home() {
     setPartyGroupTab("details");
     setSuccessInfo({
       show: true,
-      title: "Joined Party Group!",
-      message: `You have successfully joined the "${partyGroup.name}" party group.`,
+      title: "Joined Event!",
+      message: `You have successfully joined the "${partyGroup.name}" event group.`,
     });
     
     // Set active tab to "view" so users can immediately see carpools after joining
@@ -124,7 +124,7 @@ export default function Home() {
             
             setSuccessInfo({
               show: true,
-              title: "Party Group Found!",
+              title: "Event Found!",
               message: `You've opened "${partyGroup.name}". You can now view available carpools.`,
             });
             
@@ -170,7 +170,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-neutral-800 mb-2">KidPool</h1>
-          <p className="text-neutral-600">Organize carpools for your child's party easily</p>
+          <p className="text-neutral-600">Organize carpools for your child's events easily</p>
         </header>
 
         {/* Navigation Tabs */}
@@ -269,13 +269,13 @@ export default function Home() {
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold mb-4">Offer a Carpool</h2>
             <p className="text-neutral-600 mb-6">
-              Please select or join a party group first before offering a carpool.
+              Please select or join an event first before offering a carpool.
             </p>
             <button
               onClick={() => handleTabChange("partyGroups")}
               className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
             >
-              Go to Party Groups
+              Go to Event Details
             </button>
           </div>
         )}
@@ -295,13 +295,13 @@ export default function Home() {
               {!selectedPartyGroup ? (
                 <>
                   <p className="text-neutral-600 mb-6">
-                    Please select or join a party group first before requesting a carpool spot.
+                    Please select or join an event first before requesting a carpool spot.
                   </p>
                   <button
                     onClick={() => handleTabChange("partyGroups")}
                     className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
                   >
-                    Go to Party Groups
+                    Go to Event Details
                   </button>
                 </>
               ) : (
@@ -332,13 +332,13 @@ export default function Home() {
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold mb-4">View Carpools</h2>
             <p className="text-neutral-600 mb-6">
-              Please select or join a party group first to view available carpools.
+              Please select or join an event first to view available carpools.
             </p>
             <button
               onClick={() => handleTabChange("partyGroups")}
               className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
             >
-              Go to Party Groups
+              Go to Event Details
             </button>
           </div>
         )}

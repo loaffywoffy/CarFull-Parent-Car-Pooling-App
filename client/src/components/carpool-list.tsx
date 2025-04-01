@@ -88,9 +88,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Carpools</SelectItem>
-              <SelectItem value="pickup">Take to party only</SelectItem>
-              <SelectItem value="dropoff">Pick up from party only</SelectItem>
-              <SelectItem value="both">Both to and from party</SelectItem>
+              <SelectItem value="pickup">Take to event only</SelectItem>
+              <SelectItem value="dropoff">Pick up from event only</SelectItem>
+              <SelectItem value="both">Both to and from event</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -112,24 +112,24 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
                 <div className="text-neutral-600 text-sm mb-3">
                   <div className="font-medium mb-1">Carpool Services:</div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {/* Going to party section */}
+                    {/* Going to event section */}
                     {(carpool.canPickup || carpool.canBoth) && (
                       <div className="bg-gray-50 p-2 rounded border border-gray-200">
                         <div className="flex items-center mb-1">
-                          <Badge className="bg-primary-light mr-2">To Party</Badge>
+                          <Badge className="bg-primary-light mr-2">To Event</Badge>
                           <span className="text-xs">{carpool.spacesAvailable} spaces</span>
                         </div>
                         <p className="text-xs">
-                          Will take children from their home to the party
+                          Will take children from their home to the event
                         </p>
                       </div>
                     )}
                     
-                    {/* Return from party section */}
+                    {/* Return from event section */}
                     {(carpool.canDropoff || carpool.canBoth) && (
                       <div className="bg-gray-50 p-2 rounded border border-gray-200">
                         <div className="flex items-center mb-1">
-                          <Badge className="bg-primary-light mr-2">From Party</Badge>
+                          <Badge className="bg-primary-light mr-2">From Event</Badge>
                           <span className="text-xs">{carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces</span>
                         </div>
                         <p className="text-xs font-medium">Return arrangement:</p>
@@ -149,10 +149,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
                   <span className="font-medium">Home Location:</span> {carpool.city}, {carpool.postcode}
                 </p>
                 
-                {/* Party Details if available */}
+                {/* Event Details if available */}
                 {carpool.partyAddress && (
                   <div className="mt-2 border-t border-gray-100 pt-2">
-                    <p className="text-neutral-600 text-sm font-medium">Party Information:</p>
+                    <p className="text-neutral-600 text-sm font-medium">Event Information:</p>
                     <p className="text-neutral-600 text-sm">
                       <span className="font-medium">Address:</span> {carpool.partyAddress}
                       {carpool.partyCity && `, ${carpool.partyCity}`}

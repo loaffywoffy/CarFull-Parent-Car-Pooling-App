@@ -19,8 +19,8 @@ interface PartyGroupFormProps {
 
 // Create the form schema with custom validations
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
-  name: z.string().min(3, "Party name must be at least 3 characters"),
-  partyAddress: z.string().min(5, "Party address is required"),
+  name: z.string().min(3, "Event name must be at least 3 characters"),
+  partyAddress: z.string().min(5, "Event address is required"),
   partyCity: z.string().min(2, "City is required"),
   partyPostcode: z.string().min(3, "Postcode is required"),
   targetArrivalTime: z.string().min(1, "Start time is required"),
@@ -99,7 +99,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
       
       toast({
         title: "Success!",
-        description: "Party group created successfully.",
+        description: "Event created successfully.",
       });
       form.reset();
       onSuccess(data.id);
@@ -107,7 +107,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create party group. Please try again.",
+        description: error.message || "Failed to create event. Please try again.",
         variant: "destructive",
       });
     },
@@ -119,22 +119,22 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-2 text-neutral-800">Create a New Party Group</h2>
-      <p className="text-sm text-neutral-600 mb-6">Enter the party details and share the access code with parents</p>
+      <h2 className="text-xl font-semibold mb-2 text-neutral-800">Create a New Event</h2>
+      <p className="text-sm text-neutral-600 mb-6">Enter the event details and share the access code with parents</p>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
-            {/* Party Information */}
+            {/* Event Information */}
             <div className="space-y-4">
-              <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Party Information</h3>
+              <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Event Information</h3>
               
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Party Name</FormLabel>
+                    <FormLabel>Event Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Sarah's 10th Birthday Party" {...field} />
                     </FormControl>
@@ -148,7 +148,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                 name="partyAddress"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Party Address</FormLabel>
+                    <FormLabel>Event Address</FormLabel>
                     <FormControl>
                       <Input placeholder="Street Address" {...field} />
                     </FormControl>
@@ -193,7 +193,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                   name="partyDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Party Date</FormLabel>
+                      <FormLabel>Event Date</FormLabel>
                       <FormControl>
                         <Input 
                           type="date" 
@@ -467,7 +467,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                   <FormItem>
                     <FormLabel>Your Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your name (as the party organizer)" {...field} />
+                      <Input placeholder="Your name (as the event organizer)" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -493,7 +493,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                         Generate Code
                       </Button>
                     </div>
-                    <p className="text-xs text-neutral-500 mt-1">Parents will use this code to join the carpool group</p>
+                    <p className="text-xs text-neutral-500 mt-1">Parents will use this code to join the event carpool group</p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -509,7 +509,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
               className="px-6 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
               disabled={partyGroupMutation.isPending}
             >
-              {partyGroupMutation.isPending ? "Creating..." : "Create Party Group"}
+              {partyGroupMutation.isPending ? "Creating..." : "Create Event"}
             </Button>
           </div>
         </form>
