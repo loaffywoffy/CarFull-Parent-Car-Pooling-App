@@ -4,10 +4,11 @@ import { getCarpoolsByPartyGroupId } from "@/api/partyGroups";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Users } from "lucide-react";
-import CarpoolRequestsList from "./carpool-requests-list";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, List, MapIcon, Users } from "lucide-react";
+import LocationMap from "./location-map";
 
 interface CarpoolListProps {
   partyGroupId: number;
@@ -15,209 +16,178 @@ interface CarpoolListProps {
   onManageCalendar?: (carpoolId: number) => void;
 }
 
-type FilterOption = "all" | "pickup" | "dropoff" | "both";
+type ViewMode = "list" | "map";
+type SortOption = "distance" | "spaces" | "name";
 
 export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalendar }: CarpoolListProps) {
-  const [filter, setFilter] = useState<FilterOption>("all");
-  const [openCarpoolIds, setOpenCarpoolIds] = useState<Record<number, boolean>>({});
-  
-  // Query carpools for the specific party group
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [sortBy, setSortBy] = useState<SortOption>("distance");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTab, setSelectedTab] = useState("to-party");
+
   const { data: carpools, isLoading } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId, "carpools"],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
   });
-  
-  const toggleCarpool = (carpoolId: number) => {
-    setOpenCarpoolIds(prev => ({
-      ...prev,
-      [carpoolId]: !prev[carpoolId]
-    }));
+
+  const filterCarpools = (carpools: any[]) => {
+    if (!Array.isArray(carpools)) return [];
+
+    return carpools
+      .filter(carpool => {
+        // Filter by tab selection
+        if (selectedTab === "to-party") return carpool.canPickup;
+        if (selectedTab === "from-party") return carpool.canDropoff;
+        return carpool.canBoth;
+      })
+      .filter(carpool => {
+        // Filter by search term
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          carpool.parentName.toLowerCase().includes(searchLower) ||
+          carpool.city.toLowerCase().includes(searchLower) ||
+          carpool.postcode.toLowerCase().includes(searchLower)
+        );
+      })
+      .sort((a, b) => {
+        // Sort based on selected option
+        if (sortBy === "distance") {
+          return (a.distance || 0) - (b.distance || 0);
+        }
+        if (sortBy === "spaces") {
+          return (b.spacesAvailable || 0) - (a.spacesAvailable || 0);
+        }
+        return a.parentName.localeCompare(b.parentName);
+      });
   };
 
-  const filteredCarpools = Array.isArray(carpools) 
-    ? carpools.filter((carpool: any) => {
-        if (filter === "all") return true;
-        if (filter === "pickup" && carpool.canPickup && !carpool.canDropoff && !carpool.canBoth) return true;
-        if (filter === "dropoff" && !carpool.canPickup && carpool.canDropoff && !carpool.canBoth) return true;
-        if (filter === "both" && carpool.canBoth) return true;
-        return false;
-      }) 
-    : [];
+  const filteredCarpools = filterCarpools(carpools || []);
 
-  const handleFilterChange = (value: string) => {
-    setFilter(value as FilterOption);
-  };
+  const renderCarpoolCard = (carpool: any) => (
+    <Card key={carpool.id} className="mb-4 hover:shadow-lg transition-shadow">
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start">
+          <div className="space-y-2">
+            <h3 className="font-semibold text-lg">{carpool.parentName}</h3>
+
+            <div className="flex items-center text-sm text-gray-600 space-x-2">
+              <MapPin size={16} />
+              <span>{carpool.city}, {carpool.postcode}</span>
+              {carpool.distance && <span className="text-primary">({carpool.distance} miles)</span>}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Badge className="bg-green-100 text-green-800">
+                {carpool.spacesAvailable} spaces available
+              </Badge>
+              {carpool.dropoffPreference && (
+                <Badge className="bg-blue-100 text-blue-800">
+                  {carpool.dropoffPreference === "direct-home" ? "Direct home drop-off" : 
+                   carpool.dropoffPreference === "my-home" ? "Pickup from driver's home" : 
+                   "Meeting point"}
+                </Badge>
+              )}
+            </div>
+
+            {carpool.maxDistance && (
+              <p className="text-sm text-gray-600">
+                Maximum distance: {carpool.maxDistance} miles
+              </p>
+            )}
+          </div>
+
+          <Button 
+            onClick={() => onRequestSpot(carpool.id)}
+            className="ml-4"
+          >
+            Request Spot
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   if (isLoading) {
-    return (
-      <div>
-        <div className="mb-6 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-neutral-800">Available Carpools</h2>
-          <div className="flex space-x-2">
-            <Skeleton className="h-10 w-36" />
-          </div>
-        </div>
-        
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white rounded-lg shadow-md p-5 mb-4 border-l-4 border-primary">
-            <div className="flex flex-col md:flex-row justify-between">
-              <div className="w-full">
-                <Skeleton className="h-6 w-32 mb-2" />
-                <Skeleton className="h-4 w-44 mb-2" />
-                <Skeleton className="h-4 w-48 mb-2" />
-                <Skeleton className="h-4 w-36 mb-2" />
-              </div>
-              <div className="mt-4 md:mt-0">
-                <Skeleton className="h-10 w-28" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <div>Loading carpools...</div>;
   }
 
   return (
-    <div>
-      <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-neutral-800">Available Carpools</h2>
-        <div className="flex space-x-2">
-          <Select defaultValue="all" onValueChange={handleFilterChange}>
-            <SelectTrigger className="px-3 py-1 border border-neutral-300 rounded-md text-sm w-[180px]">
-              <SelectValue placeholder="Filter carpools" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Carpools</SelectItem>
-              <SelectItem value="pickup">Take to event only</SelectItem>
-              <SelectItem value="dropoff">Pick up from event only</SelectItem>
-              <SelectItem value="both">Both to and from event</SelectItem>
-            </SelectContent>
-          </Select>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-xl font-semibold">Available Carpools</h2>
+
+        <div className="flex items-center space-x-2">
+          <Button
+            variant={viewMode === "list" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("list")}
+          >
+            <List className="h-4 w-4 mr-1" /> List
+          </Button>
+          <Button
+            variant={viewMode === "map" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("map")}
+          >
+            <MapIcon className="h-4 w-4 mr-1" /> Map
+          </Button>
         </div>
       </div>
-      
-      {filteredCarpools?.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-5 mb-4">
-          <p className="text-center text-neutral-600">No carpools available with the selected filter.</p>
-        </div>
-      ) : (
-        filteredCarpools?.map((carpool: any) => (
-          <div key={carpool.id} className="bg-white rounded-lg shadow-md p-5 mb-4 border-l-4 border-primary">
-            <div className="flex flex-col md:flex-row justify-between">
-              <div>
-                <h3 className="font-semibold text-lg text-neutral-800">{carpool.parentName}</h3>
-                <p className="text-neutral-600 text-sm">
-                  <span className="font-medium">Parent of:</span> {carpool.childName}
-                </p>
-                <div className="text-neutral-600 text-sm mb-3">
-                  <div className="font-medium mb-1">Carpool Services:</div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {/* Going to event section */}
-                    {(carpool.canPickup || carpool.canBoth) && (
-                      <div className="bg-gray-50 p-2 rounded border border-gray-200">
-                        <div className="flex items-center mb-1">
-                          <Badge className="bg-primary-light mr-2">To Event</Badge>
-                          <span className="text-xs">{carpool.spacesAvailable} spaces</span>
-                        </div>
-                        <p className="text-xs">
-                          Will take children from their home to the event
-                        </p>
-                      </div>
-                    )}
-                    
-                    {/* Return from event section */}
-                    {(carpool.canDropoff || carpool.canBoth) && (
-                      <div className="bg-gray-50 p-2 rounded border border-gray-200">
-                        <div className="flex items-center mb-1">
-                          <Badge className="bg-primary-light mr-2">From Event</Badge>
-                          <span className="text-xs">{carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces</span>
-                        </div>
-                        <p className="text-xs font-medium">Return arrangement:</p>
-                        <p className="text-xs">{
-                          carpool.dropoffPreference === "direct-home" 
-                            ? `Direct to child's home${carpool.maxDistance ? ` (within ${carpool.maxDistance} miles)` : ''}` 
-                            : carpool.dropoffPreference === "my-home"
-                              ? "Child to be collected from my home"
-                              : "Meet at another location: " + (carpool.pickupLocation || "Contact for details")
-                        }</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <p className="text-neutral-600 text-sm mb-2">
-                  <span className="font-medium">Home Location:</span> {carpool.city}, {carpool.postcode}
-                </p>
-                
-                {/* Event Details if available */}
-                {carpool.partyAddress && (
-                  <div className="mt-2 border-t border-gray-100 pt-2">
-                    <p className="text-neutral-600 text-sm font-medium">Event Information:</p>
-                    <p className="text-neutral-600 text-sm">
-                      <span className="font-medium">Address:</span> {carpool.partyAddress}
-                      {carpool.partyCity && `, ${carpool.partyCity}`}
-                      {carpool.partyPostcode && `, ${carpool.partyPostcode}`}
-                    </p>
-                    {carpool.targetArrivalTime && (
-                      <div className="flex flex-wrap gap-x-4 text-neutral-600 text-sm">
-                        <p><span className="font-medium">Start:</span> {carpool.targetArrivalTime}</p>
-                        {carpool.estimatedDepartureTime && (
-                          <p><span className="font-medium">Departure:</span> {carpool.estimatedDepartureTime}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {carpool.additionalNotes && (
-                  <p className="text-neutral-600 text-sm mt-2">
-                    <span className="font-medium">Notes:</span> {carpool.additionalNotes}
-                  </p>
-                )}
-                
-                {/* Collapsible Passenger List */}
-                <Collapsible 
-                  open={openCarpoolIds[carpool.id]} 
-                  onOpenChange={() => toggleCarpool(carpool.id)}
-                  className="mt-3 border-t border-gray-100 pt-3"
-                >
-                  <CollapsibleTrigger asChild>
-                    <button className="flex items-center text-sm text-primary font-medium hover:text-primary-dark focus:outline-none">
-                      <Users size={16} className="mr-1" />
-                      View Passengers
-                      {openCarpoolIds[carpool.id] ? (
-                        <ChevronUp size={16} className="ml-1" />
-                      ) : (
-                        <ChevronDown size={16} className="ml-1" />
-                      )}
-                    </button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <CarpoolRequestsList carpoolId={carpool.id} />
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
-              <div className="mt-4 md:mt-0 flex flex-col space-y-2">
-                <Button 
-                  className="px-4 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors text-sm"
-                  onClick={() => onRequestSpot(carpool.id)}
-                >
-                  Request Spot
-                </Button>
-                {onManageCalendar && (
-                  <Button 
-                    variant="outline"
-                    className="px-4 py-2 border border-primary text-primary font-medium rounded-md hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors text-sm"
-                    onClick={() => onManageCalendar(carpool.id)}
-                  >
-                    Manage Calendar
-                  </Button>
-                )}
-              </div>
-            </div>
+
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Input
+          placeholder="Search by name, city, or postcode..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-xs"
+        />
+
+        <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="distance">Sort by Distance</SelectItem>
+            <SelectItem value="spaces">Sort by Available Spaces</SelectItem>
+            <SelectItem value="name">Sort by Name</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+        <TabsList>
+          <TabsTrigger value="to-party">
+            To Party ({carpools?.filter(c => c.canPickup).length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="from-party">
+            From Party ({carpools?.filter(c => c.canDropoff).length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="both">
+            Both Ways ({carpools?.filter(c => c.canBoth).length || 0})
+          </TabsTrigger>
+        </TabsList>
+
+        {viewMode === "list" ? (
+          <div className="mt-4">
+            {filteredCarpools.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center text-gray-500">
+                  No carpools found matching your criteria
+                </CardContent>
+              </Card>
+            ) : (
+              filteredCarpools.map(renderCarpoolCard)
+            )}
           </div>
-        ))
-      )}
+        ) : (
+          <div className="mt-4 h-[500px] rounded-lg overflow-hidden">
+            <LocationMap
+              carpools={filteredCarpools}
+              onCarpoolSelect={onRequestSpot}
+            />
+          </div>
+        )}
+      </Tabs>
     </div>
   );
 }
