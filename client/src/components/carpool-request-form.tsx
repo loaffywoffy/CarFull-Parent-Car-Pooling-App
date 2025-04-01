@@ -491,10 +491,10 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                                   <p className="text-xs text-gray-600 mt-2 bg-gray-100 p-1.5 rounded">
                                     <span className="font-medium">Drop-off preference:</span> {
                                       carpool.dropoffPreference === "direct-home" 
-                                        ? "Direct to each child's home" 
+                                        ? "Driver will collect from your home" 
                                         : carpool.dropoffPreference === "my-home" 
-                                          ? "Collection from driver's home" 
-                                          : "Central meeting point"
+                                          ? "Meet at driver's home for departure" 
+                                          : "Meet at agreed central location"
                                     }
                                     {carpool.dropoffPreference === "direct-home" && carpool.maxDistance && (
                                       <span className="ml-1 text-xs text-blue-600"> (max {carpool.maxDistance} miles from their address)</span>
