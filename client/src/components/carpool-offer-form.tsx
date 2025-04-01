@@ -85,6 +85,14 @@ type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOfferFormProps) {
   const { toast } = useToast();
   
+  // Fetch party group details
+  const { data: partyGroup, isLoading: isLoadingPartyGroup } = useQuery({
+    queryKey: ['/api/party-groups', partyGroupId],
+    queryFn: () => getPartyGroupById(partyGroupId),
+    enabled: !!partyGroupId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
   // Show preferences based on selected options
   const [showOutboundPreferences, setShowOutboundPreferences] = useState(false);
   const [showReturnPreferences, setShowReturnPreferences] = useState(false);
@@ -100,6 +108,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   const [showReturnPickupLocation, setShowReturnPickupLocation] = useState(false);
   const [showReturnMyAddressDisplay, setShowReturnMyAddressDisplay] = useState(false);
   const [returnCollectionTime, setReturnCollectionTime] = useState("");
+  const [showCustomReturnTime, setShowCustomReturnTime] = useState(false);
   
   // Legacy state for backward compatibility
   const [showPickupLocation, setShowPickupLocation] = useState(false);
@@ -108,16 +117,11 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   const [homeRadius, setHomeRadius] = useState(2); // Default 2-mile radius
   const [showMap, setShowMap] = useState(false); // State for showing/hiding map
 
-  // Fetch party group details
-  const { data: partyGroup, isLoading: isLoadingPartyGroup } = useQuery({
-    queryKey: ['/api/party-groups', partyGroupId],
-    queryFn: () => getPartyGroupById(partyGroupId),
-    enabled: !!partyGroupId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  // Set up the default value for showCustomReturnTime based on partyGroup
+  useEffect(() => {
+    setShowCustomReturnTime(!partyGroup?.endTime);
+  }, [partyGroup]);
 
-  // No need to calculate estimated departure time since we don't know the driver's location
-  
   const form = useForm<CarpoolFormValues>({
     resolver: zodResolver(carpoolFormSchema),
     defaultValues: {
@@ -505,27 +509,20 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                     render={({ field }) => (
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
-                          <Checkbox
-                            checked={field.value}
+                          <Checkbox 
+                            checked={field.value} 
                             onCheckedChange={(checked: CheckedState) => {
                               field.onChange(checked);
-                              
-                              // Update outbound preferences visibility
-                              setShowOutboundPreferences(checked === true || form.getValues("canBoth"));
-                              
-                              // Set default dropoff preference when enabling this option
-                              if (checked === true) {
-                                form.setValue("outboundDropoffPreference", "direct-home");
-                              }
-                              
-                              // If checking this option and "Both" is selected, unselect "Both"
-                              if (checked === true && form.getValues("canBoth")) {
+                              if (checked) {
                                 form.setValue("canBoth", false);
+                                form.setValue("canDropoff", false);
                               }
-                            }}
+                            }} 
                           />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">To take to the party</FormLabel>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Take children TO the party
+                        </FormLabel>
                       </FormItem>
                     )}
                   />
@@ -536,28 +533,20 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                     render={({ field }) => (
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
-                          <Checkbox
-                            checked={field.value}
+                          <Checkbox 
+                            checked={field.value} 
                             onCheckedChange={(checked: CheckedState) => {
                               field.onChange(checked);
-                              
-                              // Update showReturnPreferences directly based on current state
-                              const canBoth = form.getValues("canBoth");
-                              setShowReturnPreferences(checked === true || canBoth);
-                              
-                              // Set default dropoff preference when enabling this option
-                              if (checked === true) {
-                                form.setValue("returnDropoffPreference", "direct-home");
-                              }
-                              
-                              // If checking this option and "Both" is selected, unselect "Both"
-                              if (checked === true && form.getValues("canBoth")) {
+                              if (checked) {
                                 form.setValue("canBoth", false);
+                                form.setValue("canPickup", false);
                               }
-                            }}
+                            }} 
                           />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">To pick up from the party</FormLabel>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Pick up children FROM the party
+                        </FormLabel>
                       </FormItem>
                     )}
                   />
@@ -568,172 +557,102 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                     render={({ field }) => (
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
-                          <Checkbox
-                            checked={field.value}
+                          <Checkbox 
+                            checked={field.value} 
                             onCheckedChange={(checked: CheckedState) => {
                               field.onChange(checked);
-                              
-                              // Update both preference sections when "Both" is selected
-                              setShowOutboundPreferences(checked === true);
-                              setShowReturnPreferences(checked === true);
-                              
-                              // If selecting "Both", unselect the other two options
-                              if (checked === true) {
+                              if (checked) {
                                 form.setValue("canPickup", false);
                                 form.setValue("canDropoff", false);
-                                
-                                // Set default dropoff preference for both directions
-                                form.setValue("outboundDropoffPreference", "direct-home");
-                                form.setValue("returnDropoffPreference", "direct-home");
                               }
-                            }}
+                            }} 
                           />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Both</FormLabel>
+                        <FormLabel className="font-normal cursor-pointer">
+                          BOTH ways (to and from)
+                        </FormLabel>
                       </FormItem>
                     )}
                   />
                 </div>
               </div>
               
-              {/* Show spaces available only if canPickup or canBoth is selected */}
-              {(form.watch("canPickup") || form.watch("canBoth")) && (
-                <FormField
-                  control={form.control}
-                  name="spacesAvailable"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Spaces Available to take to party</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(Number(value))} 
-                        defaultValue={String(field.value)}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="1">1 space</SelectItem>
-                          <SelectItem value="2">2 spaces</SelectItem>
-                          <SelectItem value="3">3 spaces</SelectItem>
-                          <SelectItem value="4">4 spaces</SelectItem>
-                          <SelectItem value="5">5 spaces</SelectItem>
-                          <SelectItem value="6">6 spaces</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Outbound spaces (TO party) */}
+              {showOutboundPreferences && (
+                <div className="space-y-4 border-l-2 border-primary-200 pl-4">
+                  <FormField
+                    control={form.control}
+                    name="spacesAvailable"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Spaces Available to take TO party</FormLabel>
+                        <Select
+                          value={field.value?.toString()}
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select spaces available" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">1 seat</SelectItem>
+                            <SelectItem value="2">2 seats</SelectItem>
+                            <SelectItem value="3">3 seats</SelectItem>
+                            <SelectItem value="4">4 seats</SelectItem>
+                            <SelectItem value="5">5 seats</SelectItem>
+                            <SelectItem value="6">6 seats</SelectItem>
+                            <SelectItem value="7">7+ seats</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               )}
               
-              {/* Show return spaces available only if canDropoff or canBoth is selected */}
-              {(form.watch("canDropoff") || form.watch("canBoth")) && (
-                <FormField
-                  control={form.control}
-                  name="returnSpacesAvailable"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Spaces Available to take from party</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(Number(value))} 
-                        defaultValue={String(field.value)}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="1">1 space</SelectItem>
-                          <SelectItem value="2">2 spaces</SelectItem>
-                          <SelectItem value="3">3 spaces</SelectItem>
-                          <SelectItem value="4">4 spaces</SelectItem>
-                          <SelectItem value="5">5 spaces</SelectItem>
-                          <SelectItem value="6">6 spaces</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Return spaces (FROM party) */}
+              {showReturnPreferences && (
+                <div className="space-y-4 border-l-2 border-primary-200 pl-4">
+                  <FormField
+                    control={form.control}
+                    name="returnSpacesAvailable"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Spaces Available to pick up FROM party</FormLabel>
+                        <Select
+                          value={field.value?.toString()}
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select spaces available" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">1 seat</SelectItem>
+                            <SelectItem value="2">2 seats</SelectItem>
+                            <SelectItem value="3">3 seats</SelectItem>
+                            <SelectItem value="4">4 seats</SelectItem>
+                            <SelectItem value="5">5 seats</SelectItem>
+                            <SelectItem value="6">6 seats</SelectItem>
+                            <SelectItem value="7">7+ seats</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               )}
               
               {/* Outbound dropoff preferences (TO party) */}
               {showOutboundPreferences && (
                 <div className="space-y-3 border-t border-gray-100 pt-4 mt-4">
-                  <h4 className="font-medium text-primary-700">Outbound Trip Preferences (TO Party)</h4>
-                  <FormLabel>Pickup Preference when taking children TO the party:</FormLabel>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <FormField
-                      control={form.control}
-                      name="outboundDepartureTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Departure Time (when the carpool is leaving)</FormLabel>
-                          <div className="flex space-x-2">
-                            {/* Hour Select */}
-                            <div className="w-1/2">
-                              <Select
-                                value={(field.value || '').split(':')[0] || undefined}
-                                onValueChange={(hour) => {
-                                  const minute = (field.value || '').split(':')[1] || '00';
-                                  const newTime = `${hour}:${minute}`;
-                                  field.onChange(newTime);
-                                  setOutboundDepartureTime(newTime);
-                                }}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Hour" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Array.from({ length: 24 }).map((_, i) => {
-                                    const hourValue = i.toString().padStart(2, '0');
-                                    return (
-                                      <SelectItem key={hourValue} value={hourValue}>
-                                        {hourValue}
-                                      </SelectItem>
-                                    );
-                                  })}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            
-                            {/* Minute Select */}
-                            <div className="w-1/2">
-                              <Select
-                                value={(field.value || '').split(':')[1] || undefined}
-                                onValueChange={(minute) => {
-                                  const hour = (field.value || '').split(':')[0] || '00';
-                                  const newTime = `${hour}:${minute}`;
-                                  field.onChange(newTime);
-                                  setOutboundDepartureTime(newTime);
-                                }}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Minute" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="00">00</SelectItem>
-                                  <SelectItem value="15">15</SelectItem>
-                                  <SelectItem value="30">30</SelectItem>
-                                  <SelectItem value="45">45</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            When parents should have their children ready to leave for the party
-                          </p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <h4 className="font-medium text-primary-700">Trip Preferences (TO Party)</h4>
                   
+                  <FormLabel>Dropoff Preference when taking TO the party:</FormLabel>
                   <FormField
                     control={form.control}
                     name="outboundDropoffPreference"
@@ -742,7 +661,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                         <FormControl>
                           <RadioGroup
                             onValueChange={(value) => handleOutboundDropoffPreferenceChange(value)}
-                            defaultValue={field.value}
+                            defaultValue={field.value || "direct-home"}
                             className="flex flex-col space-y-1"
                           >
                             <FormItem className="flex items-center space-x-3 space-y-0">
@@ -750,7 +669,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                                 <RadioGroupItem value="direct-home" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                I'll pick children up directly from their homes
+                                Directly to party location
                               </FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0">
@@ -758,7 +677,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                                 <RadioGroupItem value="my-address" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                Parents drop kids at my address first
+                                To my address (group pickup)
                               </FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0">
@@ -766,7 +685,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                                 <RadioGroupItem value="pickup-point" />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                Alternative central pickup point
+                                To alternative central pickup point
                               </FormLabel>
                             </FormItem>
                           </RadioGroup>
@@ -776,24 +695,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                     )}
                   />
                   
-                  {/* OUTBOUND TRIP - TO PARTY - Show address fields if needed */}
-                  {/* The pickup location fields specifically for outbound trip */}
-                  {showOutboundMyAddressDisplay && (
-                    <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
-                      <h4 className="font-medium text-gray-800">TO Party: Parents drop kids at your address</h4>
-                      <div className="text-sm text-gray-600">
-                        <p><strong>Address:</strong> {form.getValues("address")}</p>
-                        <p><strong>City:</strong> {form.getValues("city")}</p>
-                        <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2">Parents will be asked to drop their children at this address before you take them to the party</p>
-                    </div>
-                  )}
-                  
-                  {/* Hidden field for outbound max distance - default value */}
-                  <input type="hidden" name="outboundMaxDistance" value="5" />
-                  
-                  {/* Show pickup location fields if pickup-point is selected for outbound */}
+                  {/* Outbound pickup location fields if pickup-point is selected */}
                   {showOutboundPickupLocation && (
                     <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
                       <h4 className="font-medium text-gray-800">TO Party: Central Pickup Point</h4>
@@ -842,6 +744,91 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                       </div>
                     </div>
                   )}
+                  
+                  {/* Show parent's address when "my address" is selected */}
+                  {showOutboundMyAddressDisplay && (
+                    <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
+                      <h4 className="font-medium text-gray-800">TO Party: Your Address as Pickup Point</h4>
+                      <div className="text-sm text-gray-600">
+                        <p><strong>Address:</strong> {form.getValues("address")}</p>
+                        <p><strong>City:</strong> {form.getValues("city")}</p>
+                        <p><strong>Postcode:</strong> {form.getValues("postcode")}</p>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">Parents will bring their children to this address and you'll take them to the party</p>
+                    </div>
+                  )}
+                  
+                  {/* Departure time to party */}
+                  <FormField
+                    control={form.control}
+                    name="outboundDepartureTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Target departure time (when leaving to party)</FormLabel>
+                        
+                        <div className="flex space-x-2">
+                          {/* Hour Select */}
+                          <div className="w-1/2">
+                            <Select
+                              value={(field.value || '').split(':')[0] || undefined}
+                              onValueChange={(hour) => {
+                                const minute = (field.value || '').split(':')[1] || '00';
+                                const newTime = `${hour}:${minute}`;
+                                field.onChange(newTime);
+                                setOutboundDepartureTime(newTime);
+                              }}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Hour" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Array.from({ length: 24 }).map((_, i) => {
+                                  const hourValue = i.toString().padStart(2, '0');
+                                  return (
+                                    <SelectItem key={hourValue} value={hourValue}>
+                                      {hourValue}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          {/* Minute Select */}
+                          <div className="w-1/2">
+                            <Select
+                              value={(field.value || '').split(':')[1] || undefined}
+                              onValueChange={(minute) => {
+                                const hour = (field.value || '').split(':')[0] || '00';
+                                const newTime = `${hour}:${minute}`;
+                                field.onChange(newTime);
+                                setOutboundDepartureTime(newTime);
+                              }}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Minute" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="00">00</SelectItem>
+                                <SelectItem value="15">15</SelectItem>
+                                <SelectItem value="30">30</SelectItem>
+                                <SelectItem value="45">45</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <p className="text-xs text-muted-foreground">
+                          When you'll be leaving for the party (not arrival time)
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               )}
               
@@ -866,6 +853,9 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                             form.setValue("returnCollectionTime", newTime);
                             setReturnCollectionTime(newTime);
                           }
+                          
+                          // Set state to show/hide time selectors
+                          setShowCustomReturnTime(value === "custom");
                         }}
                       >
                         <div className="flex items-center space-x-2">
@@ -886,61 +876,69 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                       name="returnCollectionTime"
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex space-x-2">
-                            {/* Hour Select */}
-                            <div className="w-1/2">
-                              <Select
-                                value={(field.value || '').split(':')[0] || undefined}
-                                onValueChange={(hour) => {
-                                  const minute = (field.value || '').split(':')[1] || '00';
-                                  const newTime = `${hour}:${minute}`;
-                                  field.onChange(newTime);
-                                  setReturnCollectionTime(newTime);
-                                }}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Hour" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Array.from({ length: 24 }).map((_, i) => {
-                                    const hourValue = i.toString().padStart(2, '0');
-                                    return (
-                                      <SelectItem key={hourValue} value={hourValue}>
-                                        {hourValue}
-                                      </SelectItem>
-                                    );
-                                  })}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            
-                            {/* Minute Select */}
-                            <div className="w-1/2">
-                              <Select
-                                value={(field.value || '').split(':')[1] || undefined}
-                                onValueChange={(minute) => {
-                                  const hour = (field.value || '').split(':')[0] || '00';
-                                  const newTime = `${hour}:${minute}`;
-                                  field.onChange(newTime);
-                                  setReturnCollectionTime(newTime);
-                                }}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Minute" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="00">00</SelectItem>
-                                  <SelectItem value="15">15</SelectItem>
-                                  <SelectItem value="30">30</SelectItem>
-                                  <SelectItem value="45">45</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
+                          {/* Display the currently selected time */}
+                          <div className="mb-2">
+                            <p className="text-sm font-medium">Selected time: {field.value || "Not set"}</p>
                           </div>
+                          
+                          {/* Only show time selectors when custom time is selected */}
+                          {showCustomReturnTime && (
+                            <div className="flex space-x-2">
+                              {/* Hour Select */}
+                              <div className="w-1/2">
+                                <Select
+                                  value={(field.value || '').split(':')[0] || undefined}
+                                  onValueChange={(hour) => {
+                                    const minute = (field.value || '').split(':')[1] || '00';
+                                    const newTime = `${hour}:${minute}`;
+                                    field.onChange(newTime);
+                                    setReturnCollectionTime(newTime);
+                                  }}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Hour" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {Array.from({ length: 24 }).map((_, i) => {
+                                      const hourValue = i.toString().padStart(2, '0');
+                                      return (
+                                        <SelectItem key={hourValue} value={hourValue}>
+                                          {hourValue}
+                                        </SelectItem>
+                                      );
+                                    })}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              
+                              {/* Minute Select */}
+                              <div className="w-1/2">
+                                <Select
+                                  value={(field.value || '').split(':')[1] || undefined}
+                                  onValueChange={(minute) => {
+                                    const hour = (field.value || '').split(':')[0] || '00';
+                                    const newTime = `${hour}:${minute}`;
+                                    field.onChange(newTime);
+                                    setReturnCollectionTime(newTime);
+                                  }}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Minute" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="00">00</SelectItem>
+                                    <SelectItem value="15">15</SelectItem>
+                                    <SelectItem value="30">30</SelectItem>
+                                    <SelectItem value="45">45</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          )}
                           <p className="text-xs text-muted-foreground">
                             When you'll be picking up children from the event
                           </p>
