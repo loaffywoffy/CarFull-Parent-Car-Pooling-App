@@ -34,11 +34,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
     if (!Array.isArray(carpools)) return [];
 
     return carpools
-      .filter(carpool => {
+      .filter((carpool: any) => {
         // Filter by tab selection
-        if (selectedTab === "to-party") return carpool.canPickup;
-        if (selectedTab === "from-party") return carpool.canDropoff;
-        return carpool.canBoth;
+        if (selectedTab === "to-party") return carpool.canPickup || carpool.canBoth;
+        if (selectedTab === "from-party") return carpool.canDropoff || carpool.canBoth;
+        return true; // Show all carpools in the "both" tab
       })
       .filter(carpool => {
         // Filter by search term
@@ -157,13 +157,13 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
           <TabsTrigger value="to-party">
-            To Party ({carpools?.filter(c => c.canPickup).length || 0})
+            To Party ({carpools?.filter((c: any) => c.canPickup || c.canBoth).length || 0})
           </TabsTrigger>
           <TabsTrigger value="from-party">
-            From Party ({carpools?.filter(c => c.canDropoff).length || 0})
+            From Party ({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})
           </TabsTrigger>
           <TabsTrigger value="both">
-            Both Ways ({carpools?.filter(c => c.canBoth).length || 0})
+            All Carpools ({carpools?.length || 0})
           </TabsTrigger>
         </TabsList>
 
