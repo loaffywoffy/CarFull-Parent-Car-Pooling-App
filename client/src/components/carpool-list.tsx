@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, List, MapIcon, Users } from "lucide-react";
-import LocationMap from "./location-map";
+import CarpoolMap from "./carpool-map";
 
 interface CarpoolListProps {
   partyGroupId: number;
@@ -181,7 +181,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
           </div>
         ) : (
           <div className="mt-4 h-[500px] rounded-lg overflow-hidden">
-            <LocationMap
+            <CarpoolMap
               carpools={filteredCarpools}
               onCarpoolSelect={onRequestSpot}
             />
