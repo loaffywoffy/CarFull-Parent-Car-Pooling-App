@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   CalendarIcon, MapPinIcon, ClockIcon, UserIcon, CopyIcon, 
-  CheckIcon, LinkIcon, Share2Icon, CarIcon 
+  CheckIcon, LinkIcon, Share2Icon, CarIcon, Map as MapIcon
 } from "lucide-react";
 import { type PartyGroup } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CarpoolSummary from "./carpool-summary";
+import { Skeleton } from "@/components/ui/skeleton";
+import LocationMap from "./location-map";
+import { geocodeAddress } from "@/lib/geocoding";
 
 interface PartyGroupDetailsProps {
   partyGroup: PartyGroup;
@@ -27,6 +30,31 @@ export default function PartyGroupDetails({
 }: PartyGroupDetailsProps) {
   const { toast } = useToast();
   const [copySuccess, setCopySuccess] = useState<{code: boolean, link: boolean}>({code: false, link: false});
+  const [partyLocation, setPartyLocation] = useState<[number, number] | null>(null);
+  const [isMapLoading, setIsMapLoading] = useState(true);
+  
+  // Get coordinates for the party location when the component mounts
+  useEffect(() => {
+    const loadPartyLocation = async () => {
+      if (partyGroup.partyAddress && partyGroup.partyPostcode) {
+        try {
+          setIsMapLoading(true);
+          const coordinates = await geocodeAddress(
+            partyGroup.partyAddress,
+            partyGroup.partyCity,
+            partyGroup.partyPostcode
+          );
+          setPartyLocation(coordinates);
+        } catch (error) {
+          console.error('Error loading party location:', error);
+        } finally {
+          setIsMapLoading(false);
+        }
+      }
+    };
+
+    loadPartyLocation();
+  }, [partyGroup]);
   
   // Format date to readable string
   const formattedDate = new Date(partyGroup.partyDate).toLocaleDateString(undefined, {
@@ -109,6 +137,12 @@ export default function PartyGroupDetails({
         <TabsList className="w-full justify-start px-6 pt-4 bg-white border-b">
           <TabsTrigger value="details" className="data-[state=active]:bg-primary-50">
             Details
+          </TabsTrigger>
+          <TabsTrigger value="map" className="data-[state=active]:bg-primary-50">
+            <div className="flex items-center gap-1">
+              <MapIcon className="h-4 w-4" />
+              <span>Map</span>
+            </div>
           </TabsTrigger>
           <TabsTrigger value="carpools" className="data-[state=active]:bg-primary-50">
             <div className="flex items-center gap-1">
@@ -262,6 +296,59 @@ export default function PartyGroupDetails({
               )}
             </div>
           </CardContent>
+        </TabsContent>
+        
+        <TabsContent value="map" className="pt-0 pb-0 px-0 m-0">
+          <div className="px-6 py-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Party Location</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                View the party location on the map to help plan your journey.
+              </p>
+              
+              {isMapLoading && (
+                <div className="rounded-md border border-gray-200 overflow-hidden">
+                  <div className="h-[350px] bg-gray-50 flex items-center justify-center">
+                    <Skeleton className="h-[350px] w-full" />
+                  </div>
+                </div>
+              )}
+              
+              {!isMapLoading && partyLocation && (
+                <div className="rounded-md border border-gray-200 overflow-hidden">
+                  <LocationMap 
+                    locations={[
+                      {
+                        label: partyGroup.name,
+                        position: partyLocation,
+                        type: 'party'
+                      }
+                    ]}
+                    height="350px"
+                    initialZoom={14}
+                  />
+                </div>
+              )}
+              
+              {!isMapLoading && !partyLocation && (
+                <div className="h-[350px] flex items-center justify-center bg-gray-50 rounded-md border border-gray-200">
+                  <div className="text-center">
+                    <p className="text-gray-500 mb-2">
+                      Couldn't load the map. Please check the address.
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      {partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-4 text-xs text-gray-500 bg-gray-50 p-3 rounded-md">
+                <p className="font-medium mb-1">Address:</p>
+                <p>{partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}</p>
+              </div>
+            </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="carpools" className="pt-0 pb-0 px-0 m-0">
