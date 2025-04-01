@@ -18,6 +18,7 @@ import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups"
 import { toast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useEffect, useRef, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
@@ -334,47 +335,66 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
       </div>
 
       <div ref={printRef}>
-        {/* Party Details Card */}
-        <Card className="mb-6 bg-gray-50 print:bg-white print:border">
-          <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-neutral-500" />
-                  <span className="text-sm font-medium">
-                    {partyGroup?.partyDate ? new Date(partyGroup.partyDate).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    }) : "Date not specified"}
-                  </span>
+        {/* Event Details Button */}
+        <div className="mb-6 flex justify-center">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span>Event Details</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Event Details</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-neutral-500 shrink-0" />
+                    <span className="text-sm font-medium">
+                      {partyGroup?.partyDate ? new Date(partyGroup.partyDate).toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      }) : "Date not specified"}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-neutral-500 shrink-0" />
+                    <span className="text-sm">
+                      {partyGroup?.targetArrivalTime || "Time not specified"}
+                      {partyGroup?.endTime ? ` - ${partyGroup.endTime}` : ""}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 text-neutral-500 shrink-0 mt-0.5" />
+                    <span className="text-sm">
+                      {partyGroup ? `${partyGroup.partyAddress}, ${partyGroup.partyCity}, ${partyGroup.partyPostcode}` : "Location not specified"}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-neutral-500 shrink-0" />
+                    <span className="text-sm">
+                      {carpoolsArray.length > 0 ? `${carpoolsArray.length} carpool${carpoolsArray.length !== 1 ? 's' : ''} arranged` : "No carpools arranged"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-neutral-500" />
-                  <span className="text-sm">
-                    {partyGroup?.targetArrivalTime || "Time not specified"}
-                    {partyGroup?.endTime ? ` - ${partyGroup.endTime}` : ""}
-                  </span>
-                </div>
+                
+                {partyGroup?.description && (
+                  <div className="pt-2 border-t">
+                    <h4 className="text-sm font-medium mb-1">Event Description</h4>
+                    <p className="text-sm text-gray-600">{partyGroup.description}</p>
+                  </div>
+                )}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-4 w-4 text-neutral-500" />
-                  <span className="text-sm">
-                    {partyGroup ? `${partyGroup.partyAddress}, ${partyGroup.partyCity}` : "Location not specified"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-neutral-500" />
-                  <span className="text-sm">
-                    {carpoolsArray.length > 0 ? `${carpoolsArray.length} carpool${carpoolsArray.length !== 1 ? 's' : ''} arranged` : "No carpools arranged"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         {activeTab === 'summary' && (
           <>
