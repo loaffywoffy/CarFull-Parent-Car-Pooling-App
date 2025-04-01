@@ -98,7 +98,6 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
   const [showPickupLocation, setShowPickupLocation] = useState(false);
   const [showHomeRadiusSelector, setShowHomeRadiusSelector] = useState(false);
   const [showMyAddressDisplay, setShowMyAddressDisplay] = useState(false);
-  const [estimatedDepartureTime, setEstimatedDepartureTime] = useState("");
   const [homeRadius, setHomeRadius] = useState(2); // Default 2-mile radius
 
   // Fetch party group details
@@ -109,28 +108,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Calculate estimated departure time based on party time
-  const calculateDepartureTimeFromArrival = (targetTime: string) => {
-    // In a real application, we would use a mapping API to calculate travel time
-    // For this demo, we'll use a simple estimate of 30 minutes travel time
-    if (!targetTime) return "";
-    
-    const arrivalDateTime = new Date(`2025-01-01T${targetTime}`);
-    const departureDateTime = new Date(arrivalDateTime.getTime() - 30 * 60000); // Subtract 30 minutes
-    return departureDateTime.toTimeString().slice(0, 5); // Format as HH:MM
-  };
-
-  // Set departure time when party group is loaded
-  useEffect(() => {
-    if (partyGroup?.targetArrivalTime) {
-      const time = calculateDepartureTimeFromArrival(partyGroup.targetArrivalTime);
-      setEstimatedDepartureTime(time);
-      
-      if (form) {
-        form.setValue("estimatedDepartureTime", time);
-      }
-    }
-  }, [partyGroup]);
+  // No need to calculate estimated departure time since we don't know the driver's location
   
   const form = useForm<CarpoolFormValues>({
     resolver: zodResolver(carpoolFormSchema),
@@ -346,6 +324,10 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 <ClockIcon className="mr-2 h-4 w-4 text-primary-600" />
                 Start: {partyGroup.targetArrivalTime}
               </div>
+              <div className="flex items-center">
+                <ClockIcon className="mr-2 h-4 w-4 text-primary-600" />
+                End: {partyGroup.endTime || "Not specified"}
+              </div>
             </div>
             
             <div className="bg-white p-3 rounded-md border border-primary-200 mb-2">
@@ -353,10 +335,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
                 <strong>Location:</strong> {partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}
               </p>
               
-              <div className="flex items-center text-sm mt-3 text-primary-700 font-medium">
-                <CalculatorIcon className="mr-2 h-4 w-4" />
-                <span>Estimated departure time: {estimatedDepartureTime || "Calculating..."}</span>
-              </div>
+              {/* No estimated departure time since we don't know the driver's location yet */}
             </div>
             
             {partyGroup.additionalInformation && (
