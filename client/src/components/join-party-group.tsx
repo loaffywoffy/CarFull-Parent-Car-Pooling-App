@@ -72,7 +72,7 @@ export default function JoinPartyGroup({ onJoinSuccess, onCancel, initialAccessC
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-2 text-neutral-800">Join a Party Group</h2>
+      <h2 className="text-xl font-semibold mb-2 text-neutral-800">Join an Event</h2>
       <p className="text-sm text-neutral-600 mb-6">Enter the access code provided by the party organizer</p>
       
       <Form {...form}>
@@ -110,7 +110,7 @@ export default function JoinPartyGroup({ onJoinSuccess, onCancel, initialAccessC
               className="px-6 py-2"
               disabled={isLoading || joinPartyGroupMutation.isPending}
             >
-              {isLoading || joinPartyGroupMutation.isPending ? "Joining..." : "Join Party Group"}
+              {isLoading || joinPartyGroupMutation.isPending ? "Joining..." : "Join Event"}
             </Button>
           </div>
         </form>

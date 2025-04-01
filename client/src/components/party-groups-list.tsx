@@ -79,7 +79,7 @@ export default function PartyGroupsList({
         <div>
           <Button onClick={() => onCreateNew()} className="flex items-center gap-1">
             <PlusIcon className="h-4 w-4" />
-            <span>Create New</span>
+            <span>Create New Event</span>
           </Button>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function PartyGroupsList({
               Join with Access Code
             </Button>
             <Button onClick={() => onCreateNew()} variant="default">
-              Create New Group
+              Create New Event
             </Button>
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function PartyGroupsList({
                     }}
                   >
                     <Share2Icon className="h-3.5 w-3.5" />
-                    <span>Join Group</span>
+                    <span>Join Event</span>
                   </Button>
                 </div>
               </CardContent>
