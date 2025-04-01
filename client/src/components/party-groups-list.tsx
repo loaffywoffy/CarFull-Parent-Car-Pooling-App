@@ -35,7 +35,7 @@ export default function PartyGroupsList({
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Party Groups</h2>
+          <h2 className="text-xl font-semibold">Event Details</h2>
           <div className="flex gap-2">
             <Skeleton className="h-9 w-24" />
             <Skeleton className="h-9 w-24" />
@@ -75,7 +75,7 @@ export default function PartyGroupsList({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Party Groups</h2>
+        <h2 className="text-xl font-semibold">Event Details</h2>
         <div>
           <Button onClick={() => onCreateNew()} className="flex items-center gap-1">
             <PlusIcon className="h-4 w-4" />
@@ -86,7 +86,7 @@ export default function PartyGroupsList({
       
       {hasNoPartyGroups ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-          <h3 className="font-medium text-lg text-gray-800 mb-2">No Party Groups Yet</h3>
+          <h3 className="font-medium text-lg text-gray-800 mb-2">No Events Yet</h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
             Create a new party group as an organizer or join an existing group with an access code
           </p>

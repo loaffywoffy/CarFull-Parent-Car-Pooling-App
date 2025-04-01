@@ -12,6 +12,7 @@ import { type PartyGroup } from "@shared/schema";
 
 interface JoinPartyGroupProps {
   onJoinSuccess: (partyGroup: PartyGroup) => void;
+  onCancel: () => void; // Add callback for cancel action
   initialAccessCode?: string; // Optional prop to pre-populate the access code
 }
 
@@ -22,7 +23,7 @@ const joinPartyGroupSchema = z.object({
 
 type JoinPartyGroupFormValues = z.infer<typeof joinPartyGroupSchema>;
 
-export default function JoinPartyGroup({ onJoinSuccess, initialAccessCode = "" }: JoinPartyGroupProps) {
+export default function JoinPartyGroup({ onJoinSuccess, onCancel, initialAccessCode = "" }: JoinPartyGroupProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
@@ -94,7 +95,16 @@ export default function JoinPartyGroup({ onJoinSuccess, initialAccessCode = "" }
             )}
           />
 
-          <div className="flex justify-end">
+          <div className="flex justify-between">
+            <Button 
+              type="button" 
+              variant="outline"
+              className="px-6 py-2"
+              onClick={onCancel}
+              disabled={isLoading || joinPartyGroupMutation.isPending}
+            >
+              Cancel
+            </Button>
             <Button 
               type="submit" 
               className="px-6 py-2"
