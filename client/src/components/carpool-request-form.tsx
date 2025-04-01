@@ -103,9 +103,14 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   };
   
   // Get the numeric distance value from the distance string
-  const getNumericDistance = (distanceStr: string): number => {
-    if (distanceStr === "Unknown") return 999; // Large number for unknown distances
-    return parseFloat(distanceStr.split(" ")[0]);
+  const getNumericDistance = (distanceStr?: string): number => {
+    if (!distanceStr || distanceStr === "Unknown") return 999; // Large number for unknown/undefined distances
+    try {
+      return parseFloat(distanceStr.split(" ")[0]);
+    } catch (e) {
+      console.error("Error parsing distance:", e);
+      return 999; // Default to large number on error
+    }
   };
 
   // Set selected carpool ID when it changes
