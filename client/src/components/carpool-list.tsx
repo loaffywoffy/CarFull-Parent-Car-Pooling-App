@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, List, MapIcon, Users } from "lucide-react";
-import CarpoolMap from "./carpool-map";
+import { MapPin, Users } from "lucide-react";
 
 interface CarpoolListProps {
   partyGroupId: number;
@@ -16,11 +15,11 @@ interface CarpoolListProps {
   onManageCalendar?: (carpoolId: number) => void;
 }
 
-type ViewMode = "list" | "map";
+// Map functionality has been removed
 type SortOption = "distance" | "spaces" | "name";
 
 export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalendar }: CarpoolListProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  // Map view has been removed
   const [sortBy, setSortBy] = useState<SortOption>("distance");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("to-party");
@@ -124,23 +123,6 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-xl font-semibold">Available Carpools</h2>
-
-        <div className="flex items-center space-x-2">
-          <Button
-            variant={viewMode === "list" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("list")}
-          >
-            <List className="h-4 w-4 mr-1" /> List
-          </Button>
-          <Button
-            variant={viewMode === "map" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("map")}
-          >
-            <MapIcon className="h-4 w-4 mr-1" /> Map
-          </Button>
-        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
@@ -176,26 +158,17 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
           </TabsTrigger>
         </TabsList>
 
-        {viewMode === "list" ? (
-          <div className="mt-4">
-            {filteredCarpools.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center text-gray-500">
-                  No carpools found matching your criteria
-                </CardContent>
-              </Card>
-            ) : (
-              filteredCarpools.map(renderCarpoolCard)
-            )}
-          </div>
-        ) : (
-          <div className="mt-4 h-[500px] rounded-lg overflow-hidden">
-            <CarpoolMap
-              carpools={filteredCarpools}
-              onCarpoolSelect={onRequestSpot}
-            />
-          </div>
-        )}
+        <div className="mt-4">
+          {filteredCarpools.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center text-gray-500">
+                No carpools found matching your criteria
+              </CardContent>
+            </Card>
+          ) : (
+            filteredCarpools.map(renderCarpoolCard)
+          )}
+        </div>
       </Tabs>
     </div>
   );
