@@ -25,8 +25,7 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   partyPostcode: z.string().min(3, "Postcode is required"),
   targetArrivalTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
-  partyEndDate: z.string().min(1, "End date is required"),
-  accessCode: z.string().optional()
+  partyEndDate: z.string().min(1, "End date is required")
 }).refine(
   (data) => {
     // If end date is provided, it must be >= start date
@@ -60,18 +59,6 @@ type PartyGroupFormValues = z.infer<typeof partyGroupFormSchema>;
 
 export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
   const { toast } = useToast();
-  const [accessCode, setAccessCode] = useState("");
-
-  // Generate a random access code of 6 alphanumeric characters
-  const generateAccessCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-    for (let i = 0; i < 6; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setAccessCode(result);
-    form.setValue("accessCode", result);
-  };
 
   const form = useForm<PartyGroupFormValues>({
     resolver: zodResolver(partyGroupFormSchema),
@@ -85,8 +72,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
       partyEndDate: "",
       targetArrivalTime: "",
       endTime: "",
-      createdBy: "",
-      accessCode: ""
+      createdBy: ""
     },
   });
 
@@ -120,7 +106,7 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <h2 className="text-xl font-semibold mb-2 text-neutral-800">Create a New Event</h2>
-      <p className="text-sm text-neutral-600 mb-6">Enter the event details and share the access code with parents</p>
+      <p className="text-sm text-neutral-600 mb-6">Enter the event details to share with parents</p>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -474,32 +460,6 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="accessCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Access Code</FormLabel>
-                    <div className="flex items-center gap-2">
-                      <FormControl>
-                        <Input placeholder="Enter or generate an access code" {...field} value={field.value || accessCode} />
-                      </FormControl>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={generateAccessCode}
-                        className="whitespace-nowrap"
-                      >
-                        Generate Code
-                      </Button>
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-1">Parents will use this code to join the event carpool group</p>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-
             </div>
           </div>
 
