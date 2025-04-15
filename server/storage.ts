@@ -15,6 +15,8 @@ import {
   type CalendarEvent,
   type InsertCalendarEvent
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -46,213 +48,66 @@ export interface IStorage {
   deleteCalendarEvent(id: number): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private partyGroups: Map<number, PartyGroup>;
-  private carpools: Map<number, Carpool>;
-  private carpoolRequests: Map<number, CarpoolRequest>;
-  private calendarEvents: Map<number, CalendarEvent>;
-  
-  private currentUserId: number;
-  private currentPartyGroupId: number;
-  private currentCarpoolId: number;
-  private currentRequestId: number;
-  private currentEventId: number;
-  
-  // Persistent storage keys
-  private readonly STORAGE_KEY_PREFIX = 'carpool_app_';
-  private readonly USERS_KEY = this.STORAGE_KEY_PREFIX + 'users';
-  private readonly PARTY_GROUPS_KEY = this.STORAGE_KEY_PREFIX + 'party_groups';
-  private readonly CARPOOLS_KEY = this.STORAGE_KEY_PREFIX + 'carpools';
-  private readonly REQUESTS_KEY = this.STORAGE_KEY_PREFIX + 'requests';
-  private readonly EVENTS_KEY = this.STORAGE_KEY_PREFIX + 'events';
-  private readonly COUNTERS_KEY = this.STORAGE_KEY_PREFIX + 'counters';
-  
-  constructor() {
-    // Initialize maps
-    this.users = new Map();
-    this.partyGroups = new Map();
-    this.carpools = new Map();
-    this.carpoolRequests = new Map();
-    this.calendarEvents = new Map();
-    
-    // Initialize IDs
-    this.currentUserId = 1;
-    this.currentPartyGroupId = 1;
-    this.currentCarpoolId = 1;
-    this.currentRequestId = 1;
-    this.currentEventId = 1;
-    
-    // Load data from persistent storage
-    this.loadFromPersistentStorage();
-    
-    console.log("[MemStorage] Initialized with:", {
-      users: this.users.size,
-      partyGroups: this.partyGroups.size,
-      carpools: this.carpools.size,
-      requests: this.carpoolRequests.size,
-      events: this.calendarEvents.size
-    });
-  }
-  
-  // Load data from session/local storage
-  private loadFromPersistentStorage() {
-    try {
-      // For server-side storage, we'll use a simpler approach with localStorage simulation
-      let storedData: any = {};
-      
-      // Check if there's a global object that we can use for persistent storage
-      if (typeof global !== 'undefined' && (global as any).__persistentStorage) {
-        storedData = (global as any).__persistentStorage;
-      }
-      
-      // Load users
-      if (storedData.users) {
-        this.users = new Map(storedData.users.map((user: User) => [user.id, user]));
-      }
-      
-      // Load party groups
-      if (storedData.partyGroups) {
-        this.partyGroups = new Map(storedData.partyGroups.map((group: PartyGroup) => [group.id, group]));
-      }
-      
-      // Load carpools
-      if (storedData.carpools) {
-        this.carpools = new Map(storedData.carpools.map((carpool: Carpool) => [carpool.id, carpool]));
-      }
-      
-      // Load carpool requests
-      if (storedData.carpoolRequests) {
-        this.carpoolRequests = new Map(storedData.carpoolRequests.map((request: CarpoolRequest) => [request.id, request]));
-      }
-      
-      // Load calendar events
-      if (storedData.calendarEvents) {
-        this.calendarEvents = new Map(storedData.calendarEvents.map((event: CalendarEvent) => [event.id, event]));
-      }
-      
-      // Load counters
-      if (storedData.counters) {
-        this.currentUserId = storedData.counters.userId || 1;
-        this.currentPartyGroupId = storedData.counters.partyGroupId || 1;
-        this.currentCarpoolId = storedData.counters.carpoolId || 1;
-        this.currentRequestId = storedData.counters.requestId || 1;
-        this.currentEventId = storedData.counters.eventId || 1;
-      }
-      
-      console.log("[MemStorage] Loaded data from persistent storage");
-    } catch (error) {
-      console.error("[MemStorage] Error loading from persistent storage:", error);
-      // Initialize with empty data if loading fails
-      this.users = new Map();
-      this.partyGroups = new Map();
-      this.carpools = new Map();
-      this.carpoolRequests = new Map();
-      this.calendarEvents = new Map();
-      
-      this.currentUserId = 1;
-      this.currentPartyGroupId = 1;
-      this.currentCarpoolId = 1;
-      this.currentRequestId = 1;
-      this.currentEventId = 1;
-    }
-  }
-  
-  // Save data to session/local storage
-  private saveToPersistentStorage() {
-    try {
-      // For server-side storage, we'll use a simpler approach with localStorage simulation
-      const storedData = {
-        users: Array.from(this.users.values()),
-        partyGroups: Array.from(this.partyGroups.values()),
-        carpools: Array.from(this.carpools.values()),
-        carpoolRequests: Array.from(this.carpoolRequests.values()),
-        calendarEvents: Array.from(this.calendarEvents.values()),
-        counters: {
-          userId: this.currentUserId,
-          partyGroupId: this.currentPartyGroupId,
-          carpoolId: this.currentCarpoolId,
-          requestId: this.currentRequestId,
-          eventId: this.currentEventId
-        }
-      };
-      
-      // Save to global object if available
-      if (typeof global !== 'undefined') {
-        // Cast to any to avoid TypeScript errors
-        (global as any).__persistentStorage = storedData;
-      }
-      
-      console.log("[MemStorage] Saved data to persistent storage");
-    } catch (error) {
-      console.error("[MemStorage] Error saving to persistent storage:", error);
-    }
-  }
-
+export class DatabaseStorage implements IStorage {
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    this.saveToPersistentStorage();
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
   
   // Party Group methods
   async createPartyGroup(insertPartyGroup: InsertPartyGroup): Promise<PartyGroup> {
-    const id = this.currentPartyGroupId++;
-    // Create a proper PartyGroup object with explicit type casting
-    const partyGroup: PartyGroup = { 
-      id,
-      name: insertPartyGroup.name,
+    // Ensure null values for nullable fields
+    const partyGroupData = {
+      ...insertPartyGroup,
       description: insertPartyGroup.description ?? null,
-      partyAddress: insertPartyGroup.partyAddress,
-      partyCity: insertPartyGroup.partyCity,
-      partyPostcode: insertPartyGroup.partyPostcode,
-      partyDate: insertPartyGroup.partyDate,
       partyEndDate: insertPartyGroup.partyEndDate ?? null,
-      targetArrivalTime: insertPartyGroup.targetArrivalTime,
       endTime: insertPartyGroup.endTime ?? null,
-      createdBy: insertPartyGroup.createdBy,
-      accessCode: insertPartyGroup.accessCode,
       additionalInformation: insertPartyGroup.additionalInformation ?? null
     };
-    this.partyGroups.set(id, partyGroup);
-    this.saveToPersistentStorage();
+
+    const [partyGroup] = await db
+      .insert(partyGroups)
+      .values(partyGroupData)
+      .returning();
+    
     return partyGroup;
   }
   
   async getPartyGroups(): Promise<PartyGroup[]> {
-    return Array.from(this.partyGroups.values());
+    return db.select().from(partyGroups);
   }
   
   async getPartyGroupById(id: number): Promise<PartyGroup | undefined> {
-    return this.partyGroups.get(id);
+    const [partyGroup] = await db.select().from(partyGroups).where(eq(partyGroups.id, id));
+    return partyGroup || undefined;
   }
   
   async getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined> {
-    return Array.from(this.partyGroups.values()).find(
-      (group) => group.accessCode === accessCode
-    );
+    const [partyGroup] = await db.select().from(partyGroups).where(eq(partyGroups.accessCode, accessCode));
+    return partyGroup || undefined;
   }
   
   // Carpool methods
   async createCarpool(insertCarpool: InsertCarpool): Promise<Carpool> {
-    const id = this.currentCarpoolId++;
+    console.log("[DB] Creating carpool with data:", JSON.stringify(insertCarpool, null, 2));
+    
     // Ensure all nullable fields have proper null values instead of undefined
-    const carpool: Carpool = { 
-      ...insertCarpool, 
-      id,
+    const carpoolData = {
+      ...insertCarpool,
       canPickup: insertCarpool.canPickup ?? null,
       canDropoff: insertCarpool.canDropoff ?? null,
       canBoth: insertCarpool.canBoth ?? null,
@@ -266,39 +121,52 @@ export class MemStorage implements IStorage {
       emergencyContactName: insertCarpool.emergencyContactName ?? null,
       emergencyContactPhone: insertCarpool.emergencyContactPhone ?? null,
       emergencyContactRelationship: insertCarpool.emergencyContactRelationship ?? null,
-      // Ensure all dynamically added properties are properly typed
+      // Additional fields
       outboundDropoffPreference: insertCarpool.outboundDropoffPreference ?? null,
       returnPickupPreference: insertCarpool.returnPickupPreference ?? null,
       pickupTime: insertCarpool.pickupTime ?? null,
-      dropoffPreference: insertCarpool.dropoffPreference ?? null
-    } as Carpool; // Type assertion to handle dynamically added properties
+      dropoffPreference: insertCarpool.dropoffPreference ?? null,
+      // Other fields
+      outboundMaxDistance: insertCarpool.outboundMaxDistance ?? null,
+      outboundPickupLocation: insertCarpool.outboundPickupLocation ?? null,
+      outboundPickupLocationCity: insertCarpool.outboundPickupLocationCity ?? null,
+      outboundPickupLocationPostcode: insertCarpool.outboundPickupLocationPostcode ?? null,
+      outboundDepartureTime: insertCarpool.outboundDepartureTime ?? null,
+      returnDropoffPreference: insertCarpool.returnDropoffPreference ?? null,
+      returnMaxDistance: insertCarpool.returnMaxDistance ?? null,
+      returnPickupLocation: insertCarpool.returnPickupLocation ?? null,
+      returnPickupLocationCity: insertCarpool.returnPickupLocationCity ?? null,
+      returnPickupLocationPostcode: insertCarpool.returnPickupLocationPostcode ?? null,
+      returnCollectionTime: insertCarpool.returnCollectionTime ?? null
+    };
     
-    this.carpools.set(id, carpool);
-    this.saveToPersistentStorage();
+    const [carpool] = await db
+      .insert(carpools)
+      .values(carpoolData)
+      .returning();
+    
+    console.log("[DB] Created carpool:", JSON.stringify(carpool, null, 2));
     return carpool;
   }
   
   async getCarpools(): Promise<Carpool[]> {
-    return Array.from(this.carpools.values());
+    return db.select().from(carpools);
   }
   
   async getCarpoolsByPartyGroupId(partyGroupId: number): Promise<Carpool[]> {
-    return Array.from(this.carpools.values()).filter(
-      (carpool) => carpool.partyGroupId === partyGroupId
-    );
+    return db.select().from(carpools).where(eq(carpools.partyGroupId, partyGroupId));
   }
   
   async getCarpoolById(id: number): Promise<Carpool | undefined> {
-    return this.carpools.get(id);
+    const [carpool] = await db.select().from(carpools).where(eq(carpools.id, id));
+    return carpool || undefined;
   }
   
   // Carpool request methods
   async createCarpoolRequest(insertRequest: InsertCarpoolRequest): Promise<CarpoolRequest> {
-    const id = this.currentRequestId++;
     // Ensure all nullable fields have proper null values instead of undefined
-    const request: CarpoolRequest = { 
-      ...insertRequest, 
-      id,
+    const requestData = {
+      ...insertRequest,
       childPhone: insertRequest.childPhone ?? null,
       needsPickup: insertRequest.needsPickup ?? null,
       needsDropoff: insertRequest.needsDropoff ?? null,
@@ -307,56 +175,54 @@ export class MemStorage implements IStorage {
       emergencyContactName: insertRequest.emergencyContactName ?? null,
       emergencyContactPhone: insertRequest.emergencyContactPhone ?? null,
       emergencyContactRelationship: insertRequest.emergencyContactRelationship ?? null,
-      // Handle dynamic properties that might be added by the client
       pickupCarpoolId: insertRequest.pickupCarpoolId ?? null,
       dropoffCarpoolId: insertRequest.dropoffCarpoolId ?? null
-    } as CarpoolRequest; // Type assertion to handle dynamically added properties
+    };
+
+    const [request] = await db
+      .insert(carpoolRequests)
+      .values(requestData)
+      .returning();
     
-    this.carpoolRequests.set(id, request);
-    this.saveToPersistentStorage();
     return request;
   }
   
   async getCarpoolRequestsByCarpoolId(carpoolId: number): Promise<CarpoolRequest[]> {
-    return Array.from(this.carpoolRequests.values()).filter(
-      (request) => request.carpoolId === carpoolId
-    );
+    return db.select().from(carpoolRequests).where(eq(carpoolRequests.carpoolId, carpoolId));
   }
   
   // Calendar event methods
   async createCalendarEvent(insertEvent: InsertCalendarEvent): Promise<CalendarEvent> {
-    const id = this.currentEventId++;
     // Ensure all nullable fields have proper null values instead of undefined
-    const event: CalendarEvent = { 
-      ...insertEvent, 
-      id,
+    const eventData = {
+      ...insertEvent,
       description: insertEvent.description ?? null,
       location: insertEvent.location ?? null,
       isRecurring: insertEvent.isRecurring ?? null,
       recurrencePattern: insertEvent.recurrencePattern ?? null,
       reminderTime: insertEvent.reminderTime ?? null
     };
-    this.calendarEvents.set(id, event);
-    this.saveToPersistentStorage();
+
+    const [event] = await db
+      .insert(calendarEvents)
+      .values(eventData)
+      .returning();
+    
     return event;
   }
   
   async getCalendarEventById(id: number): Promise<CalendarEvent | undefined> {
-    return this.calendarEvents.get(id);
+    const [event] = await db.select().from(calendarEvents).where(eq(calendarEvents.id, id));
+    return event || undefined;
   }
   
   async getCalendarEventsByCarpoolId(carpoolId: number): Promise<CalendarEvent[]> {
-    return Array.from(this.calendarEvents.values()).filter(
-      (event) => event.carpoolId === carpoolId
-    );
+    return db.select().from(calendarEvents).where(eq(calendarEvents.carpoolId, carpoolId));
   }
   
   async updateCalendarEvent(id: number, eventUpdate: Partial<InsertCalendarEvent>): Promise<CalendarEvent | undefined> {
-    const event = this.calendarEvents.get(id);
-    if (!event) return undefined;
-    
     // Process updates with proper null handling
-    const processedUpdate: Partial<CalendarEvent> = {};
+    const processedUpdate: Partial<CalendarEvent> = { id };
     
     if ('description' in eventUpdate) processedUpdate.description = eventUpdate.description ?? null;
     if ('location' in eventUpdate) processedUpdate.location = eventUpdate.location ?? null;
@@ -370,19 +236,23 @@ export class MemStorage implements IStorage {
     if ('endDate' in eventUpdate) processedUpdate.endDate = eventUpdate.endDate;
     if ('carpoolId' in eventUpdate) processedUpdate.carpoolId = eventUpdate.carpoolId;
     
-    const updatedEvent = { ...event, ...processedUpdate };
-    this.calendarEvents.set(id, updatedEvent);
-    this.saveToPersistentStorage();
-    return updatedEvent;
+    const [updatedEvent] = await db
+      .update(calendarEvents)
+      .set(processedUpdate)
+      .where(eq(calendarEvents.id, id))
+      .returning();
+    
+    return updatedEvent || undefined;
   }
   
   async deleteCalendarEvent(id: number): Promise<boolean> {
-    const deleted = this.calendarEvents.delete(id);
-    if (deleted) {
-      this.saveToPersistentStorage();
-    }
-    return deleted;
+    const [deletedEvent] = await db
+      .delete(calendarEvents)
+      .where(eq(calendarEvents.id, id))
+      .returning();
+    
+    return !!deletedEvent;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
