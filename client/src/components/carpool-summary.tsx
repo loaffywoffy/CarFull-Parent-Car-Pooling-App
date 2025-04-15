@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { 
   Car, ArrowRight, ArrowLeft, MapPin, User, Calendar, Clock, 
   Users, HomeIcon, Building, Share2, Phone, MailIcon, Printer,
-  Download, ChevronRight, Baby, Map as MapIcon
+  Download, ChevronRight, Baby
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import LocationMap from "./location-map";
+// Map functionality removed
 import { geocodeAddress } from "@/lib/geocoding";
 import { type PartyGroup, type Carpool, type CarpoolRequest } from "@shared/schema";
 import { getCarpoolRequests } from "@/api/carpools";
@@ -25,7 +25,7 @@ interface CarpoolSummaryProps {
 }
 
 export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
-  const [activeTab, setActiveTab] = useState<'summary' | 'detailed' | 'map'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'detailed'>('summary');
   const printRef = useRef<HTMLDivElement>(null);
   const [partyLocation, setPartyLocation] = useState<[number, number] | null>(null);
   const [carpoolLocations, setCarpoolLocations] = useState<Array<{
@@ -325,13 +325,7 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
         >
           Detailed View
         </button>
-        <button
-          className={`py-2 px-4 font-medium text-sm flex items-center gap-1 ${activeTab === 'map' ? 'border-b-2 border-primary text-primary' : 'text-neutral-500'}`}
-          onClick={() => setActiveTab('map')}
-        >
-          <MapIcon className="h-4 w-4" />
-          <span>Map View</span>
-        </button>
+
       </div>
 
       <div ref={printRef}>
@@ -566,75 +560,7 @@ export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
           </>
         )}
 
-        {activeTab === 'map' && (
-          <>
-            <div className="mb-8">
-              <h3 className="text-lg font-medium text-neutral-700 mb-4">Carpool Map View</h3>
-              
-              {isMapLoading && (
-                <div className="rounded-md border border-gray-200 overflow-hidden">
-                  <div className="h-[400px] flex items-center justify-center bg-gray-50">
-                    <div className="text-center">
-                      <Skeleton className="h-[400px] w-full" />
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {!isMapLoading && partyLocation && (carpoolLocations.length > 0 || true) && (
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600 mb-2">
-                    This map shows the party location and all carpool pickup/dropoff points.
-                  </p>
-                
-                  <div className="border rounded-md overflow-hidden">
-                    <LocationMap
-                      locations={[
-                        {
-                          label: partyGroup?.name || 'Party Location',
-                          position: partyLocation,
-                          type: 'party'
-                        },
-                        ...carpoolLocations.map(loc => ({
-                          label: loc.label,
-                          position: loc.position,
-                          type: loc.type === 'pickup' ? 'pickup' : 
-                                loc.type === 'dropoff' ? 'dropoff' : 'both' as any
-                        }))
-                      ]}
-                      height="450px"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-primary-500"></div>
-                      <span className="text-sm">Party Location</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                      <span className="text-sm">Pickup Points</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                      <span className="text-sm">Dropoff Points</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {!isMapLoading && (!partyLocation || carpoolLocations.length === 0) && (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <div className="text-gray-500 mb-2">
-                      Map data could not be loaded. Please make sure addresses are provided for the party location and carpools.
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </>
-        )}
+        {/* Map view has been removed */}
 
         {activeTab === 'detailed' && (
           <>
