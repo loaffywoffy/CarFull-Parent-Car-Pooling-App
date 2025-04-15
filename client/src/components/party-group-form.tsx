@@ -26,7 +26,7 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   targetArrivalTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
   partyEndDate: z.string().min(1, "End date is required"),
-  accessCode: z.string().min(4, "Access code must be at least 4 characters")
+  accessCode: z.string().optional()
 }).refine(
   (data) => {
     // If end date is provided, it must be >= start date

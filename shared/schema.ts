@@ -22,7 +22,7 @@ export const partyGroups = pgTable("party_groups", {
   targetArrivalTime: text("target_arrival_time").notNull(), // Start time
   endTime: text("end_time"), // Optional end time
   createdBy: text("created_by").notNull(), // Admin name or email
-  accessCode: text("access_code").notNull(), // Code for parents to join
+  accessCode: text("access_code"), // Optional access code for parents to join
   additionalInformation: text("additional_information"),
 });
 
