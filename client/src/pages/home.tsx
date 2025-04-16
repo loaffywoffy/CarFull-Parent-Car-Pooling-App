@@ -330,52 +330,18 @@ export default function Home() {
           />
         )}
         
-        {activeTab === "request" && !selectedCarpoolId && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg p-6 shadow-md">
-              <h2 className="text-xl font-semibold mb-4">Request a Carpool Spot</h2>
-              
-              {!selectedPartyGroup ? (
-                <>
-                  <p className="text-neutral-600 mb-6">
-                    Please select or join an event first before requesting a carpool spot.
-                  </p>
-                  <button
-                    onClick={() => handleTabChange("partyGroups")}
-                    className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
-                  >
-                    Go to Event Details
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className="text-neutral-600 mb-6">
-                    Select an available carpool offer from the list below to request a spot.
-                  </p>
-                  
-                  {/* Show available carpools directly in this tab */}
-                  <div className="mt-6">
-                    <CarpoolList 
-                      partyGroupId={selectedPartyGroup.id}
-                      onRequestSpot={handleRequestSpot}
-                      onManageCalendar={undefined}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-        
         {activeTab === "view" && selectedPartyGroup && (
-          <CarpoolSummary partyGroupId={selectedPartyGroup.id} />
+          <CarpoolSummary 
+            partyGroupId={selectedPartyGroup.id}
+            onRequestSpot={handleRequestSpot}
+          />
         )}
         
         {activeTab === "view" && !selectedPartyGroup && (
           <div className="bg-white rounded-lg p-6 shadow-md">
-            <h2 className="text-xl font-semibold mb-4">View Carpools</h2>
+            <h2 className="text-xl font-semibold mb-4">Manage Carpools</h2>
             <p className="text-neutral-600 mb-6">
-              Please select or join an event first to view available carpools.
+              Please select or join an event first to view and manage carpools.
             </p>
             <button
               onClick={() => handleTabChange("partyGroups")}

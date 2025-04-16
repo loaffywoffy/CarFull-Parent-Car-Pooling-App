@@ -444,7 +444,7 @@ export default function PartyGroupDetails({
           variant="outline" 
           onClick={onRequestSpot}
         >
-          Request a Spot
+          Manage Carpools
         </Button>
         <Button onClick={() => onOfferCarpool(partyGroup.id)}>
           Offer a Carpool

@@ -332,7 +332,12 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
         >
           Detailed View
         </button>
-
+        <button
+          className={`py-2 px-4 font-medium text-sm ${activeTab === 'request' ? 'border-b-2 border-primary text-primary' : 'text-neutral-500'}`}
+          onClick={() => setActiveTab('request')}
+        >
+          Request a Spot
+        </button>
       </div>
 
       <div ref={printRef}>
@@ -396,6 +401,150 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
             </DialogContent>
           </Dialog>
         </div>
+        
+        {/* "Request a Spot" view */}
+        {activeTab === 'request' && (
+          <div className="space-y-6">
+            <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-4">
+              <h3 className="text-lg font-medium text-blue-800 mb-2">Request a Carpool Spot</h3>
+              <p className="text-sm text-blue-700">
+                Browse available carpools below and click "Request Spot" on any that meet your needs.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-4">
+              <Input
+                placeholder="Search by name, city, or postcode..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-xs"
+              />
+
+              <Select value={sortBy} onValueChange={(value: "distance" | "spaces" | "name") => setSortBy(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spaces">Sort by Available Spaces</SelectItem>
+                  <SelectItem value="name">Sort by Name</SelectItem>
+                  <SelectItem value="distance">Sort by Distance</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Tabs value={carpoolFilterTab} onValueChange={setCarpoolFilterTab}>
+              <TabsList>
+                <TabsTrigger value="all">
+                  All ({carpoolsArray.length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="to-party">
+                  To Event ({carpoolsArray.filter((c: any) => c.canPickup || c.canBoth).length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="from-party">
+                  From Event ({carpoolsArray.filter((c: any) => c.canDropoff || c.canBoth).length || 0})
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="mt-4">
+                {carpoolsArray.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-8 text-center text-gray-500">
+                      No carpools available for this event yet
+                    </CardContent>
+                  </Card>
+                ) : (
+                  // Filter and sort carpools
+                  carpoolsArray
+                    .filter((carpool: any) => {
+                      // Filter by tab selection
+                      if (carpoolFilterTab === "to-party") return carpool.canPickup || carpool.canBoth;
+                      if (carpoolFilterTab === "from-party") return carpool.canDropoff || carpool.canBoth;
+                      return true; // Show all carpools in the "all" tab
+                    })
+                    .filter(carpool => {
+                      // Filter by search term
+                      if (!searchTerm) return true;
+                      const searchLower = searchTerm.toLowerCase();
+                      return (
+                        carpool.parentName.toLowerCase().includes(searchLower) ||
+                        (carpool.city && carpool.city.toLowerCase().includes(searchLower)) ||
+                        (carpool.postcode && carpool.postcode.toLowerCase().includes(searchLower))
+                      );
+                    })
+                    .sort((a, b) => {
+                      // Sort based on selected option
+                      if (sortBy === "spaces") {
+                        return (b.spacesAvailable || 0) - (a.spacesAvailable || 0);
+                      }
+                      if (sortBy === "name") {
+                        return a.parentName.localeCompare(b.parentName);
+                      }
+                      // Default to distance sorting
+                      return 0;
+                    })
+                    .map((carpool: any) => (
+                      <Card key={carpool.id} className="mb-4 hover:shadow-lg transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="space-y-2">
+                              <h3 className="font-semibold text-lg">{carpool.parentName}</h3>
+
+                              <div className="flex items-center text-sm text-gray-600 space-x-2">
+                                <MapPin size={16} />
+                                <span>{carpool.city || 'Location'}, {carpool.postcode || 'N/A'}</span>
+                              </div>
+
+                              <div className="flex flex-wrap gap-2">
+                                {carpool.canPickup && (
+                                  <Badge className="bg-green-100 text-green-800">
+                                    To event ({carpool.spacesAvailable} spaces)
+                                  </Badge>
+                                )}
+                                {carpool.canDropoff && (
+                                  <Badge className="bg-blue-100 text-blue-800">
+                                    From event ({carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces)
+                                  </Badge>
+                                )}
+                                {carpool.dropoffPreference && (
+                                  <Badge className="bg-purple-100 text-purple-800">
+                                    {carpool.dropoffPreference === "direct-home" ? "Direct home drop-off" : 
+                                     carpool.dropoffPreference === "my-home" ? "Pickup from driver's home" : 
+                                     "Meeting point"}
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {carpool.maxDistance && (
+                                <p className="text-sm text-gray-600">
+                                  Maximum distance: {carpool.maxDistance} miles
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                              <Button 
+                                onClick={() => onRequestSpot && onRequestSpot(carpool.id)}
+                                className="ml-4"
+                                variant="default"
+                              >
+                                <Users className="h-4 w-4 mr-2" />
+                                Request Spot
+                              </Button>
+                              {carpool.spacesAvailable <= 2 && (
+                                <span className="text-xs text-amber-600 whitespace-nowrap">
+                                  Only {carpool.spacesAvailable} {carpool.spacesAvailable === 1 ? 'space' : 'spaces'} left
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                )}
+              </div>
+            </Tabs>
+          </div>
+        )}
 
         {activeTab === 'summary' && (
           <>
