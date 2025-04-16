@@ -308,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Delete a party group
-  app.delete("/api/party-groups/:id", async (req, res) => {
+  app.delete("/api/party-groups/:id", isCreatorMiddleware, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -334,7 +334,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Update a party group
-  app.put("/api/party-groups/:id", async (req, res) => {
+  // Middleware to check if user is creator
+  const isCreatorMiddleware = async (req: any, res: any, next: any) => {
+    try {
+      const id = parseInt(req.params.id);
+      const partyGroup = await storage.getPartyGroupById(id);
+      
+      if (!partyGroup) {
+        return res.status(404).json({ message: "Party group not found" });
+      }
+      
+      // Check if the current user is the creator
+      if (req.headers['x-user-email'] !== partyGroup.createdBy) {
+        return res.status(403).json({ message: "Only the creator can modify this party group" });
+      }
+      
+      next();
+    } catch (error) {
+      res.status(500).json({ message: "Error checking permissions" });
+    }
+  };
+
+  // Protected routes that require creator access
+  app.put("/api/party-groups/:id", isCreatorMiddleware, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {

@@ -50,32 +50,32 @@ export default function PartyGroupDetails({
   const [partyLocation, setPartyLocation] = useState<[number, number] | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(true);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  
+
   const queryClient = useQueryClient();
-  
+
   // Mutation for deleting the event
   const deleteMutation = useMutation({
     mutationFn: () => deletePartyGroup(partyGroup.id),
     onSuccess: () => {
       // Invalidate all related caches to ensure consistency across the application
-      
+
       // Invalidate the specific party group
       queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}`] });
-      
+
       // Invalidate carpools for this party group
       queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}/carpools`] });
-      
+
       // Invalidate all party groups list
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
-      
+
       // Also invalidate any nested queries related to this party group
       queryClient.invalidateQueries({ queryKey: [`/api/carpools`] });
-      
+
       toast({
         title: "Event deleted",
         description: `'${partyGroup.name}' has been successfully deleted.`,
       });
-      
+
       if (onDeleted) onDeleted();
     },
     onError: (error) => {
@@ -87,7 +87,7 @@ export default function PartyGroupDetails({
       console.error("Error deleting event:", error);
     }
   });
-  
+
   // Get coordinates for the party location when the component mounts
   useEffect(() => {
     const loadPartyLocation = async () => {
@@ -110,7 +110,7 @@ export default function PartyGroupDetails({
 
     loadPartyLocation();
   }, [partyGroup]);
-  
+
   // Format date to readable string
   const formattedDate = new Date(partyGroup.partyDate).toLocaleDateString(undefined, {
     weekday: 'long',
@@ -118,7 +118,7 @@ export default function PartyGroupDetails({
     month: 'long',
     day: 'numeric'
   });
-  
+
   // Get end date if available
   const formattedEndDate = partyGroup.partyEndDate 
     ? new Date(partyGroup.partyEndDate).toLocaleDateString(undefined, {
@@ -132,7 +132,7 @@ export default function PartyGroupDetails({
   // Generate shareable link
   const baseUrl = window.location.origin;
   const shareableLink = `${baseUrl}?access=${partyGroup.accessCode}`;
-  
+
   const copyAccessCode = () => {
     if (partyGroup.accessCode) {
       navigator.clipboard.writeText(partyGroup.accessCode)
@@ -153,7 +153,7 @@ export default function PartyGroupDetails({
         });
     }
   };
-  
+
   const copyShareableLink = () => {
     navigator.clipboard.writeText(shareableLink)
       .then(() => {
@@ -174,7 +174,7 @@ export default function PartyGroupDetails({
   };
 
   const [activeTab, setActiveTab] = useState("details");
-  
+
   return (
     <Card className="w-full mb-6 overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-primary-100 to-primary-50 pb-4">
@@ -212,7 +212,7 @@ export default function PartyGroupDetails({
           </div>
         </div>
       </CardHeader>
-      
+
       {/* Main content tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start px-6 pt-4 bg-white border-b">
@@ -232,14 +232,14 @@ export default function PartyGroupDetails({
             </div>
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="details" className="pt-2 pb-0 px-0 m-0">
           <CardContent className="pt-4">
             <div className="space-y-4">
               {partyGroup.description && (
                 <p className="text-gray-600 text-sm">{partyGroup.description}</p>
               )}
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-start space-x-2">
                   <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
@@ -248,7 +248,7 @@ export default function PartyGroupDetails({
                     <p className="text-gray-600 text-sm">{formattedDate}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-2">
                   <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
                   <div>
@@ -256,7 +256,7 @@ export default function PartyGroupDetails({
                     <p className="text-gray-600 text-sm">{partyGroup.targetArrivalTime}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-2 md:col-span-2">
                   <MapPinIcon className="h-5 w-5 text-primary-600 mt-0.5" />
                   <div>
@@ -267,7 +267,7 @@ export default function PartyGroupDetails({
                   </div>
                 </div>
               </div>
-              
+
               {partyGroup.additionalInformation && (
                 <div className="pt-2">
                   <p className="font-medium text-gray-900 mb-1">Additional Information</p>
@@ -276,7 +276,7 @@ export default function PartyGroupDetails({
                   </p>
                 </div>
               )}
-              
+
               {/* Display end date and time if available */}
               {(partyGroup.partyEndDate || partyGroup.endTime) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -289,7 +289,7 @@ export default function PartyGroupDetails({
                       </div>
                     </div>
                   )}
-                  
+
                   {partyGroup.endTime && (
                     <div className="flex items-start space-x-2">
                       <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
@@ -301,7 +301,7 @@ export default function PartyGroupDetails({
                   )}
                 </div>
               )}
-              
+
               {/* Only show sharing options to the creator */}
               {isCreator && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
@@ -311,13 +311,14 @@ export default function PartyGroupDetails({
                       <p className="font-medium text-gray-900">Share with Parents</p>
                     </div>
                   </div>
-                  
+
                   <Tabs defaultValue="code" className="w-full">
                     <TabsList className="mb-4">
                       <TabsTrigger value="code">Access Code</TabsTrigger>
                       <TabsTrigger value="link">Shareable Link</TabsTrigger>
+                      <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent value="code">
                       <div className="flex items-center justify-between bg-gray-50 rounded-md p-2">
                         <code className="px-2 py-1 bg-white rounded text-sm font-mono border">
@@ -344,7 +345,7 @@ export default function PartyGroupDetails({
                       </div>
                       <p className="text-xs text-gray-500 mt-2">Share this code with parents to join the party group</p>
                     </TabsContent>
-                    
+
                     <TabsContent value="link">
                       <div className="space-y-2">
                         <div className="flex gap-2">
@@ -372,13 +373,36 @@ export default function PartyGroupDetails({
                         </p>
                       </div>
                     </TabsContent>
+
+                    <TabsContent value="whatsapp">
+                      <div className="space-y-2">
+                        <p className="text-sm text-gray-600">Share this party group via WhatsApp:</p>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="default"
+                            className="w-full bg-green-600 hover:bg-green-700"
+                            onClick={() => {
+                              const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                                `📅 Date: ${partyGroup.partyDate}\n` +
+                                `⏰ Time: ${partyGroup.targetArrivalTime}\n` +
+                                `📍 Location: ${partyGroup.partyAddress}\n\n` +
+                                `Access Code: ${partyGroup.accessCode}\n` +
+                                `Link: ${shareableLink}`;
+                              window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                            }}
+                          >
+                            Share via WhatsApp
+                          </Button>
+                        </div>
+                      </div>
+                    </TabsContent>
                   </Tabs>
                 </div>
               )}
             </div>
           </CardContent>
         </TabsContent>
-        
+
         <TabsContent value="map" className="pt-0 pb-0 px-0 m-0">
           <div className="px-6 py-4">
             <div className="mb-4">
@@ -386,7 +410,7 @@ export default function PartyGroupDetails({
               <p className="text-sm text-gray-600 mb-4">
                 View the party location on the map to help plan your journey.
               </p>
-              
+
               {isMapLoading && (
                 <div className="rounded-md border border-gray-200 overflow-hidden">
                   <div className="h-[350px] bg-gray-50 flex items-center justify-center">
@@ -394,7 +418,7 @@ export default function PartyGroupDetails({
                   </div>
                 </div>
               )}
-              
+
               {!isMapLoading && partyLocation && (
                 <div className="rounded-md border border-gray-200 overflow-hidden">
                   <LocationMap 
@@ -410,7 +434,7 @@ export default function PartyGroupDetails({
                   />
                 </div>
               )}
-              
+
               {!isMapLoading && !partyLocation && (
                 <div className="h-[350px] flex items-center justify-center bg-gray-50 rounded-md border border-gray-200">
                   <div className="text-center">
@@ -423,7 +447,7 @@ export default function PartyGroupDetails({
                   </div>
                 </div>
               )}
-              
+
               <div className="mt-4 text-xs text-gray-500 bg-gray-50 p-3 rounded-md">
                 <p className="font-medium mb-1">Address:</p>
                 <p>{partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}</p>
@@ -431,14 +455,14 @@ export default function PartyGroupDetails({
             </div>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="carpools" className="pt-0 pb-0 px-0 m-0">
           <div className="px-6 py-4">
             <CarpoolSummary partyGroupId={partyGroup.id} />
           </div>
         </TabsContent>
       </Tabs>
-      
+
       <CardFooter className="bg-gray-50 py-4 flex justify-end space-x-3">
         <Button 
           variant="outline" 
@@ -450,7 +474,7 @@ export default function PartyGroupDetails({
           Offer a Carpool
         </Button>
       </CardFooter>
-      
+
       {/* Delete confirmation dialog */}
       <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
         <AlertDialogContent>
