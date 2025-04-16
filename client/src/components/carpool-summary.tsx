@@ -45,13 +45,13 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
   
   // Fetch carpool data
   const { data: carpools, isLoading: carpoolsLoading } = useQuery({
-    queryKey: [`/api/party-groups/${partyGroupId}/carpools`],
+    queryKey: ['/api/party-groups', partyGroupId, 'carpools'],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
   });
 
   // Fetch party group data
   const { data: partyGroup } = useQuery<PartyGroup>({
-    queryKey: [`/api/party-groups/${partyGroupId}`],
+    queryKey: ['/api/party-groups', partyGroupId],
     queryFn: () => getPartyGroupById(partyGroupId),
     enabled: !!partyGroupId,
   });
