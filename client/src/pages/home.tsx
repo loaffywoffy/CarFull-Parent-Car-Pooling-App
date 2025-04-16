@@ -240,7 +240,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Offer a Carpool
+              Give a Ride
             </button>
             <button
               onClick={() => selectedPartyGroup ? handleTabChange("view") : handleTabChange("partyGroups")}
@@ -250,7 +250,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Manage Carpools
+              Find a Ride
             </button>
 
 
