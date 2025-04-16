@@ -1109,7 +1109,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
               className="w-full sm:w-auto"
               disabled={carpoolMutation.isPending || isLoadingPartyGroup}
             >
-              {carpoolMutation.isPending ? "Submitting..." : "Submit Carpool Offer"}
+              {carpoolMutation.isPending ? "Submitting..." : "Share My Ride"}
             </Button>
           </div>
         </form>

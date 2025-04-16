@@ -687,7 +687,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
               className="px-6 py-2 bg-primary text-white font-medium rounded-md"
               disabled={requestMutation.isPending}
             >
-              {requestMutation.isPending ? "Submitting..." : "Submit Request"}
+              {requestMutation.isPending ? "Submitting..." : "Request This Ride"}
             </Button>
           </div>
         </form>

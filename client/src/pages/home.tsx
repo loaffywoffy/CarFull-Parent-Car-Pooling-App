@@ -241,7 +241,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Offer Ride
+              Give a Ride
             </button>
             <button
               onClick={() => selectedPartyGroup ? handleTabChange("view") : handleTabChange("partyGroups")}
@@ -251,7 +251,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Need Ride
+              Find a Ride
             </button>
 
 
