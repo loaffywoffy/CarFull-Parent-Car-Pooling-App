@@ -6,6 +6,7 @@ import CalendarEventForm from "@/components/calendar-event-form";
 import CalendarEventsList from "@/components/calendar-events-list";
 import SuccessDialog from "@/components/success-dialog";
 import PartyGroupForm from "@/components/party-group-form";
+import PartyGroupEditForm from "@/components/party-group-edit-form";
 import PartyGroupsList from "@/components/party-groups-list";
 import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
