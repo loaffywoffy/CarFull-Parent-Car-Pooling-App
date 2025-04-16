@@ -10,7 +10,7 @@ import { type PartyGroup } from "@shared/schema";
 interface PartyGroupsListProps {
   onSelectPartyGroup: (partyGroup: PartyGroup) => void;
   onCreateNew: () => void;
-  onJoinPartyGroup: (accessCode?: string) => void;
+  onJoinPartyGroup: (partyId?: string) => void;
 }
 
 export default function PartyGroupsList({ 
@@ -88,11 +88,11 @@ export default function PartyGroupsList({
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
           <h3 className="font-medium text-lg text-gray-800 mb-2">No Events Yet</h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Create a new party group as an organizer or join an existing group with an access code
+            Create a new event group as an organizer or join an existing group with an event ID
           </p>
           <div className="flex justify-center gap-3">
             <Button onClick={() => onJoinPartyGroup()} variant="outline">
-              Join with Access Code
+              Join with Event ID
             </Button>
             <Button onClick={() => onCreateNew()} variant="default">
               Create New Event

@@ -13,7 +13,7 @@ import JoinPartyGroup from "@/components/join-party-group";
 import CarpoolSummary from "@/components/carpool-summary";
 
 import { type PartyGroup } from "@shared/schema";
-import { getPartyGroupById, getPartyGroupByAccessCode } from "@/api/partyGroups";
+import { getPartyGroupById } from "@/api/partyGroups";
 
 type Tab = "partyGroups" | "offer" | "request" | "view";
 type PartyGroupTab = "list" | "create" | "join" | "details" | "edit";
@@ -79,7 +79,7 @@ export default function Home() {
         setSuccessInfo({
           show: true,
           title: "Event Created!",
-          message: "Your event has been created successfully. Share the access code with other parents.",
+          message: "Your event has been created successfully. Share the link with other parents.",
         });
       } catch (error) {
         console.error("Error fetching party group:", error);
@@ -110,18 +110,18 @@ export default function Home() {
     // Don't automatically navigate to the view tab
   };
 
-  // Check URL for access code when the component mounts
+  // Check URL for party ID when the component mounts
   useEffect(() => {
-    const checkUrlForAccessCode = async () => {
+    const checkUrlForPartyId = async () => {
       const params = new URLSearchParams(window.location.search);
-      const accessCode = params.get('access');
+      const partyId = params.get('partyId');
       
-      if (accessCode) {
+      if (partyId && !isNaN(Number(partyId))) {
         try {
-          // Try to find a party group with this access code
-          const partyGroup = await getPartyGroupByAccessCode(accessCode);
+          // Try to find a party group with this ID
+          const partyGroup = await getPartyGroupById(parseInt(partyId));
           if (partyGroup) {
-            setJoinAccessCode(accessCode);
+            setJoinPartyId(partyId);
             setSelectedPartyGroup(partyGroup);
             setPartyGroupTab("details");
             setActiveTab("view"); // Auto-navigate to the View Carpools tab
@@ -132,17 +132,17 @@ export default function Home() {
               message: `You've opened "${partyGroup.name}". You can now view available carpools.`,
             });
             
-            // Remove the access code from the URL to avoid reloading on refresh
+            // Remove the party ID from the URL to avoid reloading on refresh
             const newUrl = window.location.pathname;
             window.history.replaceState({}, document.title, newUrl);
           }
         } catch (error) {
-          console.error("Error fetching party group by access code:", error);
+          console.error("Error fetching party group by ID:", error);
         }
       }
     };
     
-    checkUrlForAccessCode();
+    checkUrlForPartyId();
   }, []);
 
   const handleOfferCarpool = (partyGroupId: number) => {
@@ -264,8 +264,8 @@ export default function Home() {
               <PartyGroupsList
                 onSelectPartyGroup={handleSelectPartyGroup}
                 onCreateNew={() => setPartyGroupTab("create")}
-                onJoinPartyGroup={(accessCode) => {
-                  setJoinAccessCode(accessCode || "");
+                onJoinPartyGroup={(partyId) => {
+                  setJoinPartyId(partyId || "");
                   setPartyGroupTab("join");
                 }}
               />
@@ -279,7 +279,7 @@ export default function Home() {
               <JoinPartyGroup 
                 onJoinSuccess={handlePartyGroupJoinSuccess}
                 onCancel={() => setPartyGroupTab("list")}
-                initialAccessCode={joinAccessCode}
+                initialPartyId={joinPartyId}
               />
             )}
             
