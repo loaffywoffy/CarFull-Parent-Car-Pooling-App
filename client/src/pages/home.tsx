@@ -240,24 +240,14 @@ export default function Home() {
               Offer a Carpool
             </button>
             <button
-              onClick={() => selectedPartyGroup ? handleTabChange("request") : handleTabChange("partyGroups")}
-              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
-                activeTab === "request"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-neutral-600"
-              }`}
-            >
-              Request a Spot
-            </button>
-            <button
-              onClick={() => handleTabChange("view")}
+              onClick={() => selectedPartyGroup ? handleTabChange("view") : handleTabChange("partyGroups")}
               className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
                 activeTab === "view"
                   ? "border-b-2 border-primary text-primary"
                   : "text-neutral-600"
               }`}
             >
-              View All Carpools
+              Manage Carpools
             </button>
 
 

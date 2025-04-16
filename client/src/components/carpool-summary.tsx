@@ -19,13 +19,20 @@ import { toast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
+  onRequestSpot?: (carpoolId: number) => void;
 }
 
-export default function CarpoolSummary({ partyGroupId }: CarpoolSummaryProps) {
-  const [activeTab, setActiveTab] = useState<'summary' | 'detailed'>('summary');
+export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolSummaryProps) {
+  const [activeTab, setActiveTab] = useState<'summary' | 'detailed' | 'request'>('summary');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"distance" | "spaces" | "name">("spaces");
+  const [carpoolFilterTab, setCarpoolFilterTab] = useState("all");
   const printRef = useRef<HTMLDivElement>(null);
   const [partyLocation, setPartyLocation] = useState<[number, number] | null>(null);
   const [carpoolLocations, setCarpoolLocations] = useState<Array<{
