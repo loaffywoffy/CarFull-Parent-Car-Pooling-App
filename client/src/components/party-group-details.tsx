@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   CalendarIcon, MapPinIcon, ClockIcon, UserIcon, CopyIcon, 
   CheckIcon, LinkIcon, Share2Icon, CarIcon, Map as MapIcon,
-  Pencil, Trash2, AlertCircle
+  Pencil, Trash2, AlertCircle, ChevronLeft
 } from "lucide-react";
 import { type PartyGroup } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,7 @@ interface PartyGroupDetailsProps {
   onRequestSpot?: () => void; // New prop for requesting a spot
   onEdit?: (partyGroupId: number) => void; // New prop for editing the event
   onDeleted?: () => void; // New prop for after successful deletion
+  onBack?: () => void; // New prop for going back to the list view
   isCreator?: boolean; // Flag to determine if the current user created this group
 }
 
@@ -43,6 +44,7 @@ export default function PartyGroupDetails({
   onRequestSpot,
   onEdit,
   onDeleted,
+  onBack,
   isCreator = false 
 }: PartyGroupDetailsProps) {
   const { toast } = useToast();
@@ -195,6 +197,20 @@ export default function PartyGroupDetails({
       </CardHeader>
 
       {/* Main content tabs */}
+      {onBack && (
+        <div className="bg-white px-6 pt-4 border-b border-gray-100">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-1 mb-1 text-gray-600 hover:text-gray-900"
+            onClick={onBack}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span>Back to Events</span>
+          </Button>
+        </div>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start px-6 pt-4 bg-white border-b">
           <TabsTrigger value="details" className="data-[state=active]:bg-primary-50">

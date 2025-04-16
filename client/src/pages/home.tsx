@@ -294,6 +294,7 @@ export default function Home() {
                 isCreator={true} /* Set to true for testing purposes - normally: createdGroupIds.includes(selectedPartyGroup.id) */
                 onEdit={() => handleEditPartyGroup(selectedPartyGroup.id)}
                 onDeleted={() => setPartyGroupTab("list")}
+                onBack={() => setPartyGroupTab("list")}
               />
             )}
 
