@@ -3,19 +3,26 @@ import session from "express-session";
 import { storage } from "./storage";
 import { randomUUID } from "crypto";
 import createMemoryStore from "memorystore";
-import { User } from "@shared/schema";
+// Import the User type but rename it to avoid conflict with Express.User
+import { User as SchemaUser } from "@shared/schema";
 
 const MemoryStore = createMemoryStore(session);
 
 declare module "express-session" {
   interface SessionData {
-    user?: User;
+    user?: SchemaUser;
   }
 }
 
 declare global {
   namespace Express {
-    interface User extends User {}
+    // Use the User type from schema but avoid recursive extension
+    interface User {
+      id: number;
+      name: string;
+      phoneNumber: string;
+      email?: string;
+    }
   }
 }
 

@@ -115,11 +115,9 @@ export const calendarEvents = pgTable("calendar_events", {
 
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  email: true,
   name: true,
   phoneNumber: true,
+  email: true,
 });
 
 export const insertPartyGroupSchema = createInsertSchema(partyGroups).omit({
