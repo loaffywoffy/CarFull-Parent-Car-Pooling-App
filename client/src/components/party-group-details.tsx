@@ -57,11 +57,25 @@ export default function PartyGroupDetails({
   const deleteMutation = useMutation({
     mutationFn: () => deletePartyGroup(partyGroup.id),
     onSuccess: () => {
+      // Invalidate all related caches to ensure consistency across the application
+      
+      // Invalidate the specific party group
+      queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}`] });
+      
+      // Invalidate carpools for this party group
+      queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}/carpools`] });
+      
+      // Invalidate all party groups list
+      queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
+      
+      // Also invalidate any nested queries related to this party group
+      queryClient.invalidateQueries({ queryKey: [`/api/carpools`] });
+      
       toast({
         title: "Event deleted",
         description: `'${partyGroup.name}' has been successfully deleted.`,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
+      
       if (onDeleted) onDeleted();
     },
     onError: (error) => {

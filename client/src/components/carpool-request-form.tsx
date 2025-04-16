@@ -146,7 +146,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       // Invalidate carpool requests query to ensure fresh data
       if (partyGroupId) {
         // Invalidate the carpool requests for the selected carpool
-        queryClient.invalidateQueries({ queryKey: ['/api/carpools', values.carpoolId, 'requests'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/carpools', form.getValues('carpoolId'), 'requests'] });
         
         // Invalidate all carpools for this event group to refresh counts
         queryClient.invalidateQueries({ queryKey: ['/api/party-groups', partyGroupId, 'carpools'] });

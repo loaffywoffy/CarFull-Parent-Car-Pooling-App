@@ -85,8 +85,19 @@ export default function PartyGroupEditForm({ partyGroup, onSuccess, onCancel }: 
     mutationFn: (values: PartyGroupFormValues) => 
       updatePartyGroup(partyGroup.id, values),
     onSuccess: (data) => {
-      // Invalidate party groups query to refresh the list
+      // Comprehensive invalidation of all related caches to ensure consistency
+      
+      // Invalidate the specific party group detail query
+      queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}`] });
+      
+      // Invalidate carpools for this party group
+      queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}/carpools`] });
+      
+      // Invalidate all party groups list
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
+      
+      // Also invalidate any nested queries that might contain this party group's data
+      queryClient.invalidateQueries({ queryKey: ['/api/carpools'] });
       
       toast({
         title: "Success!",
