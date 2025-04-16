@@ -37,6 +37,8 @@ export interface IStorage {
   getCarpools(): Promise<Carpool[]>;
   getCarpoolsByPartyGroupId(partyGroupId: number): Promise<Carpool[]>;
   getCarpoolById(id: number): Promise<Carpool | undefined>;
+  updateCarpool(id: number, carpool: Partial<InsertCarpool>): Promise<Carpool | undefined>;
+  deleteCarpool(id: number): Promise<boolean>;
   
   // Carpool request operations
   createCarpoolRequest(request: InsertCarpoolRequest): Promise<CarpoolRequest>;
@@ -221,6 +223,83 @@ export class DatabaseStorage implements IStorage {
   async getCarpoolById(id: number): Promise<Carpool | undefined> {
     const [carpool] = await db.select().from(carpools).where(eq(carpools.id, id));
     return carpool || undefined;
+  }
+
+  async updateCarpool(id: number, carpoolUpdate: Partial<InsertCarpool>): Promise<Carpool | undefined> {
+    // Process updates with proper null handling
+    const processedUpdate: Partial<Carpool> = { id };
+    
+    // Copy non-nullable fields directly
+    if ('partyGroupId' in carpoolUpdate) processedUpdate.partyGroupId = carpoolUpdate.partyGroupId;
+    if ('parentName' in carpoolUpdate) processedUpdate.parentName = carpoolUpdate.parentName;
+    if ('childName' in carpoolUpdate) processedUpdate.childName = carpoolUpdate.childName;
+    if ('address' in carpoolUpdate) processedUpdate.address = carpoolUpdate.address;
+    if ('city' in carpoolUpdate) processedUpdate.city = carpoolUpdate.city;
+    if ('postcode' in carpoolUpdate) processedUpdate.postcode = carpoolUpdate.postcode;
+    if ('phoneNumber' in carpoolUpdate) processedUpdate.phoneNumber = carpoolUpdate.phoneNumber;
+    if ('spacesAvailable' in carpoolUpdate) processedUpdate.spacesAvailable = carpoolUpdate.spacesAvailable;
+    
+    // Handle nullable fields with null checks
+    if ('canPickup' in carpoolUpdate) processedUpdate.canPickup = carpoolUpdate.canPickup ?? null;
+    if ('canDropoff' in carpoolUpdate) processedUpdate.canDropoff = carpoolUpdate.canDropoff ?? null;
+    if ('canBoth' in carpoolUpdate) processedUpdate.canBoth = carpoolUpdate.canBoth ?? null;
+    if ('returnSpacesAvailable' in carpoolUpdate) processedUpdate.returnSpacesAvailable = carpoolUpdate.returnSpacesAvailable ?? null;
+    
+    // Handle outbound fields (TO party)
+    if ('outboundDropoffPreference' in carpoolUpdate) processedUpdate.outboundDropoffPreference = carpoolUpdate.outboundDropoffPreference ?? null;
+    if ('outboundMaxDistance' in carpoolUpdate) processedUpdate.outboundMaxDistance = carpoolUpdate.outboundMaxDistance ?? null;
+    if ('outboundPickupLocation' in carpoolUpdate) processedUpdate.outboundPickupLocation = carpoolUpdate.outboundPickupLocation ?? null;
+    if ('outboundPickupLocationCity' in carpoolUpdate) processedUpdate.outboundPickupLocationCity = carpoolUpdate.outboundPickupLocationCity ?? null;
+    if ('outboundPickupLocationPostcode' in carpoolUpdate) processedUpdate.outboundPickupLocationPostcode = carpoolUpdate.outboundPickupLocationPostcode ?? null;
+    if ('outboundDepartureTime' in carpoolUpdate) processedUpdate.outboundDepartureTime = carpoolUpdate.outboundDepartureTime ?? null;
+    
+    // Handle return fields (FROM party)
+    if ('returnDropoffPreference' in carpoolUpdate) processedUpdate.returnDropoffPreference = carpoolUpdate.returnDropoffPreference ?? null;
+    if ('returnMaxDistance' in carpoolUpdate) processedUpdate.returnMaxDistance = carpoolUpdate.returnMaxDistance ?? null;
+    if ('returnPickupLocation' in carpoolUpdate) processedUpdate.returnPickupLocation = carpoolUpdate.returnPickupLocation ?? null;
+    if ('returnPickupLocationCity' in carpoolUpdate) processedUpdate.returnPickupLocationCity = carpoolUpdate.returnPickupLocationCity ?? null;
+    if ('returnPickupLocationPostcode' in carpoolUpdate) processedUpdate.returnPickupLocationPostcode = carpoolUpdate.returnPickupLocationPostcode ?? null;
+    if ('returnCollectionTime' in carpoolUpdate) processedUpdate.returnCollectionTime = carpoolUpdate.returnCollectionTime ?? null;
+    if ('returnPickupPreference' in carpoolUpdate) processedUpdate.returnPickupPreference = carpoolUpdate.returnPickupPreference ?? null;
+    if ('pickupTime' in carpoolUpdate) processedUpdate.pickupTime = carpoolUpdate.pickupTime ?? null;
+    
+    // Legacy fields
+    if ('dropoffPreference' in carpoolUpdate) processedUpdate.dropoffPreference = carpoolUpdate.dropoffPreference ?? null;
+    if ('maxDistance' in carpoolUpdate) processedUpdate.maxDistance = carpoolUpdate.maxDistance ?? null;
+    if ('pickupLocation' in carpoolUpdate) processedUpdate.pickupLocation = carpoolUpdate.pickupLocation ?? null;
+    if ('pickupLocationCity' in carpoolUpdate) processedUpdate.pickupLocationCity = carpoolUpdate.pickupLocationCity ?? null;
+    if ('pickupLocationPostcode' in carpoolUpdate) processedUpdate.pickupLocationPostcode = carpoolUpdate.pickupLocationPostcode ?? null;
+    if ('additionalNotes' in carpoolUpdate) processedUpdate.additionalNotes = carpoolUpdate.additionalNotes ?? null;
+    if ('estimatedDepartureTime' in carpoolUpdate) processedUpdate.estimatedDepartureTime = carpoolUpdate.estimatedDepartureTime ?? null;
+    
+    // Emergency contact information
+    if ('emergencyContactName' in carpoolUpdate) processedUpdate.emergencyContactName = carpoolUpdate.emergencyContactName ?? null;
+    if ('emergencyContactPhone' in carpoolUpdate) processedUpdate.emergencyContactPhone = carpoolUpdate.emergencyContactPhone ?? null;
+    if ('emergencyContactRelationship' in carpoolUpdate) processedUpdate.emergencyContactRelationship = carpoolUpdate.emergencyContactRelationship ?? null;
+    
+    const [updatedCarpool] = await db
+      .update(carpools)
+      .set(processedUpdate)
+      .where(eq(carpools.id, id))
+      .returning();
+    
+    return updatedCarpool || undefined;
+  }
+  
+  async deleteCarpool(id: number): Promise<boolean> {
+    // First, delete all related requests
+    await db.delete(carpoolRequests).where(eq(carpoolRequests.carpoolId, id));
+    
+    // Next, delete all calendar events
+    await db.delete(calendarEvents).where(eq(calendarEvents.carpoolId, id));
+    
+    // Finally, delete the carpool
+    const [deletedCarpool] = await db
+      .delete(carpools)
+      .where(eq(carpools.id, id))
+      .returning();
+    
+    return !!deletedCarpool;
   }
   
   // Carpool request methods

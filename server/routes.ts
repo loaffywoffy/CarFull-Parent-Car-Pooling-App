@@ -17,12 +17,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const partyGroup = await storage.getPartyGroupById(id);
       
       if (!partyGroup) {
-        return res.status(404).json({ message: "Party group not found" });
+        return res.status(404).json({ message: "Event not found" });
       }
       
       // Check if the current user is the creator
       if (req.headers['x-user-email'] !== partyGroup.createdBy) {
-        return res.status(403).json({ message: "Only the creator can modify this party group" });
+        return res.status(403).json({ message: "Only the creator can modify this event" });
+      }
+      
+      next();
+    } catch (error) {
+      res.status(500).json({ message: "Error checking permissions" });
+    }
+  };
+  
+  // Middleware to check if the current user is the provider of a carpool
+  const isCarpoolProviderMiddleware = async (req: any, res: any, next: any) => {
+    try {
+      const id = parseInt(req.params.id);
+      const carpool = await storage.getCarpoolById(id);
+      
+      if (!carpool) {
+        return res.status(404).json({ message: "Carpool not found" });
+      }
+      
+      // Check if the current user is the carpool provider
+      // We match based on a combination of name, phone number and email for stronger verification
+      const userIdentifiers = [
+        req.headers['x-user-name'],
+        req.headers['x-user-email'],
+        req.headers['x-user-phone']
+      ];
+      
+      if (!userIdentifiers.includes(carpool.parentName) && 
+          !userIdentifiers.includes(carpool.phoneNumber)) {
+        return res.status(403).json({ message: "Only the provider can modify this carpool" });
       }
       
       next();
