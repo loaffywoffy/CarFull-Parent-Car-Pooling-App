@@ -295,8 +295,9 @@ export default function Home() {
                 partyGroup={selectedPartyGroup} 
                 onOfferCarpool={() => handleOfferCarpool(selectedPartyGroup.id)}
                 onRequestSpot={() => handleTabChange("view")} 
-                isCreator={createdGroupIds.includes(selectedPartyGroup.id)}
+                isCreator={true} /* Set to true for testing purposes - normally: createdGroupIds.includes(selectedPartyGroup.id) */
                 onEdit={() => handleEditPartyGroup(selectedPartyGroup.id)}
+                onDeleted={() => setPartyGroupTab("list")}
               />
             )}
             
