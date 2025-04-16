@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { 
   CalendarIcon, MapPinIcon, ClockIcon, UserIcon, CopyIcon, 
-  CheckIcon, LinkIcon, Share2Icon, CarIcon, Map as MapIcon
+  CheckIcon, LinkIcon, Share2Icon, CarIcon, Map as MapIcon,
+  Pencil, Trash2, AlertCircle
 } from "lucide-react";
 import { type PartyGroup } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -14,11 +15,25 @@ import CarpoolSummary from "./carpool-summary";
 import { Skeleton } from "@/components/ui/skeleton";
 import LocationMap from "./location-map";
 import { geocodeAddress } from "@/lib/geocoding";
+import { deletePartyGroup } from "@/api/partyGroups";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PartyGroupDetailsProps {
   partyGroup: PartyGroup;
   onOfferCarpool: (partyGroupId: number) => void;
   onRequestSpot?: () => void; // New prop for requesting a spot
+  onEdit?: (partyGroupId: number) => void; // New prop for editing the event
+  onDeleted?: () => void; // New prop for after successful deletion
   isCreator?: boolean; // Flag to determine if the current user created this group
 }
 
@@ -26,12 +41,38 @@ export default function PartyGroupDetails({
   partyGroup, 
   onOfferCarpool, 
   onRequestSpot,
+  onEdit,
+  onDeleted,
   isCreator = false 
 }: PartyGroupDetailsProps) {
   const { toast } = useToast();
   const [copySuccess, setCopySuccess] = useState<{code: boolean, link: boolean}>({code: false, link: false});
   const [partyLocation, setPartyLocation] = useState<[number, number] | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(true);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  
+  const queryClient = useQueryClient();
+  
+  // Mutation for deleting the event
+  const deleteMutation = useMutation({
+    mutationFn: () => deletePartyGroup(partyGroup.id),
+    onSuccess: () => {
+      toast({
+        title: "Event deleted",
+        description: `'${partyGroup.name}' has been successfully deleted.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
+      if (onDeleted) onDeleted();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete the event. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error deleting event:", error);
+    }
+  });
   
   // Get coordinates for the party location when the component mounts
   useEffect(() => {
@@ -79,22 +120,24 @@ export default function PartyGroupDetails({
   const shareableLink = `${baseUrl}?access=${partyGroup.accessCode}`;
   
   const copyAccessCode = () => {
-    navigator.clipboard.writeText(partyGroup.accessCode)
-      .then(() => {
-        setCopySuccess({...copySuccess, code: true});
-        toast({
-          title: "Copied!",
-          description: "Access code copied to clipboard",
+    if (partyGroup.accessCode) {
+      navigator.clipboard.writeText(partyGroup.accessCode)
+        .then(() => {
+          setCopySuccess({...copySuccess, code: true});
+          toast({
+            title: "Copied!",
+            description: "Access code copied to clipboard",
+          });
+          setTimeout(() => setCopySuccess(prev => ({...prev, code: false})), 2000);
+        })
+        .catch(() => {
+          toast({
+            title: "Error",
+            description: "Failed to copy access code",
+            variant: "destructive",
+          });
         });
-        setTimeout(() => setCopySuccess(prev => ({...prev, code: false})), 2000);
-      })
-      .catch(() => {
-        toast({
-          title: "Error",
-          description: "Failed to copy access code",
-          variant: "destructive",
-        });
-      });
+    }
   };
   
   const copyShareableLink = () => {
@@ -128,7 +171,31 @@ export default function PartyGroupDetails({
               Organized by {partyGroup.createdBy}
             </CardDescription>
           </div>
-          <Badge variant="outline" className="bg-white">Active</Badge>
+          <div className="flex items-center gap-2">
+            {isCreator && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8 rounded-full bg-white hover:bg-gray-100"
+                  onClick={() => onEdit && onEdit(partyGroup.id)}
+                  title="Edit event"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8 rounded-full bg-white hover:bg-red-100 text-red-500 hover:text-red-600"
+                  onClick={() => setConfirmDeleteOpen(true)}
+                  title="Delete event"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+            <Badge variant="outline" className="bg-white ml-1">Active</Badge>
+          </div>
         </div>
       </CardHeader>
       
@@ -369,6 +436,33 @@ export default function PartyGroupDetails({
           Offer a Carpool
         </Button>
       </CardFooter>
+      
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-500" />
+              Delete this event?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event "{partyGroup.name}" and all associated carpools and requests.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600"
+              onClick={() => {
+                deleteMutation.mutate();
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete Event"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
