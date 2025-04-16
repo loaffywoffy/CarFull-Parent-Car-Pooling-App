@@ -12,8 +12,8 @@ import { z } from "zod";
 import { setupAuth, isAuthenticated, isPartyGroupCreator, isCarpoolProvider } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Set up auth system
-  setupAuth(app);
+  // Auth system is disabled for MVP
+  // setupAuth(app);
   
   // Middleware to check if the current user is the creator of a party group
   const isCreatorMiddleware = async (req: any, res: any, next: any) => {
@@ -66,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
   
   // API routes for party groups
-  app.post("/api/party-groups", isAuthenticated, async (req, res) => {
+  app.post("/api/party-groups", async (req, res) => {
     try {
       // Validate request body against schema
       const validationResult = insertPartyGroupSchema.safeParse(req.body);
