@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -143,6 +143,23 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
     mutationFn: (values: CarpoolRequestFormValues) => 
       apiRequest("POST", "/api/carpool-requests", values),
     onSuccess: () => {
+      // Invalidate carpool requests query to ensure fresh data
+      if (partyGroupId) {
+        // Invalidate the carpool requests for the selected carpool
+        queryClient.invalidateQueries({ queryKey: ['/api/carpools', values.carpoolId, 'requests'] });
+        
+        // Invalidate all carpools for this event group to refresh counts
+        queryClient.invalidateQueries({ queryKey: ['/api/party-groups', partyGroupId, 'carpools'] });
+        
+        // Invalidate the parent query in case counts need to be updated
+        queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
+      }
+      
+      toast({
+        title: "Success!",
+        description: "Your carpool request has been submitted successfully.",
+      });
+      
       form.reset();
       onSuccess();
     },
