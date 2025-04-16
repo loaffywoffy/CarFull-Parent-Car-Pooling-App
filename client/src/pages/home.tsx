@@ -68,14 +68,14 @@ export default function Home() {
   const handlePartyGroupSuccess = (partyGroupId: number) => {
     // Add the newly created group to the createdGroupIds array
     setCreatedGroupIds(prev => [...prev, partyGroupId]);
-    
+
     // Get the newly created party group and navigate to its details
     const fetchPartyGroup = async () => {
       try {
         const partyGroup = await getPartyGroupById(partyGroupId);
         setSelectedPartyGroup(partyGroup);
         setPartyGroupTab("details");
-        
+
         setSuccessInfo({
           show: true,
           title: "Event Created!",
@@ -86,7 +86,7 @@ export default function Home() {
         setPartyGroupTab("list");
       }
     };
-    
+
     fetchPartyGroup();
   };
 
@@ -98,7 +98,7 @@ export default function Home() {
       title: "Joined Event!",
       message: `You have successfully joined the "${partyGroup.name}" event group.`,
     });
-    
+
     // Set active tab to "view" so users can immediately see carpools after joining
     setActiveTab("view");
   };
@@ -115,7 +115,7 @@ export default function Home() {
     const checkUrlForPartyId = async () => {
       const params = new URLSearchParams(window.location.search);
       const partyId = params.get('partyId');
-      
+
       if (partyId && !isNaN(Number(partyId))) {
         try {
           // Try to find a party group with this ID
@@ -125,13 +125,13 @@ export default function Home() {
             setSelectedPartyGroup(partyGroup);
             setPartyGroupTab("details");
             setActiveTab("view"); // Auto-navigate to the View Carpools tab
-            
+
             setSuccessInfo({
               show: true,
               title: "Event Found!",
               message: `You've opened "${partyGroup.name}". You can now view available carpools.`,
             });
-            
+
             // Remove the party ID from the URL to avoid reloading on refresh
             const newUrl = window.location.pathname;
             window.history.replaceState({}, document.title, newUrl);
@@ -141,7 +141,7 @@ export default function Home() {
         }
       }
     };
-    
+
     checkUrlForPartyId();
   }, []);
 
@@ -192,7 +192,7 @@ export default function Home() {
         const partyGroup = await getPartyGroupById(partyGroupId);
         setSelectedPartyGroup(partyGroup);
         setPartyGroupTab("details");
-        
+
         setSuccessInfo({
           show: true,
           title: "Event Updated!",
@@ -203,7 +203,7 @@ export default function Home() {
         setPartyGroupTab("list");
       }
     };
-    
+
     fetchPartyGroup();
   };
 
@@ -230,7 +230,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Event Details
+              Events
             </button>
             <button
               onClick={() => selectedPartyGroup ? handleTabChange("offer") : handleTabChange("partyGroups")}
@@ -240,7 +240,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Give a Ride
+              Offer Ride
             </button>
             <button
               onClick={() => selectedPartyGroup ? handleTabChange("view") : handleTabChange("partyGroups")}
@@ -250,7 +250,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Find a Ride
+              Need Ride
             </button>
 
 
@@ -270,11 +270,11 @@ export default function Home() {
                 }}
               />
             )}
-            
+
             {partyGroupTab === "create" && (
               <PartyGroupForm onSuccess={handlePartyGroupSuccess} />
             )}
-            
+
             {partyGroupTab === "join" && (
               <JoinPartyGroup 
                 onJoinSuccess={handlePartyGroupJoinSuccess}
@@ -282,7 +282,7 @@ export default function Home() {
                 initialPartyId={joinPartyId}
               />
             )}
-            
+
             {partyGroupTab === "details" && selectedPartyGroup && (
               <PartyGroupDetails 
                 partyGroup={selectedPartyGroup} 
@@ -293,7 +293,7 @@ export default function Home() {
                 onDeleted={() => setPartyGroupTab("list")}
               />
             )}
-            
+
             {partyGroupTab === "edit" && selectedPartyGroup && (
               <PartyGroupEditForm 
                 partyGroup={selectedPartyGroup}
@@ -303,14 +303,14 @@ export default function Home() {
             )}
           </>
         )}
-        
+
         {activeTab === "offer" && selectedPartyGroup && (
           <CarpoolOfferForm 
             onSuccess={handleCarpoolSubmitSuccess} 
             partyGroupId={selectedPartyGroup.id} 
           />
         )}
-        
+
         {activeTab === "offer" && !selectedPartyGroup && (
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold mb-4">Offer a Carpool</h2>
@@ -321,25 +321,25 @@ export default function Home() {
               onClick={() => handleTabChange("partyGroups")}
               className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
             >
-              Go to Event Details
+              Select Event
             </button>
           </div>
         )}
-        
+
         {activeTab === "request" && selectedCarpoolId && (
           <CarpoolRequestForm 
             selectedCarpoolId={selectedCarpoolId}
             onSuccess={handleRequestSubmitSuccess} 
           />
         )}
-        
+
         {activeTab === "view" && selectedPartyGroup && (
           <CarpoolSummary 
             partyGroupId={selectedPartyGroup.id}
             onRequestSpot={handleRequestSpot}
           />
         )}
-        
+
         {activeTab === "view" && !selectedPartyGroup && (
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold mb-4">Manage Carpools</h2>
@@ -350,11 +350,11 @@ export default function Home() {
               onClick={() => handleTabChange("partyGroups")}
               className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
             >
-              Go to Event Details
+              Select Event
             </button>
           </div>
         )}
-        
+
 
 
         {/* Success Dialog */}
