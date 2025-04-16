@@ -5,11 +5,9 @@ import { z } from "zod";
 // User schema represents a parent
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  name: text("name").notNull(),
+  phoneNumber: text("phone_number").notNull().unique(), // Primary identifier
   email: text("email"),
-  name: text("name"),
-  phoneNumber: text("phone_number").unique(),
 });
 
 // Party Group schema for events created by an admin

@@ -66,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
   
   // API routes for party groups
-  app.post("/api/party-groups", async (req, res) => {
+  app.post("/api/party-groups", isAuthenticated, async (req, res) => {
     try {
       // Validate request body against schema
       const validationResult = insertPartyGroupSchema.safeParse(req.body);
