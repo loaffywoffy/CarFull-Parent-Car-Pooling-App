@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getCarpoolsByPartyGroupId } from "@/api/partyGroups";
@@ -8,22 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Users, Calendar, Clock } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import CarpoolRequestForm from "./carpool-request-form";
+import { MapPin, Users } from "lucide-react";
 
 interface CarpoolListProps {
   partyGroupId: number;
-  onRequestSpot?: (carpoolId: number) => void;
+  onRequestSpot: (carpoolId: number) => void;
+  onManageCalendar?: (carpoolId: number) => void;
 }
 
+// Map functionality has been removed
 type SortOption = "distance" | "spaces" | "name";
 
-export default function CarpoolList({ partyGroupId }: CarpoolListProps) {
+export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalendar }: CarpoolListProps) {
+  // Map view has been removed
   const [sortBy, setSortBy] = useState<SortOption>("distance");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("to-party");
-  const [selectedCarpoolId, setSelectedCarpoolId] = useState<number | null>(null);
 
   const { data: carpools, isLoading } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId, "carpools"],
@@ -35,11 +34,13 @@ export default function CarpoolList({ partyGroupId }: CarpoolListProps) {
 
     return carpools
       .filter((carpool: any) => {
+        // Filter by tab selection
         if (selectedTab === "to-party") return carpool.canPickup || carpool.canBoth;
         if (selectedTab === "from-party") return carpool.canDropoff || carpool.canBoth;
-        return true;
+        return true; // Show all carpools in the "both" tab
       })
       .filter(carpool => {
+        // Filter by search term
         const searchLower = searchTerm.toLowerCase();
         return (
           carpool.parentName.toLowerCase().includes(searchLower) ||
@@ -48,8 +49,13 @@ export default function CarpoolList({ partyGroupId }: CarpoolListProps) {
         );
       })
       .sort((a, b) => {
-        if (sortBy === "distance") return (a.distance || 0) - (b.distance || 0);
-        if (sortBy === "spaces") return (b.spacesAvailable || 0) - (a.spacesAvailable || 0);
+        // Sort based on selected option
+        if (sortBy === "distance") {
+          return (a.distance || 0) - (b.distance || 0);
+        }
+        if (sortBy === "spaces") {
+          return (b.spacesAvailable || 0) - (a.spacesAvailable || 0);
+        }
         return a.parentName.localeCompare(b.parentName);
       });
   };
@@ -62,7 +68,7 @@ export default function CarpoolList({ partyGroupId }: CarpoolListProps) {
         <div className="flex justify-between items-start">
           <div className="space-y-2">
             <h3 className="font-semibold text-lg">{carpool.parentName}</h3>
-            
+
             <div className="flex items-center text-sm text-gray-600 space-x-2">
               <MapPin size={16} />
               <span>{carpool.city}, {carpool.postcode}</span>
@@ -89,29 +95,21 @@ export default function CarpoolList({ partyGroupId }: CarpoolListProps) {
             )}
           </div>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                onClick={() => setSelectedCarpoolId(carpool.id)}
-                className="ml-4"
-                variant="default"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Request Spot
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Request a Spot in {carpool.parentName}'s Carpool</DialogTitle>
-              </DialogHeader>
-              <CarpoolRequestForm 
-                onSuccess={() => {
-                  setSelectedCarpoolId(null);
-                }} 
-                selectedCarpoolId={carpool.id}
-              />
-            </DialogContent>
-          </Dialog>
+          <div className="flex flex-col gap-2">
+            <Button 
+              onClick={() => onRequestSpot(carpool.id)}
+              className="ml-4"
+              variant="default"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Request Spot
+            </Button>
+            {carpool.spacesAvailable <= 2 && (
+              <span className="text-xs text-amber-600 whitespace-nowrap">
+                Only {carpool.spacesAvailable} {carpool.spacesAvailable === 1 ? 'space' : 'spaces'} left
+              </span>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
