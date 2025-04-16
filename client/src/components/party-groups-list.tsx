@@ -88,12 +88,9 @@ export default function PartyGroupsList({
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
           <h3 className="font-medium text-lg text-gray-800 mb-2">No Events Yet</h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Create a new event group as an organizer or join an existing group with an event ID
+            Create a new event to get started organizing carpools
           </p>
-          <div className="flex justify-center gap-3">
-            <Button onClick={() => onJoinPartyGroup()} variant="outline">
-              Join with Event ID
-            </Button>
+          <div className="flex justify-center">
             <Button onClick={() => onCreateNew()} variant="default">
               Create New Event
             </Button>
@@ -125,9 +122,9 @@ export default function PartyGroupsList({
                   </span>
                 </div>
                 
-                <div className="flex justify-between mt-4 pt-3 border-t border-gray-100">
+                <div className="flex justify-end mt-4 pt-3 border-t border-gray-100">
                   <Button 
-                    variant="outline" 
+                    variant="default" 
                     size="sm" 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -135,20 +132,6 @@ export default function PartyGroupsList({
                     }}
                   >
                     View Details
-                  </Button>
-                  
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    className="gap-1"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Ask for access code, don't pre-populate
-                      onJoinPartyGroup();
-                    }}
-                  >
-                    <Share2Icon className="h-3.5 w-3.5" />
-                    <span>Join Event</span>
                   </Button>
                 </div>
               </CardContent>

@@ -16,7 +16,7 @@ import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById } from "@/api/partyGroups";
 
 type Tab = "partyGroups" | "offer" | "request" | "view";
-type PartyGroupTab = "list" | "create" | "join" | "details" | "edit";
+type PartyGroupTab = "list" | "create" | "details" | "edit";
 
 type SuccessInfo = {
   show: boolean;
@@ -90,16 +90,17 @@ export default function Home() {
     fetchPartyGroup();
   };
 
+  // Join functionality removed for MVP but we still need to handle URL parameters
   const handlePartyGroupJoinSuccess = (partyGroup: PartyGroup) => {
     setSelectedPartyGroup(partyGroup);
     setPartyGroupTab("details");
     setSuccessInfo({
       show: true,
-      title: "Joined Event!",
-      message: `You have successfully joined the "${partyGroup.name}" event group.`,
+      title: "Event Opened!",
+      message: `You've opened the "${partyGroup.name}" event.`,
     });
 
-    // Set active tab to "view" so users can immediately see carpools after joining
+    // Set active tab to "view" so users can immediately see carpools after opening an event
     setActiveTab("view");
   };
 
@@ -264,10 +265,7 @@ export default function Home() {
               <PartyGroupsList
                 onSelectPartyGroup={handleSelectPartyGroup}
                 onCreateNew={() => setPartyGroupTab("create")}
-                onJoinPartyGroup={(partyId) => {
-                  setJoinPartyId(partyId || "");
-                  setPartyGroupTab("join");
-                }}
+                onJoinPartyGroup={() => {}} // Removed for MVP but keeping prop for interface compatibility
               />
             )}
 
@@ -278,13 +276,7 @@ export default function Home() {
               />
             )}
 
-            {partyGroupTab === "join" && (
-              <JoinPartyGroup 
-                onJoinSuccess={handlePartyGroupJoinSuccess}
-                onCancel={() => setPartyGroupTab("list")}
-                initialPartyId={joinPartyId}
-              />
-            )}
+            {/* Join party feature removed for MVP */}
 
             {partyGroupTab === "details" && selectedPartyGroup && (
               <PartyGroupDetails 
@@ -319,7 +311,7 @@ export default function Home() {
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold mb-4">Offer a Carpool</h2>
             <p className="text-neutral-600 mb-6">
-              Please select or join an event first before offering a carpool.
+              Please select an event first before offering a carpool.
             </p>
             <button
               onClick={() => handleTabChange("partyGroups")}
@@ -348,7 +340,7 @@ export default function Home() {
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold mb-4">Manage Carpools</h2>
             <p className="text-neutral-600 mb-6">
-              Please select or join an event first to view and manage carpools.
+              Please select an event first to view and manage carpools.
             </p>
             <button
               onClick={() => handleTabChange("partyGroups")}
