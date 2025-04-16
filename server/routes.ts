@@ -9,8 +9,12 @@ import {
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
+import { setupAuth, isAuthenticated, isPartyGroupCreator, isCarpoolProvider } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up auth system
+  setupAuth(app);
+  
   // Middleware to check if the current user is the creator of a party group
   const isCreatorMiddleware = async (req: any, res: any, next: any) => {
     try {

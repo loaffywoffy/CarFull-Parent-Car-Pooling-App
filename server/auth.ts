@@ -3,6 +3,13 @@ import session from 'express-session';
 import { storage } from './storage';
 import { User as SelectUser } from '@shared/schema';
 
+// Extend the session with a user property
+declare module 'express-session' {
+  interface SessionData {
+    user?: SelectUser;
+  }
+}
+
 declare global {
   namespace Express {
     interface User extends SelectUser {}
