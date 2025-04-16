@@ -7,6 +7,9 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email"),
+  name: text("name"),
+  phoneNumber: text("phone_number").unique(),
 });
 
 // Party Group schema for events created by an admin
@@ -116,6 +119,9 @@ export const calendarEvents = pgTable("calendar_events", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  email: true,
+  name: true,
+  phoneNumber: true,
 });
 
 export const insertPartyGroupSchema = createInsertSchema(partyGroups).omit({
