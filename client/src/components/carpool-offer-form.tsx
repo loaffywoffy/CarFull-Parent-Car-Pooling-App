@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { type CheckedState } from "@radix-ui/react-checkbox";
 import { getPartyGroupById } from "@/api/partyGroups";
@@ -167,6 +167,17 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     mutationFn: (values: CarpoolFormValues) => 
       apiRequest("POST", "/api/carpools", values),
     onSuccess: () => {
+      // Invalidate the carpools query to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/party-groups', partyGroupId, 'carpools'] });
+      
+      // Also invalidate the parent query in case counts need to be updated
+      queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
+      
+      toast({
+        title: "Success!",
+        description: "Your carpool offer has been submitted successfully.",
+      });
+      
       form.reset();
       onSuccess();
     },
