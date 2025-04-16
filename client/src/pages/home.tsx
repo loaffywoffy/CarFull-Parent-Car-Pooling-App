@@ -272,7 +272,10 @@ export default function Home() {
             )}
 
             {partyGroupTab === "create" && (
-              <PartyGroupForm onSuccess={handlePartyGroupSuccess} />
+              <PartyGroupForm 
+                onSuccess={handlePartyGroupSuccess} 
+                onCancel={() => setPartyGroupTab("list")}
+              />
             )}
 
             {partyGroupTab === "join" && (

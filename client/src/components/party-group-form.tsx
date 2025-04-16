@@ -15,6 +15,7 @@ import { queryClient } from "@/lib/queryClient";
 
 interface PartyGroupFormProps {
   onSuccess: (partyGroupId: number) => void;
+  onCancel?: () => void; // Add optional cancel callback
 }
 
 // Create the form schema with custom validations
@@ -57,7 +58,7 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
 
 type PartyGroupFormValues = z.infer<typeof partyGroupFormSchema>;
 
-export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
+export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormProps) {
   const { toast } = useToast();
 
   const form = useForm<PartyGroupFormValues>({
@@ -463,7 +464,17 @@ export default function PartyGroupForm({ onSuccess }: PartyGroupFormProps) {
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex justify-end space-x-3">
+            {onCancel && (
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={() => onCancel()}
+                className="px-6 py-2 font-medium rounded-md"
+              >
+                Cancel
+              </Button>
+            )}
             <Button 
               type="submit" 
               className="px-6 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
