@@ -200,8 +200,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Update carpool - requires provider authentication
-  app.put("/api/carpools/:id", isCarpoolProviderMiddleware, async (req, res) => {
+  // Update carpool - removed provider check for MVP
+  app.put("/api/carpools/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -230,8 +230,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete carpool - requires provider authentication
-  app.delete("/api/carpools/:id", isCarpoolProviderMiddleware, async (req, res) => {
+  // Delete carpool - removed provider check for MVP
+  app.delete("/api/carpools/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -397,7 +397,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  app.patch("/api/calendar-events/:id", isCalendarEventOwnerMiddleware, async (req, res) => {
+  // Calendar event updates - removed owner check for MVP
+  app.patch("/api/calendar-events/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -427,7 +428,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/calendar-events/:id", isCalendarEventOwnerMiddleware, async (req, res) => {
+  // Calendar event deletion - removed owner check for MVP
+  app.delete("/api/calendar-events/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -453,8 +455,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete a party group
-  app.delete("/api/party-groups/:id", isCreatorMiddleware, async (req, res) => {
+  // Delete a party group - removed creator check for MVP
+  app.delete("/api/party-groups/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -479,9 +481,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Update a party group
-  // Protected routes that require creator access
-  app.put("/api/party-groups/:id", isCreatorMiddleware, async (req, res) => {
+  // Update a party group - removed creator check for MVP
+  app.put("/api/party-groups/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
