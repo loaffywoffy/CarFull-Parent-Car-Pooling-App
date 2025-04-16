@@ -30,3 +30,15 @@ export async function getCarpoolsByPartyGroupId(partyGroupId: number) {
   const response = await apiRequest("GET", `/api/party-groups/${partyGroupId}/carpools`);
   return response.json();
 }
+
+// Update a party group
+export async function updatePartyGroup(id: number, partyGroupData: Partial<InsertPartyGroup>): Promise<PartyGroup> {
+  const response = await apiRequest("PUT", `/api/party-groups/${id}`, partyGroupData);
+  return response.json();
+}
+
+// Delete a party group
+export async function deletePartyGroup(id: number): Promise<void> {
+  await apiRequest("DELETE", `/api/party-groups/${id}`);
+  return;
+}

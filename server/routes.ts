@@ -306,6 +306,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete calendar event" });
     }
   });
+  
+  // Delete a party group
+  app.delete("/api/party-groups/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid party group ID" });
+      }
+      
+      // Check if the party group exists
+      const partyGroup = await storage.getPartyGroupById(id);
+      if (!partyGroup) {
+        return res.status(404).json({ message: "Party group not found" });
+      }
+      
+      const success = await storage.deletePartyGroup(id);
+      if (success) {
+        res.status(204).send();
+      } else {
+        res.status(500).json({ message: "Failed to delete party group" });
+      }
+    } catch (error) {
+      console.error("Error deleting party group:", error);
+      res.status(500).json({ message: "Failed to delete party group" });
+    }
+  });
+  
+  // Update a party group
+  app.put("/api/party-groups/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid party group ID" });
+      }
+      
+      // Check if the party group exists
+      const partyGroup = await storage.getPartyGroupById(id);
+      if (!partyGroup) {
+        return res.status(404).json({ message: "Party group not found" });
+      }
+      
+      // Validate the request body
+      const validationResult = insertPartyGroupSchema.partial().safeParse(req.body);
+      if (!validationResult.success) {
+        const errorMessage = fromZodError(validationResult.error).message;
+        return res.status(400).json({ message: errorMessage });
+      }
+      
+      const updatedPartyGroup = await storage.updatePartyGroup(id, validationResult.data);
+      res.json(updatedPartyGroup);
+    } catch (error) {
+      console.error("Error updating party group:", error);
+      res.status(500).json({ message: "Failed to update party group" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

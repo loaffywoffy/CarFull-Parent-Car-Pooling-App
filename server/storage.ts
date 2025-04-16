@@ -29,6 +29,8 @@ export interface IStorage {
   getPartyGroups(): Promise<PartyGroup[]>;
   getPartyGroupById(id: number): Promise<PartyGroup | undefined>;
   getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined>;
+  updatePartyGroup(id: number, partyGroup: Partial<InsertPartyGroup>): Promise<PartyGroup | undefined>;
+  deletePartyGroup(id: number): Promise<boolean>;
   
   // Carpool operations
   createCarpool(carpool: InsertCarpool): Promise<Carpool>;
@@ -99,6 +101,62 @@ export class DatabaseStorage implements IStorage {
   async getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined> {
     const [partyGroup] = await db.select().from(partyGroups).where(eq(partyGroups.accessCode, accessCode));
     return partyGroup || undefined;
+  }
+  
+  async updatePartyGroup(id: number, partyGroupUpdate: Partial<InsertPartyGroup>): Promise<PartyGroup | undefined> {
+    // Process updates with proper null handling
+    const processedUpdate: Partial<PartyGroup> = { id };
+    
+    if ('name' in partyGroupUpdate) processedUpdate.name = partyGroupUpdate.name;
+    if ('parentName' in partyGroupUpdate) processedUpdate.parentName = partyGroupUpdate.parentName;
+    if ('location' in partyGroupUpdate) processedUpdate.location = partyGroupUpdate.location;
+    if ('partyDate' in partyGroupUpdate) processedUpdate.partyDate = partyGroupUpdate.partyDate;
+    if ('startTime' in partyGroupUpdate) processedUpdate.startTime = partyGroupUpdate.startTime;
+    if ('accessCode' in partyGroupUpdate) processedUpdate.accessCode = partyGroupUpdate.accessCode ?? null;
+    
+    // Handle nullable fields
+    if ('description' in partyGroupUpdate) processedUpdate.description = partyGroupUpdate.description ?? null;
+    if ('partyEndDate' in partyGroupUpdate) processedUpdate.partyEndDate = partyGroupUpdate.partyEndDate ?? null;
+    if ('endTime' in partyGroupUpdate) processedUpdate.endTime = partyGroupUpdate.endTime ?? null;
+    if ('additionalInformation' in partyGroupUpdate) processedUpdate.additionalInformation = partyGroupUpdate.additionalInformation ?? null;
+    
+    const [updatedPartyGroup] = await db
+      .update(partyGroups)
+      .set(processedUpdate)
+      .where(eq(partyGroups.id, id))
+      .returning();
+    
+    return updatedPartyGroup || undefined;
+  }
+  
+  async deletePartyGroup(id: number): Promise<boolean> {
+    // First, delete all related carpools
+    const relatedCarpools = await this.getCarpoolsByPartyGroupId(id);
+    
+    for (const carpool of relatedCarpools) {
+      // Delete all carpool requests for this carpool
+      await db
+        .delete(carpoolRequests)
+        .where(eq(carpoolRequests.carpoolId, carpool.id));
+      
+      // Delete all calendar events for this carpool
+      await db
+        .delete(calendarEvents)
+        .where(eq(calendarEvents.carpoolId, carpool.id));
+    }
+    
+    // Delete all carpools for this party group
+    await db
+      .delete(carpools)
+      .where(eq(carpools.partyGroupId, id));
+    
+    // Finally, delete the party group itself
+    const [deletedPartyGroup] = await db
+      .delete(partyGroups)
+      .where(eq(partyGroups.id, id))
+      .returning();
+    
+    return !!deletedPartyGroup;
   }
   
   // Carpool methods
