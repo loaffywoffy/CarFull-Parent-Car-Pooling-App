@@ -1,36 +1,39 @@
-// This is a mock geocoding service for demonstration purposes
-// In a real application, you would use a proper geocoding service like Google Maps, Mapbox, or OpenStreetMap
 
-// Function to convert UK postcodes or addresses to coordinates using a mock geocoding service
-// Returns [latitude, longitude]
+// Real geocoding service using OpenStreetMap's Nominatim API
 export async function geocodeAddress(
   address: string,
   city?: string,
   postcode?: string
 ): Promise<[number, number]> {
-  // For demo purposes, we'll use random coordinates near London
-  console.log(`Geocoding: ${address}, ${city || ''}, ${postcode || ''}`);
+  const query = `${address}, ${city || ''}, ${postcode || ''}`.trim();
+  const encodedQuery = encodeURIComponent(query);
   
-  // Set a seed based on the postcode or address to ensure consistent coordinates for the same input
-  const seed = postcode || address;
-  const seedNum = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  
-  // Random coordinate near London (51.5074° N, 0.1278° W) but deterministic based on seed
-  const baseLat = 51.5074;
-  const baseLng = -0.1278;
-  
-  // Add some variation based on the seed (±0.1 degrees)
-  const rng1 = Math.sin(seedNum) * 0.1;
-  const rng2 = Math.cos(seedNum) * 0.1;
-  
-  const lat = baseLat + rng1;
-  const lng = baseLng + rng2;
-  
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  console.log(`Geocoded to [${lat}, ${lng}]`);
-  return [lat, lng];
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=json&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'CarpoolApp/1.0' // Required by Nominatim's terms of use
+        }
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Geocoding failed: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.length === 0) {
+      throw new Error('Location not found');
+    }
+    
+    const [result] = data;
+    return [parseFloat(result.lat), parseFloat(result.lon)];
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    throw error;
+  }
 }
 
 // Calculate distance between two coordinates (in miles)
@@ -40,7 +43,6 @@ export function calculateDistance(
   lat2: number,
   lon2: number
 ): number {
-  // Haversine formula for calculating distance between two points on Earth
   const R = 3958.8; // Earth's radius in miles
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
