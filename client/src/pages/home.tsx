@@ -16,7 +16,7 @@ import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroupByAccessCode } from "@/api/partyGroups";
 
 type Tab = "partyGroups" | "offer" | "request" | "view";
-type PartyGroupTab = "list" | "create" | "join" | "details";
+type PartyGroupTab = "list" | "create" | "join" | "details" | "edit";
 
 type SuccessInfo = {
   show: boolean;
@@ -162,6 +162,48 @@ export default function Home() {
     }
   };
 
+  const handleEditPartyGroup = (partyGroupId: number) => {
+    if (partyGroupId) {
+      // If we don't have the party group selected yet, fetch it first
+      if (!selectedPartyGroup || selectedPartyGroup.id !== partyGroupId) {
+        const fetchPartyGroup = async () => {
+          try {
+            const partyGroup = await getPartyGroupById(partyGroupId);
+            setSelectedPartyGroup(partyGroup);
+            setPartyGroupTab("edit");
+          } catch (error) {
+            console.error("Error fetching party group:", error);
+          }
+        };
+        fetchPartyGroup();
+      } else {
+        setPartyGroupTab("edit");
+      }
+    }
+  };
+
+  const handlePartyGroupEditSuccess = (partyGroupId: number) => {
+    // Get the updated party group and navigate back to its details
+    const fetchPartyGroup = async () => {
+      try {
+        const partyGroup = await getPartyGroupById(partyGroupId);
+        setSelectedPartyGroup(partyGroup);
+        setPartyGroupTab("details");
+        
+        setSuccessInfo({
+          show: true,
+          title: "Event Updated!",
+          message: "Your event has been updated successfully.",
+        });
+      } catch (error) {
+        console.error("Error fetching party group:", error);
+        setPartyGroupTab("list");
+      }
+    };
+    
+    fetchPartyGroup();
+  };
+
   const closeSuccessDialog = () => {
     setSuccessInfo({ ...successInfo, show: false });
   };
@@ -254,6 +296,15 @@ export default function Home() {
                 onOfferCarpool={() => handleOfferCarpool(selectedPartyGroup.id)}
                 onRequestSpot={() => handleTabChange("view")} 
                 isCreator={createdGroupIds.includes(selectedPartyGroup.id)}
+                onEdit={() => handleEditPartyGroup(selectedPartyGroup.id)}
+              />
+            )}
+            
+            {partyGroupTab === "edit" && selectedPartyGroup && (
+              <PartyGroupEditForm 
+                partyGroup={selectedPartyGroup}
+                onSuccess={handlePartyGroupEditSuccess}
+                onCancel={() => setPartyGroupTab("details")}
               />
             )}
           </>
