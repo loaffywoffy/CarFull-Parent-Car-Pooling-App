@@ -55,11 +55,14 @@ export default function Home() {
       title: "Spot Request Submitted!",
       message: "Your carpool spot request has been submitted. The driver will be notified.",
     });
+    // Return to the "view" tab to see the updated carpool information
+    setActiveTab("view");
+    setSelectedCarpoolId(null);
   };
 
   const handleRequestSpot = (carpoolId: number) => {
     setSelectedCarpoolId(carpoolId);
-    setActiveTab("request");
+    setActiveTab("request"); // Keep this line to maintain the CarpoolRequestForm rendering
   };
 
   const handlePartyGroupSuccess = (partyGroupId: number) => {
