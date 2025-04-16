@@ -131,28 +131,9 @@ export default function PartyGroupDetails({
 
   // Generate shareable link
   const baseUrl = window.location.origin;
-  const shareableLink = `${baseUrl}?access=${partyGroup.accessCode}`;
+  const shareableLink = `${baseUrl}?partyId=${partyGroup.id}`;
 
-  const copyAccessCode = () => {
-    if (partyGroup.accessCode) {
-      navigator.clipboard.writeText(partyGroup.accessCode)
-        .then(() => {
-          setCopySuccess({...copySuccess, code: true});
-          toast({
-            title: "Copied!",
-            description: "Access code copied to clipboard",
-          });
-          setTimeout(() => setCopySuccess(prev => ({...prev, code: false})), 2000);
-        })
-        .catch(() => {
-          toast({
-            title: "Error",
-            description: "Failed to copy access code",
-            variant: "destructive",
-          });
-        });
-    }
-  };
+  // Access code copying function removed for MVP
 
   const copyShareableLink = () => {
     navigator.clipboard.writeText(shareableLink)
@@ -312,91 +293,57 @@ export default function PartyGroupDetails({
                     </div>
                   </div>
 
-                  <Tabs defaultValue="code" className="w-full">
-                    <TabsList className="mb-4">
-                      <TabsTrigger value="code">Access Code</TabsTrigger>
-                      <TabsTrigger value="link">Shareable Link</TabsTrigger>
-                      <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="code">
-                      <div className="flex items-center justify-between bg-gray-50 rounded-md p-2">
-                        <code className="px-2 py-1 bg-white rounded text-sm font-mono border">
-                          {partyGroup.accessCode}
-                        </code>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Shareable Link */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Shareable Link</p>
+                      <div className="flex gap-2">
+                        <Input readOnly value={shareableLink} className="font-mono text-sm bg-gray-50" />
                         <Button 
                           variant="outline" 
-                          size="sm" 
-                          onClick={copyAccessCode}
-                          className="ml-2 flex items-center gap-1"
+                          onClick={copyShareableLink}
+                          className="flex gap-1 shrink-0"
                         >
-                          {copySuccess.code ? (
+                          {copySuccess.link ? (
                             <>
                               <CheckIcon className="h-4 w-4 text-green-600" />
                               <span>Copied</span>
                             </>
                           ) : (
                             <>
-                              <CopyIcon className="h-4 w-4" />
-                              <span>Copy Code</span>
+                              <LinkIcon className="h-4 w-4" />
+                              <span>Copy</span>
                             </>
                           )}
                         </Button>
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">Share this code with parents to join the party group</p>
-                    </TabsContent>
+                      <p className="text-xs text-gray-500">
+                        This link lets parents join directly. Share it via email or messaging.
+                      </p>
+                    </div>
 
-                    <TabsContent value="link">
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Input readOnly value={shareableLink} className="font-mono text-sm bg-gray-50" />
-                          <Button 
-                            variant="outline" 
-                            onClick={copyShareableLink}
-                            className="flex gap-1 shrink-0"
-                          >
-                            {copySuccess.link ? (
-                              <>
-                                <CheckIcon className="h-4 w-4 text-green-600" />
-                                <span>Copied</span>
-                              </>
-                            ) : (
-                              <>
-                                <LinkIcon className="h-4 w-4" />
-                                <span>Copy Link</span>
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          This link lets parents join directly. Share it via email or messaging.
-                        </p>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="whatsapp">
-                      <div className="space-y-2">
-                        <p className="text-sm text-gray-600">Share this party group via WhatsApp:</p>
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="default"
-                            className="w-full bg-green-600 hover:bg-green-700"
-                            onClick={() => {
-                              const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
-                                `📅 Date: ${partyGroup.partyDate}\n` +
-                                `⏰ Time: ${partyGroup.targetArrivalTime}\n` +
-                                `📍 Location: ${partyGroup.partyAddress}\n\n` +
-                                `Access Code: ${partyGroup.accessCode}\n` +
-                                `Link: ${shareableLink}`;
-                              window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
-                            }}
-                          >
-                            Share via WhatsApp
-                          </Button>
-                        </div>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
+                    {/* WhatsApp Button */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Share via WhatsApp</p>
+                      <Button 
+                        variant="default"
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        onClick={() => {
+                          const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                            `📅 Date: ${formattedDate}\n` +
+                            `⏰ Time: ${partyGroup.targetArrivalTime}\n` +
+                            `📍 Location: ${partyGroup.partyAddress}, ${partyGroup.partyCity}\n\n` +
+                            `Link: ${shareableLink}`;
+                          window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                        }}
+                      >
+                        Share via WhatsApp
+                      </Button>
+                      <p className="text-xs text-gray-500">
+                        Instantly share event details with parents through WhatsApp.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

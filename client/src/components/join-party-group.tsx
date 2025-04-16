@@ -6,24 +6,26 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPartyGroupByAccessCode } from "@/api/partyGroups";
+import { getPartyGroupById } from "@/api/partyGroups";
 import { useToast } from "@/hooks/use-toast";
 import { type PartyGroup } from "@shared/schema";
 
 interface JoinPartyGroupProps {
   onJoinSuccess: (partyGroup: PartyGroup) => void;
-  onCancel: () => void; // Add callback for cancel action
-  initialAccessCode?: string; // Optional prop to pre-populate the access code
+  onCancel: () => void; 
+  initialPartyId?: string; // Optional prop to pre-populate the party ID
 }
 
 // Create the form schema
 const joinPartyGroupSchema = z.object({
-  accessCode: z.string().min(4, "Access code must be at least 4 characters")
+  partyId: z.string()
+    .min(1, "Party ID is required")
+    .refine((val) => !isNaN(Number(val)), { message: "Party ID must be a number" })
 });
 
 type JoinPartyGroupFormValues = z.infer<typeof joinPartyGroupSchema>;
 
-export default function JoinPartyGroup({ onJoinSuccess, onCancel, initialAccessCode = "" }: JoinPartyGroupProps) {
+export default function JoinPartyGroup({ onJoinSuccess, onCancel, initialPartyId = "" }: JoinPartyGroupProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function JoinPartyGroup({ onJoinSuccess, onCancel, initialAccessC
   const form = useForm<JoinPartyGroupFormValues>({
     resolver: zodResolver(joinPartyGroupSchema),
     defaultValues: {
-      accessCode: initialAccessCode
+      partyId: initialPartyId
     },
   });
 
@@ -39,7 +41,7 @@ export default function JoinPartyGroup({ onJoinSuccess, onCancel, initialAccessC
     mutationFn: async (values: JoinPartyGroupFormValues) => {
       setIsLoading(true);
       try {
-        const partyGroup = await getPartyGroupByAccessCode(values.accessCode);
+        const partyGroup = await getPartyGroupById(parseInt(values.partyId));
         return partyGroup;
       } finally {
         setIsLoading(false);
@@ -60,7 +62,7 @@ export default function JoinPartyGroup({ onJoinSuccess, onCancel, initialAccessC
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message || "Invalid access code. Please check and try again.",
+        description: error.message || "Invalid party ID. Please check and try again.",
         variant: "destructive",
       });
     },
@@ -73,21 +75,22 @@ export default function JoinPartyGroup({ onJoinSuccess, onCancel, initialAccessC
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <h2 className="text-xl font-semibold mb-2 text-neutral-800">Join an Event</h2>
-      <p className="text-sm text-neutral-600 mb-6">Enter the access code provided by the event organizer</p>
+      <p className="text-sm text-neutral-600 mb-6">Enter the event ID from the shared link</p>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="accessCode"
+            name="partyId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Access Code</FormLabel>
+                <FormLabel>Event ID</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="Enter the access code" 
+                    placeholder="Enter the event ID" 
                     {...field} 
                     autoComplete="off"
+                    type="number"
                   />
                 </FormControl>
                 <FormMessage />
