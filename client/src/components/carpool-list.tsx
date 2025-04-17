@@ -234,6 +234,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
       parentName: "",
       childName: "",
       phoneNumber: "",
+      address: "",
+      city: "",
+      postcode: "",
       specialRequirements: ""
     });
     const { toast } = useToast();
@@ -257,6 +260,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
           parentName: "",
           childName: "",
           phoneNumber: "",
+          address: "",
+          city: "",
+          postcode: "",
           specialRequirements: ""
         });
         
@@ -561,10 +567,32 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         value={formData.phoneNumber}
                         onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
                       />
+                      
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                      <Input 
+                        placeholder="Your address" 
+                        className="mb-3"
+                        value={formData.address}
+                        onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      />
                     </div>
                     
                     <div>
-                      {/* Trip Type selector removed - determined by the selected carpool */}
+                      <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                      <Input 
+                        placeholder="Your city" 
+                        className="mb-3"
+                        value={formData.city}
+                        onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      />
+                      
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
+                      <Input 
+                        placeholder="Your postcode" 
+                        className="mb-3"
+                        value={formData.postcode}
+                        onChange={(e) => setFormData({...formData, postcode: e.target.value})}
+                      />
                       
                       <label className="block text-sm font-medium text-gray-700 mb-1">Special Requirements</label>
                       <textarea 
@@ -598,6 +626,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                           parentName: formData.parentName,
                           childName: formData.childName,
                           phoneNumber: formData.phoneNumber,
+                          address: formData.address,
+                          city: formData.city,
+                          postcode: formData.postcode,
                           specialRequirements: formData.specialRequirements,
                           needsPickup,
                           needsDropoff,
