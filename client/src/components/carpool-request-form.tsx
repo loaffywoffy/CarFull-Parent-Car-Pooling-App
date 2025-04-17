@@ -34,14 +34,14 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   const { toast } = useToast();
   const [distances, setDistances] = useState<{[key: number]: string}>({});
   const [showNearbyOptions, setShowNearbyOptions] = useState(false);
-  
+
   // State to track ride preference for filtering carpools
   const [ridePreference, setRidePreference] = useState<string | null>("pickup");
-  
+
   // State for separate carpool IDs for TO and FROM journeys
   const [pickupCarpoolId, setPickupCarpoolId] = useState<number | null>(null);
   const [dropoffCarpoolId, setDropoffCarpoolId] = useState<number | null>(null);
-  
+
   const form = useForm<CarpoolRequestFormValues>({
     resolver: zodResolver(carpoolRequestFormSchema),
     defaultValues: {
@@ -65,20 +65,20 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
 
   // Extract party group ID from the carpool ID if available
   const [partyGroupId, setPartyGroupId] = useState<number | null>(null);
-  
+
   // Fetch selected carpool details to get party group ID
   const { data: carpoolDetails } = useQuery({
     queryKey: [`/api/carpools/${selectedCarpoolId || 0}`],
     enabled: !!selectedCarpoolId
   });
-  
+
   // Set party group ID when carpool details are loaded
   useEffect(() => {
     if (carpoolDetails && typeof carpoolDetails === 'object' && 'partyGroupId' in carpoolDetails) {
       setPartyGroupId(Number(carpoolDetails.partyGroupId));
     }
   }, [carpoolDetails]);
-  
+
   // Fetch available carpools for the party group
   const { data: carpools, isLoading: carpoolsLoading } = useQuery({
     queryKey: partyGroupId ? [`/api/party-groups/${partyGroupId}/carpools`] : ["/api/carpools"],
@@ -88,20 +88,20 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   const calculateDistance = (postcode1: string, postcode2: string) => {
     // In a real application, you would use a mapping API to calculate actual distance
     // For this demo, we'll use a simple algorithm based on the postcode strings
-    
+
     if (!postcode1 || !postcode2) return "Unknown";
-    
+
     // Extract numeric parts for a simple calculation
     const code1 = postcode1.replace(/[^0-9]/g, '');
     const code2 = postcode2.replace(/[^0-9]/g, '');
-    
+
     if (code1 === code2) return "0.1 miles";
-    
+
     // Generate a pseudo-random but consistent distance based on the codes
     const dist = Math.abs(parseInt(code1 || "0") - parseInt(code2 || "0")) / 100;
     return dist.toFixed(1) + " miles";
   };
-  
+
   // Get the numeric distance value from the distance string
   const getNumericDistance = (distanceStr?: string): number => {
     if (!distanceStr || distanceStr === "Unknown") return 999; // Large number for unknown/undefined distances
@@ -119,11 +119,11 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       form.setValue("carpoolId", selectedCarpoolId);
     }
   }, [selectedCarpoolId, form]);
-  
+
   // Calculate distances automatically when user enters a postcode
   useEffect(() => {
     const watchPostcode = form.watch("postcode");
-    
+
     // Only calculate if postcode has at least 3 characters
     if (watchPostcode && watchPostcode.length >= 3 && carpools) {
       // Calculate distances for all carpools
@@ -133,7 +133,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
           newDistances[carpool.id] = calculateDistance(watchPostcode, carpool.postcode);
         });
       }
-      
+
       setDistances(newDistances);
       setShowNearbyOptions(true);
     }
@@ -147,19 +147,19 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       if (partyGroupId) {
         // Invalidate the carpool requests for the selected carpool
         queryClient.invalidateQueries({ queryKey: ['/api/carpools', form.getValues('carpoolId'), 'requests'] });
-        
+
         // Invalidate all carpools for this event group to refresh counts
         queryClient.invalidateQueries({ queryKey: ['/api/party-groups', partyGroupId, 'carpools'] });
-        
+
         // Invalidate the parent query in case counts need to be updated
         queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
       }
-      
+
       toast({
         title: "Success!",
         description: "Your carpool request has been submitted successfully.",
       });
-      
+
       form.reset();
       onSuccess();
     },
@@ -185,18 +185,18 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       values.pickupCarpoolId = pickupCarpoolId || values.carpoolId;
       values.dropoffCarpoolId = dropoffCarpoolId || values.carpoolId;
     }
-    
+
     // Submit the request with updated fields
     requestMutation.mutate(values);
   };
-  
+
   // Count available carpools for different ride preferences
   const getAvailableCarpoolCounts = () => {
     if (!carpools || !Array.isArray(carpools)) return { pickup: 0, dropoff: 0, both: 0 };
-    
+
     // Get user's postcode to filter by distance constraints
     const userPostcode = form.getValues("postcode");
-    
+
     // Filter carpools based on distance constraints for direct-to-home dropoffs
     const filteredCarpools = userPostcode ? carpools.filter(c => {
       // If carpool has direct-to-home dropoff preference with distance limit
@@ -208,26 +208,26 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       }
       return true; // Include all others
     }) : carpools;
-    
+
     const counts = {
       pickup: filteredCarpools.filter(c => c.canPickup || c.canBoth).length,
       dropoff: filteredCarpools.filter(c => c.canDropoff || c.canBoth).length,
       both: filteredCarpools.filter(c => c.canBoth).length
     };
-    
+
     return counts;
   };
-  
+
   const carpoolCounts = getAvailableCarpoolCounts();
 
   // Filter carpools based on ride preference
   const getFilteredCarpools = () => {
     if (!carpools || !Array.isArray(carpools)) return [];
-    
+
     return carpools.filter((carpool: any) => {
       // Match by ride preference
       let matches = true;
-      
+
       if (ridePreference === "pickup") {
         matches = carpool.canPickup || carpool.canBoth;
       } else if (ridePreference === "dropoff") {
@@ -235,7 +235,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       } else if (ridePreference === "both") {
         matches = carpool.canBoth;
       }
-      
+
       // Check the max distance constraint for direct-to-home dropoffs
       if (matches && (ridePreference === "dropoff" || ridePreference === "both") && 
           carpool.dropoffPreference === "direct-home" && carpool.maxDistance) {
@@ -243,7 +243,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
         // Only include this carpool if user is within max distance range
         return numericDistance <= carpool.maxDistance;
       }
-      
+
       return matches; // Return true if matches ride preference and other conditions
     });
   };
@@ -253,7 +253,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <h2 className="text-xl font-semibold mb-6 text-neutral-800">Request a Carpool Spot</h2>
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Ride Preference Selection - Moved to top for better UX */}
@@ -270,7 +270,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                         field.onChange(value);
                         // Update ride preference state for filtering carpools
                         setRidePreference(value);
-                        
+
                         // Also update the individual need fields to maintain compatibility
                         if (value === "pickup") {
                           form.setValue("needsPickup", true);
@@ -334,7 +334,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
             {/* Parent Information */}
             <div className="space-y-4 md:col-span-2">
               <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Your Information</h3>
-              
+
               <FormField
                 control={form.control}
                 name="parentName"
@@ -348,7 +348,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="address"
@@ -362,7 +362,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   </FormItem>
                 )}
               />
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -377,7 +377,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="postcode"
@@ -391,7 +391,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="phoneNumber"
@@ -407,11 +407,11 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                 />
               </div>
             </div>
-            
+
             {/* Child Information */}
             <div className="space-y-4 md:col-span-2">
               <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Child's Information</h3>
-              
+
               <FormField
                 control={form.control}
                 name="childName"
@@ -425,7 +425,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="childPhone"
@@ -439,7 +439,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   </FormItem>
                 )}
               />
-              
+
               {/* Nearby Carpools Section */}
               {showNearbyOptions && Object.keys(distances).length > 0 && (
                 <div className="bg-gray-50 p-4 rounded-md mb-4 border border-gray-200">
@@ -501,7 +501,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                                   {carpool.canDropoff && <Badge className="bg-blue-100 text-blue-800">From party</Badge>}
                                   {carpool.canBoth && <Badge className="bg-purple-100 text-purple-800">Both</Badge>}
                                 </div>
-                                
+
                                 {/* Show drop-off preferences for carpools offering return from party */}
                                 {(ridePreference === "dropoff" || ridePreference === "both") && 
                                  (carpool.canDropoff || carpool.canBoth) && carpool.dropoffPreference && (
@@ -542,7 +542,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   </div>
                 </div>
               )}
-              
+
               <FormField
                 control={form.control}
                 name="carpoolId"
@@ -586,7 +586,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   </FormItem>
                 )}
               />
-              
+
               <div className="space-y-3">
                 <FormField
                   control={form.control}
@@ -600,7 +600,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                             field.onChange(value);
                             // Update ride preference state for filtering carpools
                             setRidePreference(value);
-                            
+
                             // Also update the individual need fields to maintain compatibility
                             if (value === "pickup") {
                               form.setValue("needsPickup", true);
@@ -659,7 +659,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                   )}
                 />
               </div>
-              
+
               <FormField
                 control={form.control}
                 name="specialRequirements"
