@@ -350,7 +350,9 @@ export default function Home() {
         {activeTab === "view" && selectedPartyGroup && (
           <div className="space-y-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-neutral-800">Available Rides</h2>
+              <h2 className="text-2xl font-bold text-neutral-800">
+                Available Rides to {selectedPartyGroup.name}
+              </h2>
               <Button
                 onClick={() => handleTabChange("partyGroups")}
                 variant="outline"

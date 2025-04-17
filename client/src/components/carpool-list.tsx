@@ -630,9 +630,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-xl font-semibold">Available Carpools</h2>
-        
-
+        <h3 className="text-lg font-semibold text-gray-700">Find available rides below</h3>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
