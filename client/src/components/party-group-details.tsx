@@ -233,6 +233,58 @@ export default function PartyGroupDetails({
         <TabsContent value="details" className="pt-2 pb-0 px-0 m-0">
           <CardContent className="pt-4">
             <div className="space-y-4">
+              {/* Share with Parents - moved to top of details section */}
+              {isCreator && (
+                <div className="mb-4 pb-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <Share2Icon className="h-4 w-4 text-primary-600" />
+                      <p className="font-medium text-sm text-gray-700">Share with Parents</p>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Input readOnly value={shareableLink} className="font-mono text-xs bg-gray-50" />
+                      <Button 
+                        variant="outline" 
+                        onClick={copyShareableLink}
+                        className="flex gap-1 shrink-0" 
+                        size="sm"
+                      >
+                        {copySuccess.link ? (
+                          <>
+                            <CheckIcon className="h-3 w-3 text-green-600" />
+                            <span>Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <LinkIcon className="h-3 w-3" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                      onClick={() => {
+                        const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                          `📅 Date: ${formattedDate}\n` +
+                          `⏰ Time: ${partyGroup.targetArrivalTime}\n` +
+                          `📍 Location: ${partyGroup.partyAddress}, ${partyGroup.partyCity}\n\n` +
+                          `Link: ${shareableLink}`;
+                        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                      }}
+                    >
+                      Share via WhatsApp
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
               {partyGroup.description && (
                 <p className="text-gray-600 text-sm">{partyGroup.description}</p>
               )}
@@ -330,60 +382,7 @@ export default function PartyGroupDetails({
                 </div>
               </div>
               
-              {/* Only show sharing options to the creator - minimized */}
-              {isCreator && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <details className="group">
-                    <summary className="flex items-center justify-between mb-2 cursor-pointer">
-                      <div className="flex items-center space-x-2">
-                        <Share2Icon className="h-4 w-4 text-primary-600" />
-                        <p className="font-medium text-sm text-gray-700">Share with Parents</p>
-                      </div>
-                    </summary>
-
-                    <div className="pt-2">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Input readOnly value={shareableLink} className="font-mono text-xs bg-gray-50" />
-                        <Button 
-                          variant="outline" 
-                          onClick={copyShareableLink}
-                          className="flex gap-1 shrink-0" 
-                          size="sm"
-                        >
-                          {copySuccess.link ? (
-                            <>
-                              <CheckIcon className="h-3 w-3 text-green-600" />
-                              <span>Copied</span>
-                            </>
-                          ) : (
-                            <>
-                              <LinkIcon className="h-3 w-3" />
-                              <span>Copy</span>
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                      
-                      <Button 
-                        variant="outline"
-                        size="sm"
-                        className="w-full bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                        onClick={() => {
-                          const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
-                            `📅 Date: ${formattedDate}\n` +
-                            `⏰ Time: ${partyGroup.targetArrivalTime}\n` +
-                            `📍 Location: ${partyGroup.partyAddress}, ${partyGroup.partyCity}\n\n` +
-                            `Link: ${shareableLink}`;
-                          window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
-                        }}
-                      >
-                        Share via WhatsApp
-                      </Button>
-                    </div>
-                  </details>
-                </div>
-              )}
-              {/* Additional content section removed */}
+              {/* Share section moved to top */}
             </div>
           </CardContent>
         </TabsContent>
