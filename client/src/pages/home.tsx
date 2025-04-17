@@ -293,7 +293,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Give a Ride
+              Offer a Ride
             </button>
             <button
               onClick={() => {
