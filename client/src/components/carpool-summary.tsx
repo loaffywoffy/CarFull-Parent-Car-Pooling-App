@@ -542,6 +542,30 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                          'Central meeting point'}
                       </div>
                     )}
+                    {carpoolRequestsMap[carpool.id]?.length > 0 && (
+                      <div className="mt-2 pt-2 border-t">
+                        <p className="font-medium text-xs text-gray-700 mb-1">Current Passengers:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {carpoolRequestsMap[carpool.id].map((request) => (
+                            <Badge key={request.id} variant="outline" className="text-xs">
+                              <span className="mr-1">{request.childName}</span>
+                              {request.specialRequirements && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <InfoIcon className="h-3 w-3 text-gray-400" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{request.specialRequirements}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Show passengers inline */}
                     {carpoolRequestsMap[carpool.id]?.length > 0 && (
