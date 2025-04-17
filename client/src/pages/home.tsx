@@ -19,7 +19,7 @@ import { PlusIcon, ChevronLeft } from "lucide-react";
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroups } from "@/api/partyGroups";
 
-type Tab = "partyGroups" | "offer" | "request" | "view";
+type Tab = "partyGroups" | "offer" | "request" | "view" | "calendar";
 type PartyGroupTab = "list" | "create" | "details" | "edit";
 
 type SuccessInfo = {
@@ -75,6 +75,11 @@ export default function Home() {
   const handleRequestSpot = (carpoolId: number) => {
     setSelectedCarpoolId(carpoolId);
     setActiveTab("request"); // Keep this line to maintain the CarpoolRequestForm rendering
+  };
+  
+  const handleManageCalendar = (carpoolId: number) => {
+    setSelectedCarpoolId(carpoolId);
+    setActiveTab("calendar");
   };
 
   const handlePartyGroupSuccess = (partyGroupId: number) => {
@@ -377,6 +382,7 @@ export default function Home() {
                 <CarpoolList 
                   partyGroupId={selectedPartyGroup.id}
                   onRequestSpot={handleRequestSpot}
+                  onManageCalendar={handleManageCalendar}
                 />
               </TabsContent>
               
@@ -407,6 +413,67 @@ export default function Home() {
         )}
 
 
+
+        {/* Calendar Management UI */}
+        {activeTab === "calendar" && selectedCarpoolId && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-neutral-800">Calendar Management</h2>
+              <Button
+                onClick={() => setActiveTab("view")}
+                variant="outline"
+                size="sm"
+                className="flex gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back to Carpools
+              </Button>
+            </div>
+            
+            <Tabs defaultValue="events">
+              <TabsList className="grid grid-cols-2 mb-6 w-full p-1.5 bg-gray-100 rounded-lg shadow-sm border">
+                <TabsTrigger 
+                  value="events" 
+                  className="text-center py-3.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
+                >
+                  <span className="flex items-center justify-center gap-2 font-medium text-base">
+                    <span className="inline-block relative top-[1px]">📅</span>
+                    View Events
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="create" 
+                  className="text-center py-3.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
+                >
+                  <span className="flex items-center justify-center gap-2 font-medium text-base">
+                    <span className="inline-block relative top-[1px]">➕</span>
+                    Add Event
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="events" className="mt-0">
+                <CalendarEventsList 
+                  carpoolId={selectedCarpoolId}
+                  onBackToList={() => setActiveTab("view")}
+                />
+              </TabsContent>
+              
+              <TabsContent value="create" className="mt-0">
+                <CalendarEventForm 
+                  carpoolId={selectedCarpoolId}
+                  onSuccess={() => {
+                    setSuccessInfo({
+                      show: true,
+                      title: "Calendar Event Created!",
+                      message: "The calendar event has been created successfully.",
+                    });
+                  }}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
 
         {/* Success Dialog */}
         <SuccessDialog
