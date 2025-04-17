@@ -77,6 +77,40 @@ function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: Carpoo
       {isExpanded && (
         <div className="px-4 pb-4 border-t">
           <div className="space-y-4 pt-3">
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Edit Offer
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Edit Carpool Offer</DialogTitle>
+                  </DialogHeader>
+                  {/* Add CarpoolOfferForm component here with prefilled values */}
+                </DialogContent>
+              </Dialog>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    Delete
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Delete Carpool Offer</DialogTitle>
+                  </DialogHeader>
+                  <p>Are you sure you want to delete this carpool offer? This action cannot be undone.</p>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <Button variant="outline" onClick={() => {}}>Cancel</Button>
+                    <Button variant="destructive" onClick={() => {}}>Delete</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
             {/* Driver Details */}
             <div>
               <h4 className="text-sm font-semibold mb-2">Driver Details</h4>
@@ -94,6 +128,19 @@ function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: Carpoo
                   <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Map View */}
+            <div className="h-[200px] rounded-lg overflow-hidden border">
+              <CarpoolMap
+                carpools={[{
+                  id: carpool.id,
+                  label: `${carpool.parentName}'s Car`,
+                  position: [51.5074, -0.1278], // This should be calculated from the address
+                  type: carpool.canBoth ? 'both' : (carpool.canPickup ? 'pickup' : 'dropoff')
+                }]}
+                onCarpoolSelect={() => {}}
+              />
             </div>
 
             {/* Ride Details */}
