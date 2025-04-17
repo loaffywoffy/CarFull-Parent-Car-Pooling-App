@@ -69,6 +69,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
   const [sortBy, setSortBy] = useState<SortOption>("spaces");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("to-party");
+  const [showPostcodeInput, setShowPostcodeInput] = useState(false);
+  const [userPostcode, setUserPostcode] = useState("");
+  const [userCoordinates, setUserCoordinates] = useState<[number, number] | null>(null);
 
   const { data: carpools, isLoading } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId, "carpools"],
@@ -85,63 +88,102 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
   // State to store carpools with distances calculated
   const [carpoolsWithDistance, setCarpoolsWithDistance] = useState<any[]>([]);
   
+  // Handle sorting by distance and postcode input visibility
+  useEffect(() => {
+    if (sortBy === 'distance') {
+      setShowPostcodeInput(true);
+    } else {
+      setShowPostcodeInput(false);
+    }
+  }, [sortBy]);
+
+  // Handle geocoding user postcode when entered
+  useEffect(() => {
+    async function geocodeUserPostcode() {
+      if (!userPostcode || userPostcode.trim().length < 5) return;
+      
+      try {
+        const coords = await geocodeAddress("", "", userPostcode);
+        setUserCoordinates(coords);
+      } catch (error) {
+        console.error("Error geocoding user postcode:", error);
+        setUserCoordinates(null);
+      }
+    }
+    
+    geocodeUserPostcode();
+  }, [userPostcode]);
+
   // Calculate distances between event location and each carpool
   useEffect(() => {
     async function calculateDistances() {
-      if (!carpools || !Array.isArray(carpools) || !partyGroup) return;
-      
-      // Get party location
-      if (!partyGroup.partyAddress || !partyGroup.partyPostcode) {
-        setCarpoolsWithDistance([...carpools]);
-        return;
-      }
+      if (!carpools || !Array.isArray(carpools)) return;
       
       try {
-        // Get party coordinates
-        const partyCoordinates = await geocodeAddress(
-          partyGroup.partyAddress,
-          partyGroup.partyCity,
-          partyGroup.partyPostcode
-        );
-        
         // Calculate distance for each carpool
         const updatedCarpools = await Promise.all(
           carpools.map(async (carpool) => {
             if (!carpool.address || !carpool.postcode) {
-              return { ...carpool, distance: null };
+              return { ...carpool, distance: null, distanceFromUser: null };
             }
             
             try {
               const carpoolCoordinates = await geocodeAddress(
                 carpool.address,
-                carpool.city,
+                carpool.city || '',
                 carpool.postcode
               );
               
-              const distance = calculateDistance(
-                partyCoordinates[0],
-                partyCoordinates[1],
-                carpoolCoordinates[0],
-                carpoolCoordinates[1]
-              );
+              // Calculate distance from event (if event location is available)
+              let distance = null;
+              if (partyGroup?.partyAddress && partyGroup?.partyPostcode) {
+                const partyCoordinates = await geocodeAddress(
+                  partyGroup.partyAddress,
+                  partyGroup.partyCity || '',
+                  partyGroup.partyPostcode
+                );
+                
+                distance = calculateDistance(
+                  partyCoordinates[0],
+                  partyCoordinates[1],
+                  carpoolCoordinates[0],
+                  carpoolCoordinates[1]
+                );
+              }
               
-              return { ...carpool, distance };
+              // Calculate distance from user (if user location is available)
+              let distanceFromUser = null;
+              if (userCoordinates) {
+                distanceFromUser = calculateDistance(
+                  userCoordinates[0],
+                  userCoordinates[1],
+                  carpoolCoordinates[0],
+                  carpoolCoordinates[1]
+                );
+              }
+              
+              return { 
+                ...carpool, 
+                distance, 
+                distanceFromUser,
+                carpoolCoordinates
+              };
             } catch (error) {
               console.error(`Error calculating distance for carpool ${carpool.id}:`, error);
-              return { ...carpool, distance: null };
+              return { ...carpool, distance: null, distanceFromUser: null };
             }
           })
         );
         
         setCarpoolsWithDistance(updatedCarpools);
       } catch (error) {
-        console.error('Error getting party location:', error);
+        console.error('Error calculating distances:', error);
         setCarpoolsWithDistance([...carpools]);
       }
     }
     
     calculateDistances();
-  }, [carpools, partyGroup]);
+  }, [carpools, partyGroup, userCoordinates]);
 
 
 
@@ -167,6 +209,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
       .sort((a, b) => {
         // Sort based on selected option
         if (sortBy === "distance") {
+          // If user postcode is provided, sort by distance from user
+          if (userCoordinates && a.distanceFromUser !== null && b.distanceFromUser !== null) {
+            return (a.distanceFromUser || 0) - (b.distanceFromUser || 0);
+          }
+          // Otherwise sort by distance from event
           return (a.distance || 0) - (b.distance || 0);
         }
         if (sortBy === "spaces") {
@@ -323,10 +370,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                     <Users className="h-3 w-3 mr-1" />
                     {carpool.spacesAvailable} spaces
                   </Badge>
-                  {sortBy === "distance" && carpool.distance !== null && (
+                  {sortBy === "distance" && (
                     <Badge className="bg-gray-100 text-gray-800">
                       <MapPin className="h-3 w-3 mr-1" />
-                      {carpool.distance.toFixed(1)} miles
+                      {userCoordinates && carpool.distanceFromUser !== null 
+                        ? `${carpool.distanceFromUser.toFixed(1)} miles from you` 
+                        : carpool.distance !== null 
+                          ? `${carpool.distance.toFixed(1)} miles from event`
+                          : "Distance unknown"}
                     </Badge>
                   )}
                 </div>
@@ -606,6 +657,51 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
           </SelectContent>
         </Select>
       </div>
+      
+      {/* Postcode Input for distance calculation */}
+      {showPostcodeInput && (
+        <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mt-4">
+          <div className="flex items-center mb-2">
+            <MapPin className="h-4 w-4 text-blue-500 mr-2" />
+            <h3 className="text-sm font-medium text-blue-700">Your Location</h3>
+          </div>
+          <p className="text-xs text-blue-600 mb-3">
+            Enter your postcode to see how far you are from each carpool pickup point
+          </p>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Enter your postcode..."
+              value={userPostcode}
+              onChange={(e) => setUserPostcode(e.target.value)}
+              className="max-w-xs"
+            />
+            {userPostcode && userCoordinates && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setUserPostcode("");
+                  setUserCoordinates(null);
+                }}
+                className="text-xs"
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+          {userPostcode && !userCoordinates && userPostcode.length > 4 && (
+            <p className="text-xs text-amber-600 mt-2">
+              <Loader2 className="h-3 w-3 inline-block mr-1 animate-spin" />
+              Looking up your location...
+            </p>
+          )}
+          {userCoordinates && (
+            <p className="text-xs text-green-600 mt-2">
+              ✓ Location found! Carpools are now sorted by distance from you.
+            </p>
+          )}
+        </div>
+      )}
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
