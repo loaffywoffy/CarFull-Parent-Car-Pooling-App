@@ -19,7 +19,7 @@ import { PlusIcon, ChevronLeft } from "lucide-react";
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroups } from "@/api/partyGroups";
 
-type Tab = "partyGroups" | "offer" | "request" | "view" | "calendar";
+type Tab = "partyGroups" | "offer" | "request" | "view";
 type PartyGroupTab = "list" | "create" | "details" | "edit";
 
 type SuccessInfo = {
@@ -77,10 +77,7 @@ export default function Home() {
     setActiveTab("request"); // Keep this line to maintain the CarpoolRequestForm rendering
   };
   
-  const handleManageCalendar = (carpoolId: number) => {
-    setSelectedCarpoolId(carpoolId);
-    setActiveTab("calendar");
-  };
+  // Calendar feature removed
 
   const handlePartyGroupSuccess = (partyGroupId: number) => {
     // Add the newly created group to the createdGroupIds array
@@ -384,7 +381,6 @@ export default function Home() {
                 <CarpoolList 
                   partyGroupId={selectedPartyGroup.id}
                   onRequestSpot={handleRequestSpot}
-                  onManageCalendar={handleManageCalendar}
                 />
               </TabsContent>
               

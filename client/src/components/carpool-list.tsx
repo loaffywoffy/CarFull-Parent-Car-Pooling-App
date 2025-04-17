@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Calendar as CalendarIcon, Home } from "lucide-react";
+import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home } from "lucide-react";
 import { geocodeAddress, calculateDistance } from "@/lib/geocoding";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -20,13 +20,12 @@ import LocationMap from "@/components/location-map";
 interface CarpoolListProps {
   partyGroupId: number;
   onRequestSpot: (carpoolId: number) => void;
-  onManageCalendar?: (carpoolId: number) => void;
 }
 
 // Map functionality has been removed
 type SortOption = "distance" | "spaces" | "name";
 
-export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalendar }: CarpoolListProps) {
+export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolListProps) {
   // States for filtering and sorting
   const [sortBy, setSortBy] = useState<SortOption>("spaces");
   const [searchTerm, setSearchTerm] = useState("");
@@ -241,20 +240,6 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
             </div>
             
             <div className="flex gap-2">
-              {onManageCalendar && (
-                <Button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onManageCalendar(carpool.id);
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                >
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>Calendar</span>
-                </Button>
-              )}
               <Button 
                 onClick={(e) => {
                   e.stopPropagation();
