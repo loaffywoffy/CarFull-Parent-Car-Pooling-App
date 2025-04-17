@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups";
 import { getCarpoolRequests } from "@/api/carpools";
@@ -19,6 +19,42 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import LocationMap from "@/components/location-map";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+
+// Memoized stable location map component that won't re-render on parent state changes
+const StableLocationMap = memo(({ 
+  partyName, 
+  partyCoordinates, 
+  carpoolName, 
+  carpoolCoordinates, 
+  height, 
+  initialZoom 
+}: { 
+  partyName: string;
+  partyCoordinates: [number, number];
+  carpoolName: string;
+  carpoolCoordinates: [number, number];
+  height: string;
+  initialZoom: number;
+}) => {
+  return (
+    <LocationMap 
+      locations={[
+        {
+          label: partyName,
+          position: partyCoordinates,
+          type: 'party'
+        },
+        {
+          label: carpoolName,
+          position: carpoolCoordinates,
+          type: 'pickup'
+        }
+      ]}
+      height={height}
+      initialZoom={initialZoom}
+    />
+  );
+});
 
 interface CarpoolListProps {
   partyGroupId: number;
@@ -431,19 +467,12 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                   
                   {mapVisible && carpoolCoordinates && partyCoordinates && (
                     <div className="rounded-md border border-gray-200 overflow-hidden mt-2">
-                      <LocationMap 
-                        locations={[
-                          {
-                            label: partyGroup?.name || "Event",
-                            position: partyCoordinates,
-                            type: 'party'
-                          },
-                          {
-                            label: `${carpool.parentName}`,
-                            position: carpoolCoordinates,
-                            type: 'pickup'
-                          }
-                        ]}
+                      {/* Use React.memo-ed component to prevent re-renders */}
+                      <StableLocationMap
+                        partyName={partyGroup?.name || "Event"}
+                        partyCoordinates={partyCoordinates}
+                        carpoolName={carpool.parentName}
+                        carpoolCoordinates={carpoolCoordinates}
                         height="200px"
                         initialZoom={11}
                       />
