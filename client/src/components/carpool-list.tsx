@@ -195,6 +195,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
         // Filter by tab selection
         if (selectedTab === "to-party") return carpool.canPickup || carpool.canBoth;
         if (selectedTab === "from-party") return carpool.canDropoff || carpool.canBoth;
+        if (selectedTab === "round-trip") return carpool.canBoth; // Only carpools offering both ways
         return true; // Show all carpools in the "both" tab
       })
       .filter(carpool => {
@@ -708,6 +709,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
           </TabsTrigger>
           <TabsTrigger value="from-party">
             From Party ({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="round-trip">
+            To & From Party ({carpools?.filter((c: any) => c.canBoth).length || 0})
           </TabsTrigger>
           <TabsTrigger value="both">
             All Carpools ({carpools?.length || 0})
