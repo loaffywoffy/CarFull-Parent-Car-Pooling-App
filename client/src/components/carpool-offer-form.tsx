@@ -25,6 +25,7 @@ import { geocodeAddress } from "@/lib/geocoding";
 
 interface CarpoolOfferFormProps {
   onSuccess: () => void;
+  onCancel?: () => void;
   partyGroupId: number;
 }
 
