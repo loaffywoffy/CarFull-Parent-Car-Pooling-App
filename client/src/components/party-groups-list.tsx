@@ -142,7 +142,7 @@ export default function PartyGroupsList({
                     className="bg-green-600 hover:bg-green-700" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Select this party group and trigger the "Give a Ride" action
+                      // Select this party group and trigger the "Offer a Ride" action
                       onSelectPartyGroup(partyGroup);
                       // We'll use a custom attribute to signal the parent component
                       const customEvent = new CustomEvent('action', { 
@@ -151,7 +151,7 @@ export default function PartyGroupsList({
                       window.dispatchEvent(customEvent);
                     }}
                   >
-                    Give a Ride
+                    Offer a Ride
                   </Button>
                   <Button 
                     variant="default" 
