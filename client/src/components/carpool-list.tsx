@@ -694,7 +694,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
               Looking up your location...
             </p>
           )}
-          {userCoordinates && (
+          {userCoordinates && userPostcode.trim() !== "" && (
             <p className="text-xs text-green-600 mt-2">
               ✓ Location found! Carpools are now sorted by distance from you.
             </p>
