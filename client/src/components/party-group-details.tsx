@@ -245,10 +245,18 @@ export default function PartyGroupDetails({
                   
                   <div className="pt-1">
                     <div className="flex items-center gap-2 mb-3">
-                      <Input readOnly value={shareableLink} className="font-mono text-xs bg-gray-50" />
+                      <Input 
+                        readOnly 
+                        value={`https://${window.location.hostname}?partyId=${partyGroup.id}`} 
+                        className="font-mono text-xs bg-gray-50" 
+                      />
                       <Button 
                         variant="outline" 
-                        onClick={copyShareableLink}
+                        onClick={() => {
+                          navigator.clipboard.writeText(`https://${window.location.hostname}?partyId=${partyGroup.id}`);
+                          setCopySuccess({ ...copySuccess, link: true });
+                          setTimeout(() => setCopySuccess(prev => ({ ...prev, link: false })), 2000);
+                        }}
                         className="flex gap-1 shrink-0" 
                         size="sm"
                       >
