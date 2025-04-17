@@ -207,6 +207,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
       case 'direct-home':
         return 'Driver will drop off each child directly at their home';
       case 'my-home':
+      case 'my-address':
         return 'Parents should collect children from driver\'s home';
       case 'central-point':
         return 'Driver will drop off at a central meeting point';
@@ -316,7 +317,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
                       <div className="flex items-center gap-1">
                         <HomeIcon className="h-3.5 w-3.5"/>
                         {carpool.dropoffPreference === 'direct-home' ? 'Drops at your home' :
-                         carpool.dropoffPreference === 'my-home' ? 'Collect from driver' : 
+                         (carpool.dropoffPreference === 'my-home' || carpool.dropoffPreference === 'my-address') ? 'Collect from driver' : 
                          'Central meeting point'}
                       </div>
                     )}
@@ -546,7 +547,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
                                 {carpool.dropoffPreference && (
                                   <Badge className="bg-purple-100 text-purple-800">
                                     {carpool.dropoffPreference === "direct-home" ? "Direct home drop-off" : 
-                                     carpool.dropoffPreference === "my-home" ? "Pickup from driver's home" : 
+                                     (carpool.dropoffPreference === "my-home" || carpool.dropoffPreference === "my-address") ? "Pickup from driver's home" : 
                                      "Meeting point"}
                                   </Badge>
                                 )}
