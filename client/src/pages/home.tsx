@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import CarpoolOfferForm from "@/components/carpool-offer-form";
 import CarpoolRequestForm from "@/components/carpool-request-form";
 import CarpoolList from "@/components/carpool-list";
@@ -13,7 +14,7 @@ import JoinPartyGroup from "@/components/join-party-group";
 import CarpoolSummary from "@/components/carpool-summary";
 
 import { type PartyGroup } from "@shared/schema";
-import { getPartyGroupById } from "@/api/partyGroups";
+import { getPartyGroupById, getPartyGroups } from "@/api/partyGroups";
 
 type Tab = "partyGroups" | "offer" | "request" | "view";
 type PartyGroupTab = "list" | "create" | "details" | "edit";
@@ -36,6 +37,12 @@ export default function Home() {
   const [selectedPartyGroup, setSelectedPartyGroup] = useState<PartyGroup | null>(null);
   const [joinPartyId, setJoinPartyId] = useState<string>("");
   const [createdGroupIds, setCreatedGroupIds] = useState<number[]>([]);
+  
+  // Query to fetch all party groups
+  const { data: partyGroups = [] } = useQuery<PartyGroup[]>({
+    queryKey: ['/api/party-groups'],
+    queryFn: getPartyGroups
+  });
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -266,7 +273,20 @@ export default function Home() {
               Events
             </button>
             <button
-              onClick={() => selectedPartyGroup ? handleTabChange("offer") : handleTabChange("partyGroups")}
+              onClick={() => {
+                if (selectedPartyGroup) {
+                  // If a party group is already selected, navigate directly to offer tab
+                  handleTabChange("offer");
+                } else if (partyGroups?.length === 1) {
+                  // If there's only one party group, select it automatically and go to offer tab
+                  const firstPartyGroup = partyGroups[0];
+                  setSelectedPartyGroup(firstPartyGroup);
+                  setActiveTab("offer");
+                } else {
+                  // Otherwise, go to party groups tab so user can choose
+                  handleTabChange("partyGroups");
+                }
+              }}
               className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
                 activeTab === "offer"
                   ? "border-b-2 border-primary text-primary"
@@ -276,7 +296,20 @@ export default function Home() {
               Give a Ride
             </button>
             <button
-              onClick={() => selectedPartyGroup ? handleTabChange("view") : handleTabChange("partyGroups")}
+              onClick={() => {
+                if (selectedPartyGroup) {
+                  // If a party group is already selected, navigate directly to view tab
+                  handleTabChange("view");
+                } else if (partyGroups?.length === 1) {
+                  // If there's only one party group, select it automatically and go to view tab
+                  const firstPartyGroup = partyGroups[0];
+                  setSelectedPartyGroup(firstPartyGroup);
+                  setActiveTab("view");
+                } else {
+                  // Otherwise, go to party groups tab so user can choose
+                  handleTabChange("partyGroups");
+                }
+              }}
               className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
                 activeTab === "view"
                   ? "border-b-2 border-primary text-primary"
