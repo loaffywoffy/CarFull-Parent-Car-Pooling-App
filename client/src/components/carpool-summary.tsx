@@ -541,32 +541,95 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                     </div>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button size="sm">Join this Lift</Button>
+                        <Button size="sm">View Details & Join</Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
+                      <DialogContent className="sm:max-w-[600px]">
                         <DialogHeader>
-                          <DialogTitle>Book a Lift with {carpool.parentName}</DialogTitle>
+                          <DialogTitle>Carpool Details - {carpool.parentName}'s Car</DialogTitle>
                         </DialogHeader>
-                        <form className="space-y-4 py-4">
-                          <div className="space-y-2">
+                        <div className="grid gap-6 py-4">
+                          <div className="grid gap-4">
+                            {/* Driver Info */}
                             <div>
-                              <label className="text-sm font-medium">Your Details</label>
-                              <Input className="mt-1" placeholder="Your Name" />
-                              <Input className="mt-2" placeholder="Phone Number" type="tel" />
+                              <h4 className="font-medium mb-2">Driver Information</h4>
+                              <div className="grid gap-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <User className="h-4 w-4 text-gray-500" />
+                                  <span>{carpool.parentName}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Phone className="h-4 w-4 text-gray-500" />
+                                  <span>{carpool.phoneNumber}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-gray-500" />
+                                  <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="mt-4">
-                              <label className="text-sm font-medium">Child's Details</label>
-                              <Input className="mt-1" placeholder="Child's Name" />
-                              <Textarea 
-                                className="mt-2" 
-                                placeholder="Any special requirements? (allergies, medical conditions, etc.)"
-                              />
+
+                            {/* Map View */}
+                            <div className="h-[200px] rounded-lg overflow-hidden border">
+                              <div className="bg-gray-100 h-full flex items-center justify-center text-gray-500">
+                                Map View Coming Soon
+                              </div>
+                            </div>
+
+                            {/* Current Passengers */}
+                            <div>
+                              <h4 className="font-medium mb-2">Current Passengers</h4>
+                              {carpoolRequestsMap[carpool.id]?.length > 0 ? (
+                                <div className="space-y-2">
+                                  {carpoolRequestsMap[carpool.id].map((request) => (
+                                    <div key={request.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                      <div className="flex items-center gap-2">
+                                        <Baby className="h-4 w-4 text-primary" />
+                                        <span>{request.childName}</span>
+                                      </div>
+                                      {request.specialRequirements && (
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <InfoIcon className="h-4 w-4 text-gray-400" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>{request.specialRequirements}</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-500">No passengers booked yet</p>
+                              )}
+                            </div>
+
+                            {/* Join Form */}
+                            <div>
+                              <h4 className="font-medium mb-2">Request to Join</h4>
+                              <form className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium">Your Details</label>
+                                  <Input className="mt-1" placeholder="Your Name" />
+                                  <Input className="mt-2" placeholder="Phone Number" type="tel" />
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Child's Details</label>
+                                  <Input className="mt-1" placeholder="Child's Name" />
+                                  <Textarea 
+                                    className="mt-2" 
+                                    placeholder="Any special requirements? (allergies, medical conditions, etc.)"
+                                  />
+                                </div>
+                                <Button className="w-full" type="submit">
+                                  Request to Join Carpool
+                                </Button>
+                              </form>
                             </div>
                           </div>
-                          <Button className="w-full" type="submit">
-                            Confirm Booking
-                          </Button>
-                        </form>
+                        </div>
                       </DialogContent>
                     </Dialog>
                   </div>
@@ -669,32 +732,95 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                     </div>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button size="sm">Join this Lift</Button>
+                        <Button size="sm">View Details & Join</Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
+                      <DialogContent className="sm:max-w-[600px]">
                         <DialogHeader>
-                          <DialogTitle>Book a Lift with {carpool.parentName}</DialogTitle>
+                          <DialogTitle>Carpool Details - {carpool.parentName}'s Car</DialogTitle>
                         </DialogHeader>
-                        <form className="space-y-4 py-4">
-                          <div className="space-y-2">
+                        <div className="grid gap-6 py-4">
+                          <div className="grid gap-4">
+                            {/* Driver Info */}
                             <div>
-                              <label className="text-sm font-medium">Your Details</label>
-                              <Input className="mt-1" placeholder="Your Name" />
-                              <Input className="mt-2" placeholder="Phone Number" type="tel" />
+                              <h4 className="font-medium mb-2">Driver Information</h4>
+                              <div className="grid gap-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <User className="h-4 w-4 text-gray-500" />
+                                  <span>{carpool.parentName}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Phone className="h-4 w-4 text-gray-500" />
+                                  <span>{carpool.phoneNumber}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-gray-500" />
+                                  <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="mt-4">
-                              <label className="text-sm font-medium">Child's Details</label>
-                              <Input className="mt-1" placeholder="Child's Name" />
-                              <Textarea 
-                                className="mt-2" 
-                                placeholder="Any special requirements? (allergies, medical conditions, etc.)"
-                              />
+
+                            {/* Map View */}
+                            <div className="h-[200px] rounded-lg overflow-hidden border">
+                              <div className="bggray-100 h-full flex items-center justify-center text-gray-500">
+                                Map View Coming Soon
+                              </div>
+                            </div>
+
+                            {/* Current Passengers */}
+                            <div>
+                              <h4 className="font-medium mb-2">Current Passengers</h4>
+                              {carpoolRequestsMap[carpool.id]?.length > 0 ? (
+                                <div className="space-y-2">
+                                  {carpoolRequestsMap[carpool.id].map((request) => (
+                                    <div key={request.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                      <div className="flex items-center gap-2">
+                                        <Baby className="h-4 w-4 text-primary" />
+                                        <span>{request.childName}</span>
+                                      </div>
+                                      {request.specialRequirements && (
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <InfoIcon className="h-4 w-4 text-gray-400" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>{request.specialRequirements}</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-500">No passengers booked yet</p>
+                              )}
+                            </div>
+
+                            {/* Join Form */}
+                            <div>
+                              <h4 className="font-medium mb-2">Request to Join</h4>
+                              <form className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium">Your Details</label>
+                                  <Input className="mt-1" placeholder="Your Name" />
+                                  <Input className="mt-2" placeholder="Phone Number" type="tel" />
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Child's Details</label>
+                                  <Input className="mt-1" placeholder="Child's Name" />
+                                  <Textarea 
+                                    className="mt-2" 
+                                    placeholder="Any special requirements? (allergies, medical conditions, etc.)"
+                                  />
+                                </div>
+                                <Button className="w-full" type="submit">
+                                  Request to Join Carpool
+                                </Button>
+                              </form>
                             </div>
                           </div>
-                          <Button className="w-full" type="submit">
-                            Confirm Booking
-                          </Button>
-                        </form>
+                        </div>
                       </DialogContent>
                     </Dialog>
                   </div>
@@ -703,12 +829,42 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       <MapPin className="h-3.5 w-3.5"/>
                       {carpool.city}, {carpool.postcode}
                     </div>
-                    {carpool.dropoffPreference && (
+                    {carpool.pickupTime && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5"/>
+                        Pickup at {carpool.pickupTime}
+                      </div>
+                    )}
+                    {carpool.outboundDropoffPreference && (
                       <div className="flex items-center gap-1">
                         <HomeIcon className="h-3.5 w-3.5"/>
-                        {carpool.dropoffPreference === 'direct-home' ? 'Drops at your home' :
-                         (carpool.dropoffPreference === 'my-home' || carpool.dropoffPreference === 'my-address') ? 'Collect from driver' : 
+                        {carpool.outboundDropoffPreference === 'direct-home' ? 'Drops at your home' :
+                         (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') ? 'Collect from driver' : 
                          'Central meeting point'}
+                      </div>
+                    )}
+                    {carpoolRequestsMap[carpool.id]?.length > 0 && (
+                      <div className="mt-2 pt-2 border-t">
+                        <p className="font-medium text-xs text-gray-700 mb-1">Current Passengers:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {carpoolRequestsMap[carpool.id].map((request) => (
+                            <Badge key={request.id} variant="outline" className="text-xs">
+                              <span className="mr-1">{request.childName}</span>
+                              {request.specialRequirements && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <InfoIcon className="h-3 w-3 text-gray-400" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{request.specialRequirements}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     )}
 
