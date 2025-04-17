@@ -368,12 +368,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Trip Type</label>
-                      <select className="w-full rounded-md border border-gray-300 p-2 mb-3">
-                        <option value="to">To event only</option>
-                        <option value="from">From event only</option>
-                        <option value="both">Both ways</option>
-                      </select>
+                      {/* Trip Type selector removed - determined by the selected carpool */}
                       
                       <label className="block text-sm font-medium text-gray-700 mb-1">Special Requirements</label>
                       <textarea 
