@@ -261,17 +261,7 @@ export default function Home() {
           <p className="text-neutral-600">Organize carpools for your child's events easily</p>
         </header>
 
-        {/* Header Actions - Simplified */}
-        <div className="flex justify-end items-center mb-8">
-          <Button 
-            variant="default"
-            className="flex items-center gap-1" 
-            onClick={() => setPartyGroupTab("create")}
-          >
-            <PlusIcon className="h-4 w-4" />
-            <span>Create New Event</span>
-          </Button>
-        </div>
+        {/* Empty section - removed */}
 
         {/* Content based on active tab */}
         {activeTab === "partyGroups" && (

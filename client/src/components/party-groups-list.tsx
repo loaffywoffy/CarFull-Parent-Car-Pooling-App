@@ -74,8 +74,18 @@ export default function PartyGroupsList({
 
   return (
     <div className="space-y-4">
-      {/* Header - Create Event button removed from here, now exists in parent component */}
-      <h2 className="text-xl font-semibold mb-6">Event Details</h2>
+      {/* Header with inline button */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Event Details</h2>
+        <Button 
+          onClick={() => onCreateNew()} 
+          className="flex items-center gap-1"
+          variant="default"
+        >
+          <PlusIcon className="h-4 w-4" />
+          <span>Create New Event</span>
+        </Button>
+      </div>
       
       {hasNoPartyGroups ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
