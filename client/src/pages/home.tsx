@@ -13,7 +13,8 @@ import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
 import CarpoolSummary from "@/components/carpool-summary";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PlusIcon, ChevronLeft } from "lucide-react";
 
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroups } from "@/api/partyGroups";
@@ -336,11 +337,51 @@ export default function Home() {
         {/* Request form removed - now handled inline */}
 
         {activeTab === "view" && selectedPartyGroup && (
-          <CarpoolSummary 
-            partyGroupId={selectedPartyGroup.id}
-            onRequestSpot={handleRequestSpot}
-            onBackToEvents={() => handleTabChange("partyGroups")}
-          />
+          <div className="space-y-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-neutral-800">Available Rides</h2>
+              <Button
+                onClick={() => handleTabChange("partyGroups")}
+                variant="outline"
+                size="sm"
+                className="flex gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back to Event
+              </Button>
+            </div>
+            
+            <Tabs defaultValue="find">
+              <TabsList className="grid grid-cols-2 mb-4">
+                <TabsTrigger value="find" className="text-center">
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="inline-block relative top-[1px]">🔍</span>
+                    Find a Ride
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="summary" className="text-center">
+                  <span className="flex items-center justify-center gap-2">
+                    Car Summary
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="find" className="mt-0">
+                <CarpoolList 
+                  partyGroupId={selectedPartyGroup.id}
+                  onRequestSpot={handleRequestSpot}
+                />
+              </TabsContent>
+              
+              <TabsContent value="summary" className="mt-0">
+                <CarpoolSummary 
+                  partyGroupId={selectedPartyGroup.id}
+                  onRequestSpot={handleRequestSpot}
+                  onBackToEvents={() => handleTabChange("partyGroups")}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
         )}
 
         {activeTab === "view" && !selectedPartyGroup && (
