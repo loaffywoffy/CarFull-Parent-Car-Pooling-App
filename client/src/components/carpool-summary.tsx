@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ChevronLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import CarpoolMap from './carpool-map'; // Assuming CarpoolMap component exists
 
 // A component to render each carpool card with its own state
 function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: CarpoolRequest[] }) {
@@ -226,6 +227,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
     type: 'pickup' | 'dropoff' | 'both'
   }>>([]);
   const [isMapLoading, setIsMapLoading] = useState(true);
+  const [showMap, setShowMap] = useState(false); // Added state for map view toggle
 
   // Fetch carpool data
   const { data: carpools, isLoading: carpoolsLoading } = useQuery({
@@ -697,6 +699,36 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
             </CardContent>
           </Card>
         </div>
+
+        <div className="mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setShowMap(!showMap)}
+            className="w-full"
+          >
+            {showMap ? "Show List View" : "Show Map View"}
+          </Button>
+        </div>
+
+        {showMap ? (
+          <div className="h-[500px] rounded-lg overflow-hidden border">
+            <CarpoolMap 
+              carpools={carpoolsArray}
+              onCarpoolSelect={() => {}}
+              eventLocation={partyGroup ? {
+                latitude: parseFloat(partyGroup.partyLatitude),
+                longitude: parseFloat(partyGroup.partyLongitude),
+                name: partyGroup.name
+              } : undefined}
+            />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {carpoolsArray.map((carpool) => (
+              <CarpoolCard key={carpool.id} carpool={carpool} requests={carpoolRequestsMap[carpool.id] || []} />
+            ))}
+          </div>
+        )}
 
         {/* Event Details Button */}
         <div className="mb-6 flex justify-center">
