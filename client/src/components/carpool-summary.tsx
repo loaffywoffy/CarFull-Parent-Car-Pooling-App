@@ -26,9 +26,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 interface CarpoolSummaryProps {
   partyGroupId: number;
   onRequestSpot?: (carpoolId: number) => void;
+  onBackToEvents?: () => void;
 }
 
-export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolSummaryProps) {
+export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEvents }: CarpoolSummaryProps) {
   const [activeTab, setActiveTab] = useState<'summary' | 'detailed' | 'request'>('summary');
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"distance" | "spaces" | "name">("spaces");
@@ -246,7 +247,20 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-neutral-800">Carpool Summary</h2>
+          <div className="flex items-center gap-2 mb-2">
+            {onBackToEvents && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onBackToEvents}
+                className="flex items-center gap-1 border-primary text-primary hover:bg-primary/10"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Events</span>
+              </Button>
+            )}
+            <h2 className="text-xl font-semibold text-neutral-800">Carpool Summary</h2>
+          </div>
           <p className="text-neutral-600 text-sm mt-1">
             {partyGroup?.name || "Party"} - {partyGroup?.partyDate ? new Date(partyGroup.partyDate).toLocaleDateString() : ""}
           </p>
@@ -260,70 +274,18 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
       </div>
 
       <div>
-        {/* My Bookings Section */}
+        {/* My Bookings Section - Removed for MVP
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>My Bookings</CardTitle>
             <CardDescription>Your confirmed lifts for this event</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {carpoolsArray.map((carpool: Carpool) => {
-                const requests = carpoolRequestsMap[carpool.id] || [];
-                const myRequests = requests.filter((req: CarpoolRequest) => req.userId === userId);
-                
-                if (myRequests.length === 0) return null;
-                
-                return (
-                  <div key={carpool.id} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-medium">{carpool.parentName}'s Car</h4>
-                        <div className="text-sm text-gray-600 space-y-1">
-                          {myRequests.map((req: CarpoolRequest) => (
-                            <div key={req.id} className="flex items-center gap-2">
-                              <Baby className="h-4 w-4"/>
-                              {req.childName}
-                              {req.needsPickup && <Badge variant="secondary">To Event</Badge>}
-                              {req.needsDropoff && <Badge variant="secondary">From Event</Badge>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => {/* TODO: Implement cancel booking */}}
-                      >
-                        Cancel Booking
-                      </Button>
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5"/>
-                        {carpool.city}, {carpool.postcode}
-                      </div>
-                      {carpool.pickupTime && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5"/>
-                          Pickup at {carpool.pickupTime}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              {!carpoolsArray.some((carpool: Carpool) => 
-                (carpoolRequestsMap[carpool.id] || []).some((req: CarpoolRequest) => req.userId === userId)
-              ) && (
-                <div className="text-center text-gray-500 py-4">
-                  You haven't booked any lifts for this event yet
-                </div>
-              )}
+            <div className="text-center text-gray-500 py-4">
+              No bookings available in this MVP version
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* TO Party Section */}

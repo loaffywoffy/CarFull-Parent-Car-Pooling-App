@@ -398,6 +398,7 @@ export default function Home() {
           <CarpoolSummary 
             partyGroupId={selectedPartyGroup.id}
             onRequestSpot={handleRequestSpot}
+            onBackToEvents={() => handleTabChange("partyGroups")}
           />
         )}
 
