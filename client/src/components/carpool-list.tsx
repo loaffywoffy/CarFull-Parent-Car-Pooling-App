@@ -270,19 +270,6 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
                       <MapPin size={16} className="text-gray-400 mt-0.5" />
                       <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
                     </div>
-                    
-                    {carpool.distance && (
-                      <div className="flex items-center gap-2 text-sm text-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                          <path d="M12 2L4 10l8 8 8-8-8-8z"></path>
-                          <path d="M8 16l-4 4 4 4"></path>
-                          <path d="M16 16l4 4-4 4"></path>
-                          <path d="M8 8v8"></path>
-                          <path d="M16 8v8"></path>
-                        </svg>
-                        <span>{carpool.distance} miles from event location</span>
-                      </div>
-                    )}
                   </div>
                   
                   <h4 className="font-medium text-sm text-gray-700 mt-4">Ride Details</h4>
