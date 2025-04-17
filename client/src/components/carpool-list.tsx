@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Calendar, Home } from "lucide-react";
 import { geocodeAddress, calculateDistance } from "@/lib/geocoding";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -26,8 +27,8 @@ interface CarpoolListProps {
 type SortOption = "distance" | "spaces" | "name";
 
 export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalendar }: CarpoolListProps) {
-  // Map view has been removed
-  const [sortBy, setSortBy] = useState<SortOption>("distance");
+  // States for filtering and sorting
+  const [sortBy, setSortBy] = useState<SortOption>("spaces");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("to-party");
 
@@ -103,6 +104,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
     
     calculateDistances();
   }, [carpools, partyGroup]);
+
+
 
   const filterCarpools = (carpools: any[]) => {
     if (!Array.isArray(carpools)) return [];
@@ -420,7 +423,15 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
           className="max-w-xs"
         />
 
-        <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+        <Select 
+          value={sortBy} 
+          onValueChange={(value: SortOption) => {
+            setSortBy(value);
+            if (value === "distance" && !userPostcode) {
+              setShowPostcodeDialog(true);
+            }
+          }}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Sort by..." />
           </SelectTrigger>
@@ -430,6 +441,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
             <SelectItem value="name">Sort by Name</SelectItem>
           </SelectContent>
         </Select>
+
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>

@@ -352,26 +352,28 @@ export default function Home() {
             </div>
             
             <Tabs defaultValue="find">
-              <TabsList className="grid grid-cols-2 mb-6 p-1.5 bg-gray-100 rounded-lg shadow-sm border">
-                <TabsTrigger 
-                  value="find" 
-                  className="text-center py-3.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
-                >
-                  <span className="flex items-center justify-center gap-2 font-medium text-base">
-                    <span className="inline-block relative top-[1px]">🔍</span>
-                    Find a Ride
-                  </span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="summary" 
-                  className="text-center py-3.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
-                >
-                  <span className="flex items-center justify-center gap-2 font-medium text-base">
-                    <span className="inline-block relative top-[1px]">🚗</span>
-                    Car Summary
-                  </span>
-                </TabsTrigger>
-              </TabsList>
+              <div className="relative mb-6 rounded-lg shadow-sm border bg-gray-100 p-0.5">
+                <div className="grid grid-cols-2 gap-1">
+                  <TabsTrigger 
+                    value="find" 
+                    className="text-center py-3.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
+                  >
+                    <span className="flex items-center justify-center gap-2 font-medium text-base">
+                      <span className="inline-block relative top-[1px]">🔍</span>
+                      Find a Ride
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="summary" 
+                    className="text-center py-3.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
+                  >
+                    <span className="flex items-center justify-center gap-2 font-medium text-base">
+                      <span className="inline-block relative top-[1px]">🚗</span>
+                      Car Summary
+                    </span>
+                  </TabsTrigger>
+                </div>
+              </div>
               
               <TabsContent value="find" className="mt-0">
                 <CarpoolList 
