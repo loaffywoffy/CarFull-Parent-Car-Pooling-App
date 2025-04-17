@@ -19,6 +19,170 @@ import { toast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ChevronLeft } from "lucide-react";
+
+// A component to render each carpool card with its own state
+function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: CarpoolRequest[] }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  return (
+    <Card key={carpool.id} className="border overflow-hidden">
+      <div 
+        className="px-4 py-3 flex flex-col sm:flex-row sm:items-center w-full justify-between gap-2 cursor-pointer hover:bg-gray-50"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8 bg-primary/10">
+            <AvatarFallback className="text-primary">
+              {getInitials(carpool.parentName)}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-medium">{carpool.parentName}'s Car</p>
+            <p className="text-sm text-muted-foreground">{carpool.childName}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex gap-2">
+            {carpool.canPickup || carpool.canBoth ? (
+              <Badge variant="outline" className="bg-green-50 whitespace-nowrap">
+                <ArrowRight className="h-3 w-3 mr-1" />
+                To Event
+              </Badge>
+            ) : null}
+            {carpool.canDropoff || carpool.canBoth ? (
+              <Badge variant="outline" className="bg-blue-50 whitespace-nowrap">
+                <ArrowLeft className="h-3 w-3 mr-1" />
+                From Event
+              </Badge>
+            ) : null}
+          </div>
+          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}>
+            <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+          </Button>
+        </div>
+      </div>
+      
+      {isExpanded && (
+        <div className="px-4 pb-4 border-t">
+          <div className="space-y-4 pt-3">
+            {/* Driver Details */}
+            <div>
+              <h4 className="text-sm font-semibold mb-2">Driver Details</h4>
+              <div className="grid gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span>{carpool.parentName}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <span>{carpool.phoneNumber}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Ride Details */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              {carpool.canPickup || carpool.canBoth ? (
+                <div className="border rounded-md p-3 bg-green-50/30">
+                  <h4 className="font-medium flex items-center gap-1 mb-2">
+                    <ArrowRight className="h-4 w-4" />
+                    To Event Details
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span>Pickup time: {carpool.pickupTime || "Not specified"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>Spaces available: {carpool.spacesAvailable || 0}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <HomeIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <span>Dropoff: {carpool.outboundDropoffPreference === 'direct-home' ? 'Drops at child\'s home' :
+                        (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') ? 'Collect from driver' : 
+                        'Central meeting point'}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {carpool.canDropoff || carpool.canBoth ? (
+                <div className="border rounded-md p-3 bg-blue-50/30">
+                  <h4 className="font-medium flex items-center gap-1 mb-2">
+                    <ArrowLeft className="h-4 w-4" />
+                    From Event Details
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span>Pickup time: After the event</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>Spaces available: {carpool.spacesAvailable || 0}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <HomeIcon className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <span>Dropoff: {carpool.dropoffPreference === 'direct-home' ? 'Drops at child\'s home' :
+                        (carpool.dropoffPreference === 'my-home' || carpool.dropoffPreference === 'my-address') ? 'Collect from driver' : 
+                        'Central meeting point'}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Passengers */}
+            <div>
+              <h4 className="text-sm font-semibold mb-2">Passengers</h4>
+              {requests.length > 0 ? (
+                <div className="space-y-2">
+                  {requests.map((request) => (
+                    <div key={request.id} className="border rounded p-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Baby className="h-4 w-4 text-muted-foreground" />
+                        <span>{request.childName}</span>
+                        <div className="flex gap-1">
+                          {request.needsPickup && <Badge variant="outline" className="text-xs py-0 bg-green-50">To</Badge>}
+                          {request.needsDropoff && <Badge variant="outline" className="text-xs py-0 bg-blue-50">From</Badge>}
+                        </div>
+                      </div>
+                      {request.specialRequirements && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <InfoIcon className="h-4 w-4 cursor-help" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Special Requirements</DialogTitle>
+                            </DialogHeader>
+                            <div className="p-4">
+                              <p>{request.specialRequirements}</p>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No passengers booked yet</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -458,15 +622,25 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {carpoolsArray.map((carpool: Carpool) => {
-                const requests = carpoolRequestsMap[carpool.id] || [];
-                const [isExpanded, setIsExpanded] = useState(false);
+              {/* Track expanded state for all carpools with a single state object */}
+              {(() => {
+                const [expandedState, setExpandedState] = useState<Record<number, boolean>>({});
                 
-                return (
+                return carpoolsArray.map((carpool: Carpool) => {
+                  const requests = carpoolRequestsMap[carpool.id] || [];
+                  const isExpanded = expandedState[carpool.id] || false;
+                  const toggleExpanded = () => {
+                    setExpandedState({
+                      ...expandedState,
+                      [carpool.id]: !isExpanded
+                    });
+                  };
+                  
+                  return (
                   <Card key={carpool.id} className="border overflow-hidden">
                     <div 
                       className="px-4 py-3 flex flex-col sm:flex-row sm:items-center w-full justify-between gap-2 cursor-pointer hover:bg-gray-50"
-                      onClick={() => setIsExpanded(!isExpanded)}
+                      onClick={toggleExpanded}
                     >
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8 bg-primary/10">
@@ -494,7 +668,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             </Badge>
                           ) : null}
                         </div>
-                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}>
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); toggleExpanded(); }}>
                           <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                         </Button>
                       </div>
@@ -619,7 +793,8 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                     )}
                   </Card>
                 );
-              })}
+              });
+              })()}
             </div>
           </CardContent>
         </Card>
