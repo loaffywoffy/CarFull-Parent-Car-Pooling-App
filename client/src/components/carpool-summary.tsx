@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { 
   Car, ArrowRight, ArrowLeft, MapPin, User, Calendar, Clock, 
-  Users, HomeIcon, Building, Share2, Phone, MailIcon, Printer,
+  Users, HomeIcon, Building, Share2, Phone,
   Download, ChevronRight, Baby
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -144,25 +144,6 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
     }
   }, [carpoolsArray, partyGroup]);
 
-  const handlePrint = () => {
-    const content = printRef.current;
-    if (!content) return;
-    
-    const originalContents = document.body.innerHTML;
-    const printContents = content.innerHTML;
-    
-    document.body.innerHTML = `
-      <div style="padding: 20px;">
-        <h1 style="text-align: center; margin-bottom: 20px;">${partyGroup?.name || 'Party'} - Carpool Arrangements</h1>
-        ${printContents}
-      </div>
-    `;
-    
-    window.print();
-    document.body.innerHTML = originalContents;
-    window.location.reload();
-  };
-  
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -184,65 +165,6 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
         description: "Your browser doesn't support the Web Share API.",
       });
     }
-  };
-  
-  const handleSendEmail = () => {
-    // Create email body with carpool information
-    const subject = encodeURIComponent(`${partyGroup?.name || 'Party'} - Carpool Arrangements`);
-    
-    let body = `Carpool Arrangements for ${partyGroup?.name || 'Party'}\n\n`;
-    body += `Date: ${partyGroup?.partyDate ? new Date(partyGroup.partyDate).toLocaleDateString() : 'TBD'}\n`;
-    body += `Time: ${partyGroup?.targetArrivalTime || 'TBD'}${partyGroup?.endTime ? ` - ${partyGroup.endTime}` : ''}\n`;
-    body += `Location: ${partyGroup ? `${partyGroup.partyAddress}, ${partyGroup.partyCity}` : 'TBD'}\n\n`;
-    
-    // TO party carpools
-    body += `TO PARTY ARRANGEMENTS:\n`;
-    const toPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canPickup || c.canBoth);
-    if (toPartyCarpools.length === 0) {
-      body += `No carpools available for transportation to the party.\n\n`;
-    } else {
-      toPartyCarpools.forEach((carpool: Carpool) => {
-        body += `Driver: ${carpool.parentName} - ${carpool.phoneNumber}\n`;
-        const requests = carpoolRequestsMap[carpool.id] || [];
-        if (requests.length > 0) {
-          body += `Passengers:\n`;
-          requests
-            .filter(req => req.needsPickup || req.needsBoth)
-            .forEach(req => {
-              body += `- ${req.childName} (${req.parentName}) - ${req.phoneNumber}\n`;
-            });
-        } else {
-          body += `No passengers assigned yet.\n`;
-        }
-        body += `\n`;
-      });
-    }
-    
-    // FROM party carpools
-    body += `FROM PARTY ARRANGEMENTS:\n`;
-    const fromPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canDropoff || c.canBoth);
-    if (fromPartyCarpools.length === 0) {
-      body += `No carpools available for transportation from the party.\n`;
-    } else {
-      fromPartyCarpools.forEach((carpool: Carpool) => {
-        body += `Driver: ${carpool.parentName} - ${carpool.phoneNumber}\n`;
-        const requests = carpoolRequestsMap[carpool.id] || [];
-        if (requests.length > 0) {
-          body += `Passengers:\n`;
-          requests
-            .filter(req => req.needsDropoff || req.needsBoth)
-            .forEach(req => {
-              body += `- ${req.childName} (${req.parentName}) - ${req.phoneNumber}\n`;
-            });
-        } else {
-          body += `No passengers assigned yet.\n`;
-        }
-        body += `\n`;
-      });
-    }
-    
-    const encodedBody = encodeURIComponent(body);
-    window.location.href = `mailto:?subject=${subject}&body=${encodedBody}`;
   };
 
   if (carpoolsLoading) {
