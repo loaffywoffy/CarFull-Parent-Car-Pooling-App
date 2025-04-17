@@ -12,7 +12,7 @@ import PartyGroupsList from "@/components/party-groups-list";
 import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
 import CarpoolSummary from "@/components/carpool-summary";
-import Button from "@/components/button"; // Assuming a Button component exists
+import { Button } from "@/components/ui/button"; // Assuming a Button component exists
 
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroups } from "@/api/partyGroups";
