@@ -12,6 +12,7 @@ import PartyGroupsList from "@/components/party-groups-list";
 import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
 import CarpoolSummary from "@/components/carpool-summary";
+import Button from "@/components/button"; // Assuming a Button component exists
 
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroups } from "@/api/partyGroups";
@@ -37,7 +38,7 @@ export default function Home() {
   const [selectedPartyGroup, setSelectedPartyGroup] = useState<PartyGroup | null>(null);
   const [joinPartyId, setJoinPartyId] = useState<string>("");
   const [createdGroupIds, setCreatedGroupIds] = useState<number[]>([]);
-  
+
   // Query to fetch all party groups
   const { data: partyGroups = [] } = useQuery<PartyGroup[]>({
     queryKey: ['/api/party-groups'],
@@ -113,7 +114,7 @@ export default function Home() {
 
   const handleSelectPartyGroup = (partyGroup: PartyGroup) => {
     setSelectedPartyGroup(partyGroup);
-    
+
     // If we're on the Events tab, go to details
     if (activeTab === "partyGroups") {
       setPartyGroupTab("details");
@@ -161,12 +162,12 @@ export default function Home() {
         partyGroupId: number;
       }
     }
-    
+
     // Set up event listener for custom actions from the PartyGroupsList
     const handleActionEvent = (event: Event) => {
       const actionEvent = event as ActionEvent;
       const { type, partyGroupId } = actionEvent.detail;
-      
+
       if (type === 'give-ride') {
         // Navigate to "Give a Ride" tab
         handleOfferCarpool(partyGroupId);
@@ -259,68 +260,16 @@ export default function Home() {
           <p className="text-neutral-600">Organize carpools for your child's events easily</p>
         </header>
 
-        {/* Navigation Tabs */}
-        <div className="mb-8">
-          <div className="flex flex-wrap border-b border-neutral-300 sm:space-x-4">
-            <button
-              onClick={() => handleTabChange("partyGroups")}
-              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
-                activeTab === "partyGroups"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-neutral-600"
-              }`}
-            >
-              Events
-            </button>
-            <button
-              onClick={() => {
-                if (selectedPartyGroup) {
-                  // If a party group is already selected, navigate directly to offer tab
-                  handleTabChange("offer");
-                } else if (partyGroups?.length === 1) {
-                  // If there's only one party group, select it automatically and go to offer tab
-                  const firstPartyGroup = partyGroups[0];
-                  setSelectedPartyGroup(firstPartyGroup);
-                  setActiveTab("offer");
-                } else {
-                  // Otherwise, go to party groups tab so user can choose
-                  handleTabChange("partyGroups");
-                }
-              }}
-              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
-                activeTab === "offer"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-neutral-600"
-              }`}
-            >
-              Offer a Ride
-            </button>
-            <button
-              onClick={() => {
-                if (selectedPartyGroup) {
-                  // If a party group is already selected, navigate directly to view tab
-                  handleTabChange("view");
-                } else if (partyGroups?.length === 1) {
-                  // If there's only one party group, select it automatically and go to view tab
-                  const firstPartyGroup = partyGroups[0];
-                  setSelectedPartyGroup(firstPartyGroup);
-                  setActiveTab("view");
-                } else {
-                  // Otherwise, go to party groups tab so user can choose
-                  handleTabChange("partyGroups");
-                }
-              }}
-              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
-                activeTab === "view"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-neutral-600"
-              }`}
-            >
-              Available Rides
-            </button>
-
-
-          </div>
+        {/* Header Actions */}
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-xl font-semibold text-neutral-800">Upcoming Events</h2>
+          <Button 
+            variant="outline" 
+            className="bg-primary/5 hover:bg-primary/10 border-primary/20"
+            onClick={() => setPartyGroupTab("create")}
+          >
+            Create New Event
+          </Button>
         </div>
 
         {/* Content based on active tab */}

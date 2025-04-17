@@ -362,6 +362,33 @@ export default function PartyGroupDetails({
                   </div>
                 </div>
               )}
+              <div className="mt-6 space-y-4">
+                <h3 className="font-medium text-neutral-700">Travel Options</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <h4 className="font-medium mb-2">Want to help other parents?</h4>
+                    <p className="text-sm text-neutral-600 mb-3">Share your car space and help other families get to the event.</p>
+                    <Button
+                      onClick={onOfferCarpool}
+                      className="w-full"
+                      variant="outline"
+                    >
+                      Offer a Ride
+                    </Button>
+                  </div>
+
+                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <h4 className="font-medium mb-2">Need a lift?</h4>
+                    <p className="text-sm text-neutral-600 mb-3">Find available carpools and request a spot for your child.</p>
+                    <Button
+                      onClick={onRequestSpot}
+                      className="w-full"
+                    >
+                      Find a Ride
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </TabsContent>
@@ -427,15 +454,7 @@ export default function PartyGroupDetails({
       </Tabs>
 
       <CardFooter className="bg-gray-50 py-4 flex justify-end space-x-3">
-        <Button 
-          variant="outline" 
-          onClick={onRequestSpot}
-        >
-          Manage Carpools
-        </Button>
-        <Button onClick={() => onOfferCarpool(partyGroup.id)}>
-          Offer a Carpool
-        </Button>
+        {/*Removed this section as per the request */}
       </CardFooter>
 
       {/* Delete confirmation dialog */}
