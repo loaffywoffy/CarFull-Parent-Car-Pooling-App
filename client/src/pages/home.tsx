@@ -308,6 +308,7 @@ export default function Home() {
         {activeTab === "offer" && selectedPartyGroup && (
           <CarpoolOfferForm 
             onSuccess={handleCarpoolSubmitSuccess} 
+            onCancel={() => setActiveTab("view")}
             partyGroupId={selectedPartyGroup.id} 
           />
         )}

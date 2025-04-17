@@ -83,7 +83,7 @@ const carpoolFormSchema = z.object({
 
 type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 
-export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOfferFormProps) {
+export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: CarpoolOfferFormProps) {
   const { toast } = useToast();
   
   // Fetch party group details
@@ -1109,7 +1109,7 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
               type="button" 
               variant="outline"
               className="w-full sm:w-auto"
-              onClick={onSuccess}
+              onClick={onCancel || onSuccess}
               disabled={carpoolMutation.isPending}
             >
               Cancel
