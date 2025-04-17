@@ -364,24 +364,24 @@ export default function Home() {
             
             <Tabs defaultValue="find">
               <div className="bg-gray-100 rounded-lg p-1.5 border shadow-sm mb-6">
-                <TabsList className="grid grid-cols-2 w-full">
+                <TabsList className="grid grid-cols-2 w-full h-full">
                   <TabsTrigger 
                     value="find" 
-                    className="text-center py-3.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
+                    className="text-center py-3.5 h-full data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
                   >
-                    <span className="flex items-center justify-center gap-2 font-medium text-base">
+                    <div className="flex items-center justify-center gap-2 font-medium text-base w-full">
                       <span className="inline-block relative top-[1px]">🔍</span>
                       Find a Ride
-                    </span>
+                    </div>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="summary" 
-                    className="text-center py-3.5 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
+                    className="text-center py-3.5 h-full data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
                   >
-                    <span className="flex items-center justify-center gap-2 font-medium text-base">
+                    <div className="flex items-center justify-center gap-2 font-medium text-base w-full">
                       <span className="inline-block relative top-[1px]">🚗</span>
                       Carpool Summary
-                    </span>
+                    </div>
                   </TabsTrigger>
                 </TabsList>
               </div>
