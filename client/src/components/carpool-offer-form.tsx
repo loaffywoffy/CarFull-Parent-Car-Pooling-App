@@ -167,14 +167,11 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
     mutationFn: (values: CarpoolFormValues) => 
       apiRequest("POST", "/api/carpools", values),
     onSuccess: () => {
-      // Invalidate all carpools queries to ensure fresh data in all components
+      // Invalidate the carpools query to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups', partyGroupId, 'carpools'] });
       
       // Also invalidate the parent query in case counts need to be updated
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
-      
-      // Also invalidate the formatted string versions for backward compatibility
-      queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroupId}/carpools`] });
       
       toast({
         title: "Success!",
