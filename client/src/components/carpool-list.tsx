@@ -240,18 +240,33 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
               </div>
             </div>
             
-            <Button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowRequestForm(!showRequestForm);
-                if (!showDetails) setShowDetails(true);
-              }}
-              className="ml-2"
-              variant="default"
-              size="sm"
-            >
-              Request Spot
-            </Button>
+            <div className="flex gap-2">
+              {onManageCalendar && (
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onManageCalendar(carpool.id);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                  <span>Calendar</span>
+                </Button>
+              )}
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowRequestForm(!showRequestForm);
+                  if (!showDetails) setShowDetails(true);
+                }}
+                variant="default"
+                size="sm"
+              >
+                Request Spot
+              </Button>
+            </div>
           </div>
           
           {showDetails && (
