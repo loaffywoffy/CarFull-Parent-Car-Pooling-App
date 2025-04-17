@@ -387,12 +387,7 @@ export default function Home() {
           </div>
         )}
 
-        {activeTab === "request" && selectedCarpoolId && (
-          <CarpoolRequestForm 
-            selectedCarpoolId={selectedCarpoolId}
-            onSuccess={handleRequestSubmitSuccess} 
-          />
-        )}
+        {/* Request form removed - now handled inline */}
 
         {activeTab === "view" && selectedPartyGroup && (
           <CarpoolSummary 

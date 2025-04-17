@@ -22,6 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
@@ -309,12 +310,36 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       <h4 className="font-medium">{carpool.parentName}</h4>
                       <p className="text-sm text-gray-600">{carpool.spacesAvailable} spaces available</p>
                     </div>
-                    <Button 
-                      size="sm"
-                      onClick={() => onRequestSpot && onRequestSpot(carpool.id)}
-                    >
-                      Book Spot
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="sm">Join this Lift</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Book a Lift with {carpool.parentName}</DialogTitle>
+                        </DialogHeader>
+                        <form className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <div>
+                              <label className="text-sm font-medium">Your Details</label>
+                              <Input className="mt-1" placeholder="Your Name" />
+                              <Input className="mt-2" placeholder="Phone Number" type="tel" />
+                            </div>
+                            <div className="mt-4">
+                              <label className="text-sm font-medium">Child's Details</label>
+                              <Input className="mt-1" placeholder="Child's Name" />
+                              <Textarea 
+                                className="mt-2" 
+                                placeholder="Any special requirements? (allergies, medical conditions, etc.)"
+                              />
+                            </div>
+                          </div>
+                          <Button className="w-full" type="submit">
+                            Confirm Booking
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   <div className="text-sm text-gray-600">
                     <div className="flex items-center gap-1">
@@ -362,12 +387,36 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       <h4 className="font-medium">{carpool.parentName}</h4>
                       <p className="text-sm text-gray-600">{carpool.spacesAvailable} spaces available</p>
                     </div>
-                    <Button 
-                      size="sm"
-                      onClick={() => onRequestSpot && onRequestSpot(carpool.id)}
-                    >
-                      Book Spot
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="sm">Join this Lift</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Book a Lift with {carpool.parentName}</DialogTitle>
+                        </DialogHeader>
+                        <form className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <div>
+                              <label className="text-sm font-medium">Your Details</label>
+                              <Input className="mt-1" placeholder="Your Name" />
+                              <Input className="mt-2" placeholder="Phone Number" type="tel" />
+                            </div>
+                            <div className="mt-4">
+                              <label className="text-sm font-medium">Child's Details</label>
+                              <Input className="mt-1" placeholder="Child's Name" />
+                              <Textarea 
+                                className="mt-2" 
+                                placeholder="Any special requirements? (allergies, medical conditions, etc.)"
+                              />
+                            </div>
+                          </div>
+                          <Button className="w-full" type="submit">
+                            Confirm Booking
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   <div className="text-sm text-gray-600">
                     <div className="flex items-center gap-1">
