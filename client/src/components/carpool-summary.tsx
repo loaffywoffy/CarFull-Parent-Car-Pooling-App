@@ -33,7 +33,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"distance" | "spaces" | "name">("spaces");
   const [carpoolFilterTab, setCarpoolFilterTab] = useState("all");
-  const printRef = useRef<HTMLDivElement>(null);
+
   const [partyLocation, setPartyLocation] = useState<[number, number] | null>(null);
   const [carpoolLocations, setCarpoolLocations] = useState<Array<{
     id: number, 
@@ -229,14 +229,6 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
             <Share2 className="h-4 w-4" />
             <span>Share</span>
           </Button>
-          <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={handlePrint}>
-            <Printer className="h-4 w-4" />
-            <span>Print</span>
-          </Button>
-          <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={handleSendEmail}>
-            <MailIcon className="h-4 w-4" />
-            <span>Email</span>
-          </Button>
         </div>
       </div>
 
@@ -262,7 +254,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
         </button>
       </div>
 
-      <div ref={printRef}>
+      <div>
         {/* Event Details Button */}
         <div className="mb-6 flex justify-center">
           <Dialog>
