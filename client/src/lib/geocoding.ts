@@ -36,6 +36,28 @@ export async function geocodeAddress(
   }
 }
 
+// Calculate distance between two addresses
+export async function calculateDistanceBetweenAddresses(
+  address1: string,
+  city1: string,
+  postcode1: string,
+  address2: string,
+  city2: string,
+  postcode2: string
+): Promise<number> {
+  try {
+    // Get coordinates for both addresses
+    const [lat1, lon1] = await geocodeAddress(address1, city1, postcode1);
+    const [lat2, lon2] = await geocodeAddress(address2, city2, postcode2);
+    
+    // Calculate the distance
+    return calculateDistance(lat1, lon1, lat2, lon2);
+  } catch (error) {
+    console.error('Error calculating distance between addresses:', error);
+    return -1; // Return -1 to indicate failure
+  }
+}
+
 // Calculate distance between two coordinates (in miles)
 export function calculateDistance(
   lat1: number,
