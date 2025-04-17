@@ -270,7 +270,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Parties
+              Events
             </button>
             <button
               onClick={() => {
@@ -293,7 +293,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Help Drive
+              Give a Ride
             </button>
             <button
               onClick={() => {
@@ -316,7 +316,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Find a Ride
+              Available Rides
             </button>
 
 
