@@ -122,9 +122,9 @@ export default function PartyGroupsList({
                   </span>
                 </div>
                 
-                <div className="flex justify-end mt-4 pt-3 border-t border-gray-100">
+                <div className="flex flex-wrap gap-2 justify-end mt-4 pt-3 border-t border-gray-100">
                   <Button 
-                    variant="default" 
+                    variant="outline" 
                     size="sm" 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -132,6 +132,40 @@ export default function PartyGroupsList({
                     }}
                   >
                     View Details
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Select this party group and trigger the "Give a Ride" action
+                      onSelectPartyGroup(partyGroup);
+                      // We'll use a custom attribute to signal the parent component
+                      const customEvent = new CustomEvent('action', { 
+                        detail: { type: 'give-ride', partyGroupId: partyGroup.id } 
+                      });
+                      window.dispatchEvent(customEvent);
+                    }}
+                  >
+                    Give a Ride
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Select this party group and trigger the "Find a Ride" action
+                      onSelectPartyGroup(partyGroup);
+                      // We'll use a custom attribute to signal the parent component
+                      const customEvent = new CustomEvent('action', { 
+                        detail: { type: 'find-ride', partyGroupId: partyGroup.id } 
+                      });
+                      window.dispatchEvent(customEvent);
+                    }}
+                  >
+                    Find a Ride
                   </Button>
                 </div>
               </CardContent>

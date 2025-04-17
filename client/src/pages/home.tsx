@@ -106,12 +106,16 @@ export default function Home() {
 
   const handleSelectPartyGroup = (partyGroup: PartyGroup) => {
     setSelectedPartyGroup(partyGroup);
-    setPartyGroupTab("details");
-    // Stay on the current tab and show the party group details
-    // Don't automatically navigate to the view tab
+    
+    // If we're on the Events tab, go to details
+    if (activeTab === "partyGroups") {
+      setPartyGroupTab("details");
+    }
+    // If we're on a different tab (Give a Ride or Find a Ride), stay on that tab
+    // but with the selected party group now set
   };
 
-  // Check URL for party ID when the component mounts
+  // Check URL for party ID when the component mounts and setup event listeners
   useEffect(() => {
     const checkUrlForPartyId = async () => {
       const params = new URLSearchParams(window.location.search);
@@ -143,7 +147,35 @@ export default function Home() {
       }
     };
 
+    // Define custom event interface for TypeScript safety
+    interface ActionEvent extends CustomEvent {
+      detail: {
+        type: 'give-ride' | 'find-ride';
+        partyGroupId: number;
+      }
+    }
+    
+    // Set up event listener for custom actions from the PartyGroupsList
+    const handleActionEvent = (event: Event) => {
+      const actionEvent = event as ActionEvent;
+      const { type, partyGroupId } = actionEvent.detail;
+      
+      if (type === 'give-ride') {
+        // Navigate to "Give a Ride" tab
+        handleOfferCarpool(partyGroupId);
+      } else if (type === 'find-ride') {
+        // Navigate to "Find a Ride" tab
+        setActiveTab("view");
+      }
+    };
+
+    window.addEventListener('action', handleActionEvent);
     checkUrlForPartyId();
+
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener('action', handleActionEvent);
+    };
   }, []);
 
   const handleOfferCarpool = (partyGroupId: number) => {
