@@ -193,7 +193,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
         <CardContent className="p-4">
           <div 
             className="flex justify-between items-start cursor-pointer"
-            onClick={() => setShowDetails(!showDetails)}
+            onClick={() => {
+              setShowDetails(!showDetails);
+              // If opening details, auto-show map
+              if (!showDetails) setMapVisible(true);
+            }}
           >
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 bg-primary/10">
@@ -244,7 +248,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowRequestForm(!showRequestForm);
-                  if (!showDetails) setShowDetails(true);
+                  if (!showDetails) {
+                    setShowDetails(true);
+                    setMapVisible(true); // Show map when opening details via request button
+                  }
                 }}
                 variant="default"
                 size="sm"
