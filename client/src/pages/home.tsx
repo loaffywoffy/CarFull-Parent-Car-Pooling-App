@@ -12,7 +12,8 @@ import PartyGroupsList from "@/components/party-groups-list";
 import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
 import CarpoolSummary from "@/components/carpool-summary";
-import { Button } from "@/components/ui/button"; // Assuming a Button component exists
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
 
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroups } from "@/api/partyGroups";
@@ -260,15 +261,15 @@ export default function Home() {
           <p className="text-neutral-600">Organize carpools for your child's events easily</p>
         </header>
 
-        {/* Header Actions */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-xl font-semibold text-neutral-800">Upcoming Events</h2>
+        {/* Header Actions - Simplified */}
+        <div className="flex justify-end items-center mb-8">
           <Button 
-            variant="outline" 
-            className="bg-primary/5 hover:bg-primary/10 border-primary/20"
+            variant="default"
+            className="flex items-center gap-1" 
             onClick={() => setPartyGroupTab("create")}
           >
-            Create New Event
+            <PlusIcon className="h-4 w-4" />
+            <span>Create New Event</span>
           </Button>
         </div>
 
