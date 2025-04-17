@@ -316,7 +316,7 @@ export default function Home() {
                   : "text-neutral-600"
               }`}
             >
-              Find a Ride
+              Available Rides
             </button>
 
 
