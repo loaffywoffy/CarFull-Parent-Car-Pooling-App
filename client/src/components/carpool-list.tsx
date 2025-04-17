@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Calendar, Home } from "lucide-react";
+import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Calendar as CalendarIcon, Home } from "lucide-react";
 import { geocodeAddress, calculateDistance } from "@/lib/geocoding";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
