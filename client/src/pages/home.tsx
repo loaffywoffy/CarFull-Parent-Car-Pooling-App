@@ -380,7 +380,7 @@ export default function Home() {
                   >
                     <span className="flex items-center justify-center gap-2 font-medium text-base">
                       <span className="inline-block relative top-[1px]">🚗</span>
-                      Car Summary
+                      Carpool Summary
                     </span>
                   </TabsTrigger>
                 </TabsList>
