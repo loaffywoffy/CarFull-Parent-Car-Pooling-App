@@ -347,12 +347,76 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
                       <h4 className="font-medium">{carpool.parentName}</h4>
                       <p className="text-sm text-gray-600">{carpool.spacesAvailable} spaces available</p>
                     </div>
-                    <Button 
-                      size="sm" 
-                      onClick={() => onRequestSpot && onRequestSpot(carpool.id)}
-                    >
-                      Book Spot
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="sm">Join this Lift</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Book a Lift with {carpool.parentName}</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <FormField
+                              control={form.control}
+                              name="childName"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Child's Name</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="Child's Name" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="phoneNumber"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Your Phone</FormLabel>
+                                  <FormControl>
+                                    <Input type="tel" placeholder="Phone Number" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="specialRequirements"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Any Special Requirements?</FormLabel>
+                                  <FormControl>
+                                    <Textarea 
+                                      placeholder="Allergies, medical conditions, etc."
+                                      className="h-20"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <Button 
+                            className="w-full" 
+                            onClick={() => {
+                              requestMutation.mutate({
+                                carpoolId: carpool.id,
+                                childName: form.getValues("childName"),
+                                phoneNumber: form.getValues("phoneNumber"),
+                                specialRequirements: form.getValues("specialRequirements"),
+                                needsPickup: true
+                              });
+                            }}
+                          >
+                            Confirm Booking
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   <div className="text-sm text-gray-600">
                     <div className="flex items-center gap-1">
