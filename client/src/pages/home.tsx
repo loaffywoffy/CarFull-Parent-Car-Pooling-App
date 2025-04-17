@@ -72,8 +72,12 @@ export default function Home() {
   };
 
   const handleRequestSpot = (carpoolId: number) => {
+    // Instead of switching to a separate "request" tab,
+    // we'll store the carpool ID and use the inline form in carpool-list
     setSelectedCarpoolId(carpoolId);
-    setActiveTab("request"); // Keep this line to maintain the CarpoolRequestForm rendering
+    
+    // No more switching to "request" tab, just stay on the current view
+    // and let the inline form handle the request
   };
   
   // Calendar feature removed

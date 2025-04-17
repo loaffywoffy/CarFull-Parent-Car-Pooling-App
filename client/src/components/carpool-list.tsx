@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups";
 import { getCarpoolRequests } from "@/api/carpools";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home } from "lucide-react";
+import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home, Loader2 } from "lucide-react";
 import { geocodeAddress, calculateDistance } from "@/lib/geocoding";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,8 @@ import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import LocationMap from "@/components/location-map";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface CarpoolListProps {
   partyGroupId: number;
@@ -144,12 +146,56 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
     const [showDetails, setShowDetails] = useState(false);
     const [showRequestForm, setShowRequestForm] = useState(false);
     const [mapVisible, setMapVisible] = useState(false);
+    const [formData, setFormData] = useState({
+      parentName: "",
+      childName: "",
+      phoneNumber: "",
+      specialRequirements: ""
+    });
+    const { toast } = useToast();
     
     // Fetch carpool requests to display booked kids
     const { data: carpoolRequests = [] } = useQuery({
       queryKey: ["/api/carpools", carpool.id, "requests"],
       queryFn: () => getCarpoolRequests(carpool.id),
       enabled: showDetails // Only fetch when details are shown
+    });
+    
+    // Mutation for submitting a carpool request
+    const requestMutation = useMutation({
+      mutationFn: async (data: any) => {
+        const response = await apiRequest("POST", "/api/carpool-requests", data);
+        return response.json();
+      },
+      onSuccess: () => {
+        // Reset form
+        setFormData({
+          parentName: "",
+          childName: "",
+          phoneNumber: "",
+          specialRequirements: ""
+        });
+        
+        // Hide the form
+        setShowRequestForm(false);
+        
+        // Show success message
+        toast({
+          title: "Request Submitted",
+          description: "Your carpool request has been submitted successfully.",
+        });
+        
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ["/api/carpools", carpool.id, "requests"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/party-groups", partyGroupId, "carpools"] });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to submit request. Please try again.",
+          variant: "destructive",
+        });
+      },
     });
     
     // Function to get initials from a name
@@ -412,13 +458,28 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                      <Input placeholder="Parent's name" className="mb-3" />
+                      <Input 
+                        placeholder="Parent's name" 
+                        className="mb-3"
+                        value={formData.parentName}
+                        onChange={(e) => setFormData({...formData, parentName: e.target.value})}
+                      />
                       
                       <label className="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
-                      <Input placeholder="Child's name" className="mb-3" />
+                      <Input 
+                        placeholder="Child's name" 
+                        className="mb-3"
+                        value={formData.childName}
+                        onChange={(e) => setFormData({...formData, childName: e.target.value})}
+                      />
                       
                       <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                      <Input placeholder="Phone number" className="mb-3" />
+                      <Input 
+                        placeholder="Phone number" 
+                        className="mb-3"
+                        value={formData.phoneNumber}
+                        onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                      />
                     </div>
                     
                     <div>
@@ -429,6 +490,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         placeholder="Any special requirements or notes"
                         className="w-full rounded-md border border-gray-300 p-2 mb-3"
                         rows={3}
+                        value={formData.specialRequirements}
+                        onChange={(e) => setFormData({...formData, specialRequirements: e.target.value})}
                       ></textarea>
                     </div>
                   </div>
@@ -443,12 +506,32 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                     </Button>
                     <Button 
                       onClick={() => {
-                        onRequestSpot(carpool.id);
-                        setShowRequestForm(false);
+                        // Determine trip type based on carpool capabilities
+                        const needsBoth = carpool.canBoth;
+                        const needsPickup = !needsBoth && carpool.canPickup;
+                        const needsDropoff = !needsBoth && carpool.canDropoff;
+                        
+                        // Submit request
+                        requestMutation.mutate({
+                          carpoolId: carpool.id,
+                          parentName: formData.parentName,
+                          childName: formData.childName,
+                          phoneNumber: formData.phoneNumber,
+                          specialRequirements: formData.specialRequirements,
+                          needsPickup,
+                          needsDropoff,
+                          needsBoth
+                        });
                       }}
                       size="sm"
+                      disabled={requestMutation.isPending}
                     >
-                      Submit Request
+                      {requestMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : "Submit Request"}
                     </Button>
                   </div>
                 </div>
