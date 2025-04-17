@@ -13,7 +13,7 @@ import LocationMap from "@/components/location-map";
 function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: CarpoolRequest[] }) {
   // Get the number of kids already in this carpool
   const kidsInCarpool = requests.filter(r => r.carpoolId === carpool.id).length;
-  
+
   return (
     <div className="border rounded-lg p-4 mb-4">
       <div className="flex justify-between items-center mb-2">
@@ -24,7 +24,7 @@ function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: Carpoo
           </p>
         </div>
       </div>
-      
+
       {/* Details */}
       <div className="mt-3 space-y-2 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
@@ -40,7 +40,7 @@ function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: Carpoo
           <span>Contact: {carpool.phoneNumber}</span>
         </div>
       </div>
-      
+
       {/* Kids already in this carpool */}
       {kidsInCarpool > 0 && (
         <div className="mt-4">
@@ -66,27 +66,27 @@ interface CarpoolSummaryProps {
 
 export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEvents }: CarpoolSummaryProps) {
   const [carpoolRequests, setCarpoolRequests] = useState<Record<number, CarpoolRequest[]>>({});
-  
+
   // Fetch carpools for this party group
   const { data: carpools, isLoading: isLoadingCarpools } = useQuery({
     queryKey: ["/api/carpools", partyGroupId],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
   });
-  
+
   // Fetch party group details for geocoding
   const { data: partyGroup } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId],
     queryFn: () => partyGroupId ? getCarpoolsByPartyGroupId(partyGroupId) : null,
     enabled: !!partyGroupId,
   });
-  
+
   useEffect(() => {
     // Fetch carpool requests for each carpool
     async function fetchRequests() {
       if (!carpools) return;
-      
+
       const requestsMap: Record<number, CarpoolRequest[]> = {};
-      
+
       for (const carpool of carpools) {
         try {
           const requests = await getCarpoolRequests(carpool.id);
@@ -96,13 +96,13 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
           requestsMap[carpool.id] = [];
         }
       }
-      
+
       setCarpoolRequests(requestsMap);
     }
-    
+
     fetchRequests();
   }, [carpools]);
-  
+
   // No carpools to display yet
   if (isLoadingCarpools) {
     return (
@@ -111,7 +111,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
       </div>
     );
   }
-  
+
   if (!carpools || carpools.length === 0) {
     return (
       <div className="text-center p-8">
@@ -120,11 +120,11 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
       </div>
     );
   }
-  
+
   const carpoolsArray = carpools || [];
   const toPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canPickup || c.canBoth);
   const fromPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canDropoff || c.canBoth);
-  
+
   return (
     <div>
       {onBackToEvents && (
@@ -132,7 +132,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Events
         </Button>
       )}
-      
+
       <div className="space-y-8">
         {/* TO Party Section */}
         {toPartyCarpools.length > 0 && (
@@ -150,7 +150,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                     <div>
                       <h4 className="font-medium">{carpool.parentName}</h4>
                       <p className="text-sm text-gray-600">{carpool.spacesAvailable} spaces available</p>
-                      
+
                       {/* Summary of key details */}
                       <div className="mt-3 text-sm text-gray-600 space-y-1">
                         <div className="flex items-center gap-2">
@@ -159,7 +159,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPin className="h-3 w-3 text-gray-400" />
-                          <span>Pickup: {carpool.city}, {carpool.postcode}</span>
+                          <span>Pickup Location: {carpool.city}, {carpool.postcode}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Phone className="h-3 w-3 text-gray-400" />
@@ -175,7 +175,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       >
                         <Search className="h-3 w-3 mr-1" /> Find a Ride
                       </Button>
-                      
+
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">View Details</Button>
@@ -208,9 +208,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   </div>
                                 </div>
                               </div>
-                              
+
                               <Separator />
-                              
+
                               {/* Pickup Details */}
                               <div>
                                 <h4 className="font-medium mb-2">Pickup Details</h4>
@@ -229,9 +229,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   </div>
                                 </div>
                               </div>
-                              
+
                               <Separator />
-                              
+
                               {/* Map */}
                               <div>
                                 <h4 className="font-medium mb-2">Location</h4>
@@ -256,7 +256,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       </Dialog>
                     </div>
                   </div>
-                  
+
                   {/* Kids already in this carpool */}
                   {carpoolRequests[carpool.id]?.length > 0 && (
                     <div className="mt-2 border-t pt-2">
@@ -292,16 +292,16 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                     <div>
                       <h4 className="font-medium">{carpool.parentName}</h4>
                       <p className="text-sm text-gray-600">{carpool.spacesAvailable} spaces available</p>
-                      
+
                       {/* Summary of key details */}
                       <div className="mt-3 text-sm text-gray-600 space-y-1">
                         <div className="flex items-center gap-2">
                           <Clock className="h-3 w-3 text-gray-400" />
-                          <span>Pickup time: {carpool.pickupTime || "Not specified"}</span>
+                          <span>Dropoff time: {carpool.dropoffTime || "Not specified"}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPin className="h-3 w-3 text-gray-400" />
-                          <span>Pickup: {carpool.city}, {carpool.postcode}</span>
+                          <span>Dropoff Location: {carpool.city}, {carpool.postcode}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Phone className="h-3 w-3 text-gray-400" />
@@ -317,7 +317,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       >
                         <Search className="h-3 w-3 mr-1" /> Find a Ride
                       </Button>
-                      
+
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">View Details</Button>
@@ -350,16 +350,16 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   </div>
                                 </div>
                               </div>
-                              
+
                               <Separator />
-                              
+
                               {/* Pickup Details */}
                               <div>
-                                <h4 className="font-medium mb-2">Pickup Details</h4>
+                                <h4 className="font-medium mb-2">Dropoff Details</h4>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex items-center gap-2">
                                     <span className="font-medium">Time:</span>
-                                    <span>{carpool.pickupTime || "Not specified"}</span>
+                                    <span>{carpool.dropoffTime || "Not specified"}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <span className="font-medium">Spaces Available:</span>
@@ -371,9 +371,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   </div>
                                 </div>
                               </div>
-                              
+
                               <Separator />
-                              
+
                               {/* Map */}
                               <div>
                                 <h4 className="font-medium mb-2">Location</h4>
@@ -398,7 +398,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       </Dialog>
                     </div>
                   </div>
-                  
+
                   {/* Kids already in this carpool */}
                   {carpoolRequests[carpool.id]?.length > 0 && (
                     <div className="mt-2 border-t pt-2">
