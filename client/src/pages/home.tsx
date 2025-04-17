@@ -56,6 +56,8 @@ export default function Home() {
       title: "Carpool Offer Submitted!",
       message: "Your carpool offer has been submitted successfully. Parents can now request spots.",
     });
+    // Navigate to the "view" tab to see the updated carpool summary
+    setActiveTab("view");
   };
 
   const handleRequestSubmitSuccess = () => {
