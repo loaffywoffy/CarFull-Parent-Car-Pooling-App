@@ -274,6 +274,14 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
                         Pickup at {carpool.pickupTime}
                       </div>
                     )}
+                    {carpool.outboundDropoffPreference && (
+                      <div className="flex items-center gap-1">
+                        <HomeIcon className="h-3.5 w-3.5"/>
+                        {carpool.outboundDropoffPreference === 'direct-home' ? 'Drops at your home' :
+                         (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') ? 'Collect from driver' : 
+                         'Central meeting point'}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -544,7 +552,16 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot }: CarpoolS
                                     From event ({carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces)
                                   </Badge>
                                 )}
-                                {carpool.dropoffPreference && (
+                                {/* Show outbound preference for rides to the party */}
+                                {carpool.canPickup && carpool.outboundDropoffPreference && (
+                                  <Badge className="bg-purple-100 text-purple-800">
+                                    {carpool.outboundDropoffPreference === "direct-home" ? "Direct home drop-off" : 
+                                     (carpool.outboundDropoffPreference === "my-home" || carpool.outboundDropoffPreference === "my-address") ? "Pickup from driver's home" : 
+                                     "Meeting point"}
+                                  </Badge>
+                                )}
+                                {/* Show return preference for rides from the party */}
+                                {carpool.canDropoff && carpool.dropoffPreference && (
                                   <Badge className="bg-purple-100 text-purple-800">
                                     {carpool.dropoffPreference === "direct-home" ? "Direct home drop-off" : 
                                      (carpool.dropoffPreference === "my-home" || carpool.dropoffPreference === "my-address") ? "Pickup from driver's home" : 
