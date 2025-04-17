@@ -230,6 +230,12 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
                     <Users className="h-3 w-3 mr-1" />
                     {carpool.spacesAvailable} spaces
                   </Badge>
+                  {sortBy === "distance" && userPostcode && carpool.distance !== null && (
+                    <Badge className="bg-gray-100 text-gray-800">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {carpool.distance.toFixed(1)} miles
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
@@ -413,6 +419,21 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-xl font-semibold">Available Carpools</h2>
+        
+        {userPostcode && sortBy === "distance" && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">
+              Showing distances from: <span className="font-medium">{userPostcode}</span>
+            </span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowPostcodeDialog(true)}
+            >
+              Change
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
@@ -441,7 +462,42 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onManageCalen
             <SelectItem value="name">Sort by Name</SelectItem>
           </SelectContent>
         </Select>
-
+        
+        {/* Postcode Dialog */}
+        <Dialog open={showPostcodeDialog} onOpenChange={setShowPostcodeDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Enter Your Postcode</DialogTitle>
+              <DialogDescription>
+                To sort and display carpools by distance from you, please enter your postcode.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="postcode">Your Postcode</Label>
+                <Input 
+                  id="postcode" 
+                  placeholder="e.g. SW1A 1AA" 
+                  value={userPostcode}
+                  onChange={(e) => setUserPostcode(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter className="sm:justify-end">
+              <DialogClose asChild>
+                <Button type="button" variant="secondary" onClick={() => {
+                  if (!userPostcode) {
+                    setSortBy("name");
+                  } else {
+                    calculateUserDistances();
+                  }
+                }}>
+                  Submit
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
