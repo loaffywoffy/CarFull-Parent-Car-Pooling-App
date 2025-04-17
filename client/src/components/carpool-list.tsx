@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups";
+import { getCarpoolRequests } from "@/api/carpools";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -143,6 +144,13 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
     const [showDetails, setShowDetails] = useState(false);
     const [showRequestForm, setShowRequestForm] = useState(false);
     const [mapVisible, setMapVisible] = useState(false);
+    
+    // Fetch carpool requests to display booked kids
+    const { data: carpoolRequests = [] } = useQuery({
+      queryKey: ["/api/carpools", carpool.id, "requests"],
+      queryFn: () => getCarpoolRequests(carpool.id),
+      enabled: showDetails // Only fetch when details are shown
+    });
     
     // Function to get initials from a name
     const getInitialsFromName = (name: string) => {
@@ -320,6 +328,45 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                       <Car size={16} className="text-gray-400" />
                       <span>{carpool.spacesAvailable} spaces available</span>
                     </div>
+                    
+                    {/* Display booked kids information */}
+                    {carpoolRequests && carpoolRequests.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <h5 className="text-xs font-medium text-gray-600 mb-1">Booked Children:</h5>
+                        <ul className="space-y-1">
+                          {carpoolRequests.map((request: any) => (
+                            <li key={request.id} className="text-xs text-gray-600 flex items-center">
+                              <Users size={12} className="text-gray-400 mr-1" />
+                              <span className="font-medium">{request.childName}</span>
+                              <span className="text-gray-400 mx-1">•</span>
+                              <span>
+                                {request.needsPickup && request.needsDropoff ? "Both ways" :
+                                 request.needsPickup ? "To event" : 
+                                 request.needsDropoff ? "From event" : ""}
+                              </span>
+                              {request.specialRequirements && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="ml-1 inline-flex items-center text-amber-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <circle cx="12" cy="12" r="10"></circle>
+                                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                        </svg>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs text-xs">{request.specialRequirements}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
