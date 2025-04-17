@@ -335,7 +335,13 @@ export default function Home() {
           </div>
         )}
 
-        {/* Request form removed - now handled inline */}
+        {/* Carpool Request Form */}
+        {activeTab === "request" && selectedCarpoolId && (
+          <CarpoolRequestForm
+            onSuccess={handleRequestSubmitSuccess}
+            selectedCarpoolId={selectedCarpoolId}
+          />
+        )}
 
         {activeTab === "view" && selectedPartyGroup && (
           <div className="space-y-6">
