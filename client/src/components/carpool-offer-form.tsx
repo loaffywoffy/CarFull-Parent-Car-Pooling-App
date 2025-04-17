@@ -1103,7 +1103,16 @@ export default function CarpoolOfferForm({ onSuccess, partyGroupId }: CarpoolOff
             </div>
           </div>
           
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button 
+              type="button" 
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={onSuccess}
+              disabled={carpoolMutation.isPending}
+            >
+              Cancel
+            </Button>
             <Button 
               type="submit" 
               className="w-full sm:w-auto"

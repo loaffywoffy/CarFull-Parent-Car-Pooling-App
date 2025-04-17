@@ -681,10 +681,19 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex justify-end gap-2">
+            <Button 
+              type="button" 
+              variant="outline"
+              className="px-6 py-2"
+              onClick={onSuccess}
+              disabled={requestMutation.isPending}
+            >
+              Cancel
+            </Button>
             <Button 
               type="submit" 
-              className="px-6 py-2 bg-primary text-white font-medium rounded-md"
+              className="px-6 py-2"
               disabled={requestMutation.isPending}
             >
               {requestMutation.isPending ? "Submitting..." : "Request This Ride"}
