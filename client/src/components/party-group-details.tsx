@@ -299,51 +299,75 @@ export default function PartyGroupDetails({
                 </div>
               )}
 
-              {/* Only show sharing options to the creator */}
-              {isCreator && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <Share2Icon className="h-5 w-5 text-primary-600" />
-                      <p className="font-medium text-gray-900">Share with Parents</p>
-                    </div>
+              {/* Travel Options - Moved to top for more prominence */}
+              <div className="mt-6 space-y-4">
+                <h3 className="font-medium text-lg text-neutral-800">Travel Options</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-5 bg-primary/5 rounded-lg border border-primary/20 shadow-sm">
+                    <h4 className="font-medium text-primary-700 mb-2">Want to help other parents?</h4>
+                    <p className="text-sm text-neutral-600 mb-4">Share your car space and help other families get to the event.</p>
+                    <Button
+                      onClick={() => onOfferCarpool(partyGroup.id)}
+                      className="w-full"
+                      size="lg"
+                    >
+                      Offer a Ride
+                    </Button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Shareable Link */}
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Shareable Link</p>
-                      <div className="flex gap-2">
-                        <Input readOnly value={shareableLink} className="font-mono text-sm bg-gray-50" />
+                  <div className="p-5 bg-primary/5 rounded-lg border border-primary/20 shadow-sm">
+                    <h4 className="font-medium text-primary-700 mb-2">Need a lift?</h4>
+                    <p className="text-sm text-neutral-600 mb-4">Find available carpools and request a spot for your child.</p>
+                    <Button
+                      onClick={onRequestSpot ? () => onRequestSpot() : undefined}
+                      className="w-full"
+                      size="lg"
+                      variant="secondary"
+                    >
+                      Find a Ride
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Only show sharing options to the creator - minimized */}
+              {isCreator && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <details className="group">
+                    <summary className="flex items-center justify-between mb-2 cursor-pointer">
+                      <div className="flex items-center space-x-2">
+                        <Share2Icon className="h-4 w-4 text-primary-600" />
+                        <p className="font-medium text-sm text-gray-700">Share with Parents</p>
+                      </div>
+                    </summary>
+
+                    <div className="pt-2">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Input readOnly value={shareableLink} className="font-mono text-xs bg-gray-50" />
                         <Button 
                           variant="outline" 
                           onClick={copyShareableLink}
-                          className="flex gap-1 shrink-0"
+                          className="flex gap-1 shrink-0" 
+                          size="sm"
                         >
                           {copySuccess.link ? (
                             <>
-                              <CheckIcon className="h-4 w-4 text-green-600" />
+                              <CheckIcon className="h-3 w-3 text-green-600" />
                               <span>Copied</span>
                             </>
                           ) : (
                             <>
-                              <LinkIcon className="h-4 w-4" />
+                              <LinkIcon className="h-3 w-3" />
                               <span>Copy</span>
                             </>
                           )}
                         </Button>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        This link lets parents join directly. Share it via email or messaging.
-                      </p>
-                    </div>
-
-                    {/* WhatsApp Button */}
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Share via WhatsApp</p>
+                      
                       <Button 
-                        variant="default"
-                        className="w-full bg-green-600 hover:bg-green-700"
+                        variant="outline"
+                        size="sm"
+                        className="w-full bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
                         onClick={() => {
                           const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
                             `📅 Date: ${formattedDate}\n` +
@@ -355,40 +379,11 @@ export default function PartyGroupDetails({
                       >
                         Share via WhatsApp
                       </Button>
-                      <p className="text-xs text-gray-500">
-                        Instantly share event details with parents through WhatsApp.
-                      </p>
                     </div>
-                  </div>
+                  </details>
                 </div>
               )}
-              <div className="mt-6 space-y-4">
-                <h3 className="font-medium text-neutral-700">Travel Options</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                    <h4 className="font-medium mb-2">Want to help other parents?</h4>
-                    <p className="text-sm text-neutral-600 mb-3">Share your car space and help other families get to the event.</p>
-                    <Button
-                      onClick={onOfferCarpool}
-                      className="w-full"
-                      variant="outline"
-                    >
-                      Offer a Ride
-                    </Button>
-                  </div>
-
-                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                    <h4 className="font-medium mb-2">Need a lift?</h4>
-                    <p className="text-sm text-neutral-600 mb-3">Find available carpools and request a spot for your child.</p>
-                    <Button
-                      onClick={onRequestSpot}
-                      className="w-full"
-                    >
-                      Find a Ride
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              {/* Additional content section removed */}
             </div>
           </CardContent>
         </TabsContent>
