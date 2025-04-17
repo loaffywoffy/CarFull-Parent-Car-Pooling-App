@@ -211,6 +211,48 @@ function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: Carpoo
                           {request.needsDropoff && <Badge variant="outline" className="text-xs py-0 bg-blue-50">From</Badge>}
                         </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                              Remove
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Remove Passenger</DialogTitle>
+                            </DialogHeader>
+                            <p>Are you sure you want to remove {request.childName} from this carpool?</p>
+                            <div className="flex justify-end gap-2 mt-4">
+                              <DialogClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                              </DialogClose>
+                              <Button 
+                                variant="destructive"
+                                onClick={async () => {
+                                  try {
+                                    await deleteCarpoolRequest(request.id);
+                                    // Invalidate the requests query to refresh the list
+                                    queryClient.invalidateQueries(['/api/carpools', carpool.id, 'requests']);
+                                    toast({
+                                      title: "Passenger removed",
+                                      description: `${request.childName} has been removed from the carpool.`
+                                    });
+                                  } catch (error) {
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to remove passenger. Please try again.",
+                                      variant: "destructive"
+                                    });
+                                  }
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                       {request.specialRequirements && (
                         <Dialog>
                           <DialogTrigger asChild>

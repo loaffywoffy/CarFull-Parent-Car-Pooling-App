@@ -24,3 +24,8 @@ export async function createCarpoolRequest(requestData: any) {
   const response = await apiRequest("POST", "/api/carpool-requests", requestData);
   return response.json();
 }
+
+export async function deleteCarpoolRequest(requestId: number) {
+  const response = await apiRequest("DELETE", `/api/carpool-requests/${requestId}`);
+  return response.ok;
+}
