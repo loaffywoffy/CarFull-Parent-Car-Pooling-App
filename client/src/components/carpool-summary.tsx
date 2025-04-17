@@ -20,11 +20,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ChevronLeft } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // A component to render each carpool card with its own state
 function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: CarpoolRequest[] }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   // Function to get initials from a name
   const getInitialsFromName = (name: string) => {
     if (!name) return "?";
@@ -34,7 +35,7 @@ function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: Carpoo
       .join('')
       .toUpperCase();
   };
-  
+
   return (
     <Card className="border overflow-hidden">
       <div 
@@ -72,7 +73,7 @@ function CarpoolCard({ carpool, requests }: { carpool: Carpool, requests: Carpoo
           </Button>
         </div>
       </div>
-      
+
       {isExpanded && (
         <div className="px-4 pb-4 border-t">
           <div className="space-y-4 pt-3">
@@ -203,12 +204,7 @@ import {
   AccordionItem, 
   AccordionTrigger 
 } from "@/components/ui/accordion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
@@ -546,6 +542,33 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                          'Central meeting point'}
                       </div>
                     )}
+
+                    {/* Show passengers inline */}
+                    {carpoolRequestsMap[carpool.id]?.length > 0 && (
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="font-medium text-xs text-gray-700 mb-2">Current Passengers:</p>
+                        <div className="space-y-1">
+                          {carpoolRequestsMap[carpool.id].map((request) => (
+                            <div key={request.id} className="flex items-center gap-2 text-xs bg-gray-50 p-1.5 rounded">
+                              <Baby className="h-3 w-3 text-primary/70" />
+                              <span>{request.childName}</span>
+                              {request.specialRequirements && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <InfoIcon className="h-3 w-3 text-gray-400" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{request.specialRequirements}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -617,28 +640,39 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                          'Central meeting point'}
                       </div>
                     )}
+
+                    {/* Show passengers inline */}
+                    {carpoolRequestsMap[carpool.id]?.length > 0 && (
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="font-medium text-xs text-gray-700 mb-2">Current Passengers:</p>
+                        <div className="space-y-1">
+                          {carpoolRequestsMap[carpool.id].map((request) => (
+                            <div key={request.id} className="flex items-center gap-2 text-xs bg-gray-50 p-1.5 rounded">
+                              <Baby className="h-3 w-3 text-primary/70" />
+                              <span>{request.childName}</span>
+                              {request.specialRequirements && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <InfoIcon className="h-3 w-3 text-gray-400" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{request.specialRequirements}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </CardContent>
           </Card>
         </div>
-
-        {/* All Trips Summary */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>All Carpools Overview</CardTitle>
-            <CardDescription>Complete schedule of all rides for this event</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {carpoolsArray.map((carpool: Carpool) => {
-                const requests = carpoolRequestsMap[carpool.id] || [];
-                return <CarpoolCard key={carpool.id} carpool={carpool} requests={requests} />;
-              })}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Event Details Button */}
         <div className="mb-6 flex justify-center">
