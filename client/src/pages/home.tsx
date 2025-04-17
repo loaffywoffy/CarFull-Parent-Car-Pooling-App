@@ -122,7 +122,7 @@ export default function Home() {
     if (activeTab === "partyGroups") {
       setPartyGroupTab("details");
     }
-    // If we're on a different tab (Give a Ride or Find a Ride), stay on that tab
+    // If we're on a different tab (Offer a Ride or Find a Ride), stay on that tab
     // but with the selected party group now set
   };
 
@@ -161,7 +161,7 @@ export default function Home() {
     // Define custom event interface for TypeScript safety
     interface ActionEvent extends CustomEvent {
       detail: {
-        type: 'give-ride' | 'find-ride';
+        type: 'offer-ride' | 'find-ride';
         partyGroupId: number;
       }
     }
@@ -171,8 +171,8 @@ export default function Home() {
       const actionEvent = event as ActionEvent;
       const { type, partyGroupId } = actionEvent.detail;
 
-      if (type === 'give-ride') {
-        // Navigate to "Give a Ride" tab
+      if (type === 'offer-ride') {
+        // Navigate to "Offer a Ride" tab
         handleOfferCarpool(partyGroupId);
       } else if (type === 'find-ride') {
         // Navigate to "Find a Ride" tab

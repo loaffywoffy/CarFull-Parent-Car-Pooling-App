@@ -146,7 +146,7 @@ export default function PartyGroupsList({
                       onSelectPartyGroup(partyGroup);
                       // We'll use a custom attribute to signal the parent component
                       const customEvent = new CustomEvent('action', { 
-                        detail: { type: 'give-ride', partyGroupId: partyGroup.id } 
+                        detail: { type: 'offer-ride', partyGroupId: partyGroup.id } 
                       });
                       window.dispatchEvent(customEvent);
                     }}

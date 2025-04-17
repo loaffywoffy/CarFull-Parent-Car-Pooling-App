@@ -380,11 +380,13 @@ export default function PartyGroupDetails({
                     <p className="text-sm text-neutral-600 mb-4">Find available carpools and request a spot for your child.</p>
                     <Button
                       onClick={onRequestSpot ? () => onRequestSpot() : undefined}
-                      className="w-full"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white border-blue-700 shadow-md"
                       size="lg"
-                      variant="secondary"
                     >
-                      Find a Ride
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="inline-block relative top-[1px]">🔍</span>
+                        Find a Ride
+                      </span>
                     </Button>
                   </div>
                 </div>
