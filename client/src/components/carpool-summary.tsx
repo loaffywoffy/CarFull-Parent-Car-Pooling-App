@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups";
+import { getCarpoolsByPartyGroupId } from "@/api/partyGroups";
 import { getCarpoolRequests } from "@/api/carpools";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,20 +20,11 @@ interface CarpoolSummaryProps {
 export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEvents }: CarpoolSummaryProps) {
   const [carpoolRequests, setCarpoolRequests] = useState<Record<number, CarpoolRequest[]>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
-  // Store geocoded coordinates for carpools
-  const [carpoolCoordinates, setCarpoolCoordinates] = useState<Record<number, [number, number]>>({});
   
   // Fetch carpools for this party group
   const { data: carpools, isLoading: isLoadingCarpools } = useQuery({
     queryKey: ["/api/carpools", partyGroupId],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
-  });
-  
-  // Fetch party group details for geocoding
-  const { data: partyGroup } = useQuery({
-    queryKey: ["/api/party-groups", partyGroupId],
-    queryFn: () => partyGroupId ? getPartyGroupById(partyGroupId) : null,
-    enabled: !!partyGroupId,
   });
   
   // Function to fetch latest requests for all carpools
@@ -73,34 +64,6 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, [carpools]);
-  
-  // Geocode all carpool addresses
-  useEffect(() => {
-    if (!carpools || carpools.length === 0) return;
-    
-    const geocodeAddresses = async () => {
-      const newCoordinates: Record<number, [number, number]> = { ...carpoolCoordinates };
-      
-      for (const carpool of carpools) {
-        if (carpool.address && carpool.postcode && !carpoolCoordinates[carpool.id]) {
-          try {
-            const coords = await geocodeAddress(
-              carpool.address,
-              carpool.city || '',
-              carpool.postcode
-            );
-            newCoordinates[carpool.id] = coords;
-          } catch (error) {
-            console.error(`Error geocoding carpool ${carpool.id}:`, error);
-          }
-        }
-      }
-      
-      setCarpoolCoordinates(newCoordinates);
-    };
-    
-    geocodeAddresses();
-  }, [carpools, carpoolCoordinates]);
   
   // No carpools to display yet
   if (isLoadingCarpools) {
@@ -274,19 +237,14 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             {/* Map */}
                             <div>
                               <h4 className="font-medium mb-2">Location</h4>
-                              <LocationMap
-                                locations={[
-                                  {
-                                    label: `${carpool.parentName}'s Location`,
-                                    position: [
-                                      51.5074, // Default coordinates since the carpool doesn't have latitude/longitude
-                                      -0.1278
-                                    ],
-                                    type: 'pickup'
-                                  }
-                                ]}
+                              <LocationMapWrapper
+                                id={carpool.id}
+                                parentName={carpool.parentName}
+                                address={carpool.address}
+                                city={carpool.city}
+                                postcode={carpool.postcode}
                                 height="200px"
-                                initialZoom={13}
+                                type="pickup"
                               />
                             </div>
                             
@@ -309,7 +267,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                     <li key={request.id} className="text-sm flex gap-2">
                                       <span className="font-medium">{request.childName}</span>
                                       <span className="text-gray-500">
-                                        - {request.address.substring(0, 20)}...
+                                        - {request.address ? request.address.substring(0, 20) + "..." : "No address"}
                                       </span>
                                     </li>
                                   ))}
@@ -326,14 +284,14 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
             </Card>
           ) : (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center text-lg">
                   <ArrowRight className="h-5 w-5 mr-2 text-green-500" /> 
                   To Party Carpools
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center py-6 text-gray-500">No carpools available for this direction</p>
+                <p className="text-center text-muted-foreground py-4">No carpools available yet for the ride to the party.</p>
               </CardContent>
             </Card>
           )}
@@ -345,7 +303,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center text-lg">
-                  <ArrowLeft className="h-5 w-5 mr-2 text-blue-500" /> 
+                  <ArrowRight className="h-5 w-5 mr-2 rotate-180 text-blue-500" /> 
                   From Party Carpools
                 </CardTitle>
               </CardHeader>
@@ -356,9 +314,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       <div>
                         <h4 className="font-medium">{carpool.parentName}</h4>
                         <p className="text-sm text-gray-600">
-                          {carpoolRequests[carpool.id] 
-                            ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} spaces available`
-                            : `${carpool.spacesAvailable} spaces available`
+                          {carpoolRequests[carpool.id] && carpool.returnSpacesAvailable 
+                            ? `${Math.max(0, carpool.returnSpacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.returnSpacesAvailable} spaces available`
+                            : `${carpool.returnSpacesAvailable || 0} spaces available`
                           }
                         </p>
                         
@@ -366,11 +324,11 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                         <div className="mt-3 text-sm text-gray-600 space-y-1">
                           <div className="flex items-center gap-2">
                             <Clock className="h-3 w-3 text-gray-400" />
-                            <span>Return time: {carpool.returnCollectionTime || "Not specified"}</span>
+                            <span>Departure time: {carpool.estimatedDepartureTime || "Not specified"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <MapPin className="h-3 w-3 text-gray-400" />
-                            <span>Location: {carpool.city}, {carpool.postcode}</span>
+                            <span>Destination: {carpool.city}, {carpool.postcode}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Phone className="h-3 w-3 text-gray-400" />
@@ -431,24 +389,24 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             
                             <Separator />
                             
-                            {/* Pickup Details */}
+                            {/* Dropoff Details */}
                             <div>
-                              <h4 className="font-medium mb-2">Return Details</h4>
+                              <h4 className="font-medium mb-2">Return Journey Details</h4>
                               <div className="space-y-2 text-sm">
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium w-20">Time:</span>
-                                  <span>{carpool.returnCollectionTime || "Not specified"}</span>
+                                  <span>{carpool.estimatedDepartureTime || "Not specified"}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium w-20">Spaces:</span>
-                                  <span>{carpoolRequests[carpool.id] 
-                                    ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} available`
-                                    : `${carpool.spacesAvailable} available`}
+                                  <span>{carpoolRequests[carpool.id] && carpool.returnSpacesAvailable
+                                    ? `${Math.max(0, carpool.returnSpacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.returnSpacesAvailable} available`
+                                    : `${carpool.returnSpacesAvailable || 0} available`}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium w-20">Location:</span>
-                                  <span>{carpool.address ? `Drop off at ${carpool.parentName}'s house (${carpool.address})` : 'Location not specified'}</span>
+                                  <span>Destination: {carpool.address}, {carpool.city}, {carpool.postcode}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium w-20">Notes:</span>
@@ -461,20 +419,15 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             
                             {/* Map */}
                             <div>
-                              <h4 className="font-medium mb-2">Location</h4>
-                              <LocationMap
-                                locations={[
-                                  {
-                                    label: `${carpool.parentName}'s Location`,
-                                    position: [
-                                      51.5074, // Default coordinates since the carpool doesn't have latitude/longitude
-                                      -0.1278
-                                    ],
-                                    type: 'pickup'
-                                  }
-                                ]}
+                              <h4 className="font-medium mb-2">Destination</h4>
+                              <LocationMapWrapper
+                                id={carpool.id}
+                                parentName={carpool.parentName}
+                                address={carpool.address}
+                                city={carpool.city}
+                                postcode={carpool.postcode}
                                 height="200px"
-                                initialZoom={13}
+                                type="dropoff"
                               />
                             </div>
                             
@@ -497,7 +450,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                     <li key={request.id} className="text-sm flex gap-2">
                                       <span className="font-medium">{request.childName}</span>
                                       <span className="text-gray-500">
-                                        - {request.address.substring(0, 20)}...
+                                        - {request.address ? request.address.substring(0, 20) + "..." : "No address"}
                                       </span>
                                     </li>
                                   ))}
@@ -514,14 +467,14 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
             </Card>
           ) : (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <ArrowLeft className="h-5 w-5 mr-2 text-blue-500" /> 
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center text-lg">
+                  <ArrowRight className="h-5 w-5 mr-2 rotate-180 text-blue-500" /> 
                   From Party Carpools
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center py-6 text-gray-500">No carpools available for this direction</p>
+                <p className="text-center text-muted-foreground py-4">No carpools available yet for the return journey.</p>
               </CardContent>
             </Card>
           )}
