@@ -18,27 +18,27 @@ interface CarpoolSummaryProps {
 
 export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEvents }: CarpoolSummaryProps) {
   const [carpoolRequests, setCarpoolRequests] = useState<Record<number, CarpoolRequest[]>>({});
-  
+
   // Fetch carpools for this party group
   const { data: carpools, isLoading: isLoadingCarpools } = useQuery({
     queryKey: ["/api/carpools", partyGroupId],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
   });
-  
+
   // Fetch party group details for geocoding
   const { data: partyGroup } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId],
     queryFn: () => partyGroupId ? getCarpoolsByPartyGroupId(partyGroupId) : null,
     enabled: !!partyGroupId,
   });
-  
+
   useEffect(() => {
     // Fetch carpool requests for each carpool
     async function fetchRequests() {
       if (!carpools) return;
-      
+
       const requestsMap: Record<number, CarpoolRequest[]> = {};
-      
+
       for (const carpool of carpools) {
         try {
           const requests = await getCarpoolRequests(carpool.id);
@@ -48,13 +48,13 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
           requestsMap[carpool.id] = [];
         }
       }
-      
+
       setCarpoolRequests(requestsMap);
     }
-    
+
     fetchRequests();
   }, [carpools]);
-  
+
   // No carpools to display yet
   if (isLoadingCarpools) {
     return (
@@ -63,7 +63,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
       </div>
     );
   }
-  
+
   if (!carpools || carpools.length === 0) {
     return (
       <div className="text-center p-8">
@@ -72,11 +72,11 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
       </div>
     );
   }
-  
+
   const carpoolsArray = carpools || [];
   const toPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canPickup || c.canBoth);
   const fromPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canDropoff || c.canBoth);
-  
+
   return (
     <div>
       {onBackToEvents && (
@@ -84,7 +84,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Events
         </Button>
       )}
-      
+
       {/* Side-by-side layout for TO and FROM Party carpools */}
       <div className="grid md:grid-cols-2 gap-4">
         {/* TO Party Section */}
@@ -109,7 +109,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             : `${carpool.spacesAvailable} spaces available`
                           }
                         </p>
-                        
+
                         {/* Summary of key details */}
                         <div className="mt-3 text-sm text-gray-600 space-y-1">
                           <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             <span>Contact: {carpool.phoneNumber}</span>
                           </div>
                         </div>
-                        
+
                         {/* Kids already in this carpool */}
                         {carpoolRequests[carpool.id]?.length > 0 && (
                           <div className="mt-3 text-sm">
@@ -140,7 +140,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                           </div>
                         )}
                       </div>
-                      
+
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">View Details</Button>
@@ -152,7 +152,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                               View detailed information and book a ride
                             </DialogDescription>
                           </DialogHeader>
-                          
+
                           <div className="grid gap-6 py-4">
                             {/* Driver Info */}
                             <div>
@@ -176,9 +176,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                 </div>
                               </div>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             {/* Pickup Details */}
                             <div>
                               <h4 className="font-medium mb-2">Pickup Details</h4>
@@ -195,14 +195,18 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Location:</span>
+                                  <span>{carpool.address ? `Drop off at ${carpool.parentName}'s house (${carpool.address})` : 'Location not specified'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
                                   <span className="font-medium w-20">Notes:</span>
                                   <span>{carpool.notes || "No additional notes"}</span>
                                 </div>
                               </div>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             {/* Map */}
                             <div>
                               <h4 className="font-medium mb-2">Location</h4>
@@ -221,9 +225,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                 initialZoom={13}
                               />
                             </div>
-                            
+
                             <Separator />
-                            
+
                             {/* Book a spot button */}
                             <Button 
                               className="w-full"
@@ -231,7 +235,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             >
                               <Search className="h-4 w-4 mr-2" /> Book This Ride
                             </Button>
-                            
+
                             {/* Kids already in this carpool */}
                             {carpoolRequests[carpool.id]?.length > 0 && (
                               <div className="mt-2">
@@ -270,7 +274,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
             </Card>
           )}
         </div>
-        
+
         {/* FROM Party Section */}
         <div>
           {fromPartyCarpools.length > 0 ? (
@@ -293,7 +297,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             : `${carpool.spacesAvailable} spaces available`
                           }
                         </p>
-                        
+
                         {/* Summary of key details */}
                         <div className="mt-3 text-sm text-gray-600 space-y-1">
                           <div className="flex items-center gap-2">
@@ -309,7 +313,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             <span>Contact: {carpool.phoneNumber}</span>
                           </div>
                         </div>
-                        
+
                         {/* Kids already in this carpool */}
                         {carpoolRequests[carpool.id]?.length > 0 && (
                           <div className="mt-3 text-sm">
@@ -324,7 +328,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                           </div>
                         )}
                       </div>
-                      
+
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline">View Details</Button>
@@ -336,7 +340,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                               View detailed information and book a ride
                             </DialogDescription>
                           </DialogHeader>
-                          
+
                           <div className="grid gap-6 py-4">
                             {/* Driver Info */}
                             <div>
@@ -360,9 +364,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                 </div>
                               </div>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             {/* Pickup Details */}
                             <div>
                               <h4 className="font-medium mb-2">Dropoff Details</h4>
@@ -379,14 +383,18 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Location:</span>
+                                  <span>{carpool.address ? `Pickup from ${carpool.parentName}'s house (${carpool.address})` : 'Location not specified'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
                                   <span className="font-medium w-20">Notes:</span>
                                   <span>{carpool.notes || "No additional notes"}</span>
                                 </div>
                               </div>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             {/* Map */}
                             <div>
                               <h4 className="font-medium mb-2">Location</h4>
@@ -405,9 +413,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                 initialZoom={13}
                               />
                             </div>
-                            
+
                             <Separator />
-                            
+
                             {/* Book a spot button */}
                             <Button 
                               className="w-full"
@@ -415,7 +423,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             >
                               <Search className="h-4 w-4 mr-2" /> Book This Ride
                             </Button>
-                            
+
                             {/* Kids already in this carpool */}
                             {carpoolRequests[carpool.id]?.length > 0 && (
                               <div className="mt-2">
