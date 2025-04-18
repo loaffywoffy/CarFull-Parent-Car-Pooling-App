@@ -657,7 +657,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
   };
 
   if (isLoading) {
-    return <div>Loading carpools...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <Spinner size="lg" text="Loading carpools..." />
+      </div>
+    );
   }
 
   return (
@@ -721,8 +725,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
             )}
           </div>
           {userPostcode && !userCoordinates && userPostcode.length > 4 && (
-            <p className="text-xs text-amber-600 mt-2">
-              <Loader2 className="h-3 w-3 inline-block mr-1 animate-spin" />
+            <p className="text-xs text-amber-600 mt-2 flex items-center">
+              <Spinner size="xs" color="accent" className="mr-1" />
               Looking up your location...
             </p>
           )}

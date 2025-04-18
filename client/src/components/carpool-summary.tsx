@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Clock, Phone, Search, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import { MapPin, Clock, Phone, Search, ArrowRight, ArrowLeft } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Carpool, CarpoolRequest } from "@shared/schema";
 import LocationMap from "@/components/location-map";
 
@@ -75,8 +76,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
   if (isLoadingCarpools) {
     return (
       <div className="flex flex-col justify-center items-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-        <p>Loading carpools...</p>
+        <Spinner size="lg" color="primary" className="mb-2" text="Loading carpools..." />
       </div>
     );
   }
@@ -112,10 +112,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
           className="flex items-center gap-1"
         >
           {isRefreshing ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Refreshing...</span>
-            </>
+            <Spinner size="sm" text="Refreshing..." />
           ) : (
             <span>Refresh</span>
           )}
