@@ -77,17 +77,17 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
     queryKey: ["/api/party-groups", partyGroupId, "carpools"],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
   });
-  
+
   // Fetch the party details to get the event location
   const { data: partyGroup } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId],
     queryFn: () => getPartyGroupById(partyGroupId),
     enabled: !!partyGroupId,
   });
-  
+
   // State to store carpools with distances calculated
   const [carpoolsWithDistance, setCarpoolsWithDistance] = useState<any[]>([]);
-  
+
   // Handle sorting by distance and postcode input visibility
   useEffect(() => {
     if (sortBy === 'distance') {
@@ -101,7 +101,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
   useEffect(() => {
     async function geocodeUserPostcode() {
       if (!userPostcode || userPostcode.trim().length < 5) return;
-      
+
       try {
         const coords = await geocodeAddress("", "", userPostcode);
         setUserCoordinates(coords);
@@ -110,7 +110,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
         setUserCoordinates(null);
       }
     }
-    
+
     geocodeUserPostcode();
   }, [userPostcode]);
 
@@ -118,7 +118,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
   useEffect(() => {
     async function calculateDistances() {
       if (!carpools || !Array.isArray(carpools)) return;
-      
+
       try {
         // Calculate distance for each carpool
         const updatedCarpools = await Promise.all(
@@ -126,14 +126,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
             if (!carpool.address || !carpool.postcode) {
               return { ...carpool, distance: null, distanceFromUser: null };
             }
-            
+
             try {
               const carpoolCoordinates = await geocodeAddress(
                 carpool.address,
                 carpool.city || '',
                 carpool.postcode
               );
-              
+
               // Calculate distance from event (if event location is available)
               let distance = null;
               if (partyGroup?.partyAddress && partyGroup?.partyPostcode) {
@@ -142,7 +142,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                   partyGroup.partyCity || '',
                   partyGroup.partyPostcode
                 );
-                
+
                 distance = calculateDistance(
                   partyCoordinates[0],
                   partyCoordinates[1],
@@ -150,7 +150,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                   carpoolCoordinates[1]
                 );
               }
-              
+
               // Calculate distance from user (if user location is available)
               let distanceFromUser = null;
               if (userCoordinates) {
@@ -161,7 +161,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                   carpoolCoordinates[1]
                 );
               }
-              
+
               return { 
                 ...carpool, 
                 distance, 
@@ -174,14 +174,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
             }
           })
         );
-        
+
         setCarpoolsWithDistance(updatedCarpools);
       } catch (error) {
         console.error('Error calculating distances:', error);
         setCarpoolsWithDistance([...carpools]);
       }
     }
-    
+
     calculateDistances();
   }, [carpools, partyGroup, userCoordinates]);
 
@@ -240,14 +240,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
       specialRequirements: ""
     });
     const { toast } = useToast();
-    
+
     // Fetch carpool requests to display booked kids
     const { data: carpoolRequests = [] } = useQuery({
       queryKey: ["/api/carpools", carpool.id, "requests"],
       queryFn: () => getCarpoolRequests(carpool.id),
       enabled: showDetails // Only fetch when details are shown
     });
-    
+
     // Mutation for submitting a carpool request
     const requestMutation = useMutation({
       mutationFn: async (data: any) => {
@@ -265,16 +265,16 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
           postcode: "",
           specialRequirements: ""
         });
-        
+
         // Hide the form
         setShowRequestForm(false);
-        
+
         // Show success message
         toast({
           title: "Request Submitted",
           description: "Your carpool request has been submitted successfully.",
         });
-        
+
         // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ["/api/carpools", carpool.id, "requests"] });
         queryClient.invalidateQueries({ queryKey: ["/api/party-groups", partyGroupId, "carpools"] });
@@ -287,7 +287,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
         });
       },
     });
-    
+
     // Function to get initials from a name
     const getInitialsFromName = (name: string) => {
       if (!name) return "?";
@@ -297,14 +297,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
         .join('')
         .toUpperCase();
     };
-    
+
     // Format coordinates for map display
     const [carpoolCoordinates, setCarpoolCoordinates] = useState<[number, number] | null>(null);
     const [partyCoordinates, setPartyCoordinates] = useState<[number, number] | null>(null);
-    
+
     useEffect(() => {
       if (!partyGroup) return;
-      
+
       // Get party coordinates
       if (partyGroup.partyAddress && partyGroup.partyPostcode) {
         geocodeAddress(
@@ -317,7 +317,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
           console.error("Error getting party coordinates:", err);
         });
       }
-      
+
       // Get carpool coordinates
       if (carpool.address && carpool.postcode) {
         geocodeAddress(
@@ -331,7 +331,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
         });
       }
     }, [carpool, partyGroup]);
-    
+
     return (
       <Card key={carpool.id} className="mb-4 hover:shadow-lg transition-shadow overflow-hidden">
         <CardContent className="p-4">
@@ -349,7 +349,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                   {getInitialsFromName(carpool.parentName)}
                 </AvatarFallback>
               </Avatar>
-              
+
               <div>
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                   {carpool.parentName}
@@ -359,7 +359,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                     </span>
                   )}
                 </h3>
-                
+
                 <div className="flex flex-wrap gap-2 mt-1">
                   {(carpool.canPickup || carpool.canBoth) && (
                     <Badge className="bg-green-100 text-green-800">
@@ -390,7 +390,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                 </div>
               </div>
             </div>
-            
+
             <div className="flex gap-2">
               <Button 
                 onClick={(e) => {
@@ -408,19 +408,19 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
               </Button>
             </div>
           </div>
-          
+
           {showDetails && (
             <div className="mt-4 pt-4 border-t">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm text-gray-700">Driver Details</h4>
-                  
+
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <User size={16} className="text-gray-400" />
                       <span>{carpool.parentName}</span>
                     </div>
-                    
+
                     {carpool.phoneNumber && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
@@ -429,15 +429,15 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         <span>{carpool.phoneNumber}</span>
                       </div>
                     )}
-                    
+
                     <div className="flex items-start gap-2 text-sm text-gray-600">
                       <MapPin size={16} className="text-gray-400 mt-0.5" />
                       <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
                     </div>
                   </div>
-                  
+
                   <h4 className="font-medium text-sm text-gray-700 mt-4">Ride Details</h4>
-                  
+
                   <div className="space-y-2">
                     {carpool.pickupTime && (carpool.canPickup || carpool.canBoth) && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -445,30 +445,30 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         <span>Pickup time: {carpool.pickupTime}</span>
                       </div>
                     )}
-                    
+
                     {(carpool.canPickup || carpool.canBoth) && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <ArrowRight size={16} className="text-gray-400" />
-                        <span>To event: {carpool.outboundDropoffPreference === 'direct-home' ? 'Drops at destination' : 
-                          (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') ? 'Pickup from driver' : 
-                          'Meeting point'}</span>
+                        <span>To event: {carpool.outboundDropoffPreference === 'direct-home' ? 'Drops at child\'s home' : 
+                          (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') ? `Drop off at ${carpool.parentName}'s house` : 
+                          'Central meeting point'}</span>
                       </div>
                     )}
-                    
+
                     {(carpool.canDropoff || carpool.canBoth) && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <ArrowLeft size={16} className="text-gray-400" />
-                        <span>From event: {carpool.dropoffPreference === 'direct-home' ? 'Drops at your home' : 
-                          (carpool.dropoffPreference === 'my-home' || carpool.dropoffPreference === 'my-address') ? 'Pickup from driver' : 
-                          'Meeting point'}</span>
+                        <span>From event: {carpool.dropoffPreference === 'direct-home' ? 'Drops at child\'s home' : 
+                          (carpool.dropoffPreference === 'my-home' || carpool.dropoffPreference === 'my-address') ? `Pickup from ${carpool.parentName}'s house` : 
+                          'Central meeting point'}</span>
                       </div>
                     )}
-                    
+
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Car size={16} className="text-gray-400" />
                       <span>{carpool.spacesAvailable} spaces available</span>
                     </div>
-                    
+
                     {/* Display booked kids information */}
                     {carpoolRequests && carpoolRequests.length > 0 && (
                       <div className="mt-2 pt-2 border-t border-gray-100">
@@ -509,7 +509,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                     )}
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="font-medium text-sm text-gray-700">Location</h4>
@@ -522,7 +522,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                       {mapVisible ? "Hide Map" : "Show Map"}
                     </Button>
                   </div>
-                  
+
                   {mapVisible && carpoolCoordinates && partyCoordinates && (
                     <div className="rounded-md border border-gray-200 overflow-hidden mt-2">
                       {/* Use React.memo-ed component to prevent re-renders */}
@@ -538,7 +538,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                   )}
                 </div>
               </div>
-              
+
               {showRequestForm && (
                 <div className="mt-4 pt-4 border-t">
                   <h4 className="font-medium text-primary mb-3">Request a Spot</h4>
@@ -551,7 +551,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         value={formData.parentName}
                         onChange={(e) => setFormData({...formData, parentName: e.target.value})}
                       />
-                      
+
                       <label className="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
                       <Input 
                         placeholder="Child's name" 
@@ -559,7 +559,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         value={formData.childName}
                         onChange={(e) => setFormData({...formData, childName: e.target.value})}
                       />
-                      
+
                       <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                       <Input 
                         placeholder="Phone number" 
@@ -567,7 +567,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         value={formData.phoneNumber}
                         onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
                       />
-                      
+
                       <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                       <Input 
                         placeholder="Your address" 
@@ -576,7 +576,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         onChange={(e) => setFormData({...formData, address: e.target.value})}
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                       <Input 
@@ -585,7 +585,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         value={formData.city}
                         onChange={(e) => setFormData({...formData, city: e.target.value})}
                       />
-                      
+
                       <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
                       <Input 
                         placeholder="Your postcode" 
@@ -593,7 +593,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         value={formData.postcode}
                         onChange={(e) => setFormData({...formData, postcode: e.target.value})}
                       />
-                      
+
                       <label className="block text-sm font-medium text-gray-700 mb-1">Special Requirements</label>
                       <textarea 
                         placeholder="Any special requirements or notes"
@@ -604,7 +604,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                       ></textarea>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-end gap-2 mt-2">
                     <Button 
                       variant="outline" 
@@ -619,7 +619,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
                         const needsBoth = carpool.canBoth;
                         const needsPickup = !needsBoth && carpool.canPickup;
                         const needsDropoff = !needsBoth && carpool.canDropoff;
-                        
+
                         // Submit request
                         requestMutation.mutate({
                           carpoolId: carpool.id,
@@ -687,7 +687,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
           </SelectContent>
         </Select>
       </div>
-      
+
       {/* Postcode Input for distance calculation */}
       {showPostcodeInput && (
         <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mt-4">
