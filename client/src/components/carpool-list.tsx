@@ -427,8 +427,21 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                 }}
                 variant="default"
                 size="sm"
+                disabled={
+                  carpoolRequests?.length && (
+                    (carpool.canPickup || carpool.canBoth) &&
+                    carpool.spacesAvailable <= carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length ||
+                    (carpool.canDropoff || carpool.canBoth) &&
+                    (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter(r => r.needsDropoff || r.needsBoth).length
+                  )
+                }
               >
-                Request Spot
+                {carpoolRequests?.length && 
+                 ((carpool.canPickup || carpool.canBoth) && 
+                 carpool.spacesAvailable <= carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length ||
+                 (carpool.canDropoff || carpool.canBoth) && 
+                 (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter(r => r.needsDropoff || r.needsBoth).length)
+                 ? "No Spots Available" : "Request Spot"}
               </Button>
             </div>
           </div>
