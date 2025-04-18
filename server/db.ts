@@ -10,6 +10,10 @@ let pool: Pool;
 const initializePool = async () => {
   if (!process.env.DATABASE_URL) {
     console.error("DATABASE_URL environment variable is not set");
+    console.error("Please add your database connection string to Secrets:");
+    console.error("1. Go to Tools > Secrets");
+    console.error("2. Add a new secret with key 'DATABASE_URL'");
+    console.error("3. Set the value to your Neon database connection string");
     process.exit(1);
   }
 
