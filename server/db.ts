@@ -6,16 +6,25 @@ import * as schema from "@shared/schema";
 neonConfig.webSocketConstructor = ws;
 
 if (!process.env.DATABASE_URL) {
-  console.error("Database connection error: DATABASE_URL environment variable is not set");
+  console.error("\nError: DATABASE_URL environment variable is not set");
+  console.error("Please set the DATABASE_URL secret in your deployment configuration");
   process.exit(1);
 }
 
 let pool: Pool;
 
 try {
-  pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  pool = new Pool({ 
+    connectionString: process.env.DATABASE_URL,
+    connectionTimeoutMillis: 5000
+  });
+  
+  // Verify connection
+  await pool.connect();
+  console.log("Successfully connected to database");
 } catch (error) {
-  console.error("Failed to connect to database:", error);
+  console.error("\nFailed to connect to database:", error);
+  console.error("Please verify your DATABASE_URL is correct");
   process.exit(1);
 }
 
