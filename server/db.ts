@@ -32,25 +32,20 @@ const initializePool = async () => {
           rejectUnauthorized: false
         }
       });
-    
-
-
-// Run migrations
-import { migrate } from 'drizzle-orm/neon-serverless/migrator';
-
-// After db initialization, run migrations
-try {
-  await migrate(db, { migrationsFolder: './migrations' });
-  console.log("Migrations completed successfully");
-} catch (error) {
-  console.error("Error running migrations:", error);
-  process.exit(1);
-}
-
 
       // Verify connection
       await pool.connect();
       console.log("Successfully connected to database");
+      
+      // Run migrations
+      import { migrate } from 'drizzle-orm/neon-serverless/migrator';
+      try {
+        await migrate(db, { migrationsFolder: './migrations' });
+        console.log("Migrations completed successfully");
+      } catch (error) {
+        console.error("Error running migrations:", error);
+        process.exit(1);
+      }
       return;
     } catch (error) {
       retryCount++;
@@ -71,4 +66,4 @@ await initializePool().catch(error => {
 });
 
 export { pool };
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle(pool, { schema });
