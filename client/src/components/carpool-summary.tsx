@@ -206,6 +206,30 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             
                             <Separator />
                             
+                            {/* Kids already in this carpool - Moved up */}
+                            {carpoolRequests[carpool.id]?.length > 0 && (
+                              <div>
+                                <h4 className="font-medium mb-2">Kids Already Booked</h4>
+                                <div className="bg-gray-50 rounded-md p-3 mb-3">
+                                  <ul className="space-y-2">
+                                    {carpoolRequests[carpool.id].map(request => (
+                                      <li key={request.id} className="text-sm flex items-center gap-2">
+                                        <div className="bg-primary/10 text-primary rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium">
+                                          {request.childName.substring(0, 1).toUpperCase()}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">{request.childName}</span>
+                                          <p className="text-xs text-gray-500">
+                                            {request.address ? `${request.address.substring(0, 20)}${request.address.length > 20 ? "..." : ""}` : "No address"}
+                                          </p>
+                                        </div>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            )}
+                            
                             {/* Pickup Details */}
                             <div>
                               <h4 className="font-medium mb-2">Pickup Details</h4>
