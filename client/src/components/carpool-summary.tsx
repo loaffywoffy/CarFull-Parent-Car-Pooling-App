@@ -281,23 +281,6 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             >
                               <Search className="h-4 w-4 mr-2" /> Book This Ride
                             </Button>
-                            
-                            {/* Kids already in this carpool */}
-                            {carpoolRequests[carpool.id]?.length > 0 && (
-                              <div className="mt-2">
-                                <h4 className="font-medium mb-2">Kids Already Booked</h4>
-                                <ul className="space-y-1">
-                                  {carpoolRequests[carpool.id].map(request => (
-                                    <li key={request.id} className="text-sm flex gap-2">
-                                      <span className="font-medium">{request.childName}</span>
-                                      <span className="text-gray-500">
-                                        - {request.address ? request.address.substring(0, 20) + "..." : "No address"}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
                           </div>
                         </DialogContent>
                       </Dialog>
@@ -488,23 +471,6 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             >
                               <Search className="h-4 w-4 mr-2" /> Book This Ride
                             </Button>
-                            
-                            {/* Kids already in this carpool */}
-                            {carpoolRequests[carpool.id]?.length > 0 && (
-                              <div className="mt-2">
-                                <h4 className="font-medium mb-2">Kids Already Booked</h4>
-                                <ul className="space-y-1">
-                                  {carpoolRequests[carpool.id].map(request => (
-                                    <li key={request.id} className="text-sm flex gap-2">
-                                      <span className="font-medium">{request.childName}</span>
-                                      <span className="text-gray-500">
-                                        - {request.address ? request.address.substring(0, 20) + "..." : "No address"}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
                           </div>
                         </DialogContent>
                       </Dialog>
