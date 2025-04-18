@@ -76,9 +76,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
   const [userPostcode, setUserPostcode] = useState("");
   const [userCoordinates, setUserCoordinates] = useState<[number, number] | null>(null);
 
-  const { data: carpools, isLoading } = useQuery({
+  const { data: carpools, isLoading, refetch: refetchCarpools } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId, "carpools"],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
+    refetchInterval: 5000, // Refetch every 5 seconds to keep data fresh
   });
 
   // Fetch the party details to get the event location
@@ -394,7 +395,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                   )}
                   <Badge className="bg-purple-100 text-purple-800">
                     <Users className="h-3 w-3 mr-1" />
-                    {carpool.spacesAvailable} spaces
+                    {carpool.canPickup || carpool.canBoth 
+                      ? (carpoolRequests?.length 
+                          ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces`
+                          : `${carpool.spacesAvailable} spaces`) 
+                      : `${carpool.returnSpacesAvailable || 0} spaces`}
                   </Badge>
                   {sortBy === "distance" && (
                     <Badge className="bg-gray-100 text-gray-800">
@@ -485,7 +490,19 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
 
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Car size={16} className="text-gray-400" />
-                      <span>{carpool.spacesAvailable} spaces available</span>
+                      <span>
+                        {carpool.canPickup || carpool.canBoth ? (
+                          carpoolRequests?.length 
+                            ? `To event: ${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces available`
+                            : `To event: ${carpool.spacesAvailable} spaces available`
+                        ) : null}
+                        {carpool.canPickup && carpool.canDropoff ? " | " : ""}
+                        {carpool.canDropoff || carpool.canBoth ? (
+                          carpoolRequests?.length 
+                            ? `From event: ${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter(r => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces available`
+                            : `From event: ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces available`
+                        ) : null}
+                      </span>
                     </div>
 
                     {/* Display booked kids information */}
