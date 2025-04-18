@@ -114,7 +114,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                         <h4 className="font-medium">{carpool.parentName}</h4>
                         <p className="text-sm text-gray-600">
                           {carpoolRequests[carpool.id] 
-                            ? `${carpool.spacesAvailable - carpoolRequests[carpool.id].length} of ${carpool.spacesAvailable} spaces available`
+                            ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} spaces available`
                             : `${carpool.spacesAvailable} spaces available`
                           }
                         </p>
@@ -199,7 +199,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium w-20">Spaces:</span>
                                   <span>{carpoolRequests[carpool.id] 
-                                    ? `${carpool.spacesAvailable - carpoolRequests[carpool.id].length} of ${carpool.spacesAvailable} available`
+                                    ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} available`
                                     : `${carpool.spacesAvailable} available`}
                                   </span>
                                 </div>
@@ -302,7 +302,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                         <h4 className="font-medium">{carpool.parentName}</h4>
                         <p className="text-sm text-gray-600">
                           {carpoolRequests[carpool.id] 
-                            ? `${carpool.spacesAvailable - carpoolRequests[carpool.id].length} of ${carpool.spacesAvailable} spaces available`
+                            ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} spaces available`
                             : `${carpool.spacesAvailable} spaces available`
                           }
                         </p>
@@ -387,7 +387,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium w-20">Spaces:</span>
                                   <span>{carpoolRequests[carpool.id] 
-                                    ? `${carpool.spacesAvailable - carpoolRequests[carpool.id].length} of ${carpool.spacesAvailable} available`
+                                    ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} available`
                                     : `${carpool.spacesAvailable} available`}
                                   </span>
                                 </div>

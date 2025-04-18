@@ -289,7 +289,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Carpool not found" });
       }
       
+      // Get current requests for this carpool to check available spaces
+      const existingRequests = await storage.getCarpoolRequestsByCarpoolId(carpoolId);
+      
+      // Check if there are still available spaces
+      if (existingRequests.length >= carpool.spacesAvailable) {
+        return res.status(400).json({ message: "No spaces available in this carpool" });
+      }
+      
       const newRequest = await storage.createCarpoolRequest(validationResult.data);
+      
+      // Log for debugging
+      console.log(`[INFO] New request created for carpool ${carpoolId}. Total requests: ${existingRequests.length + 1}`);
+      console.log(`[INFO] Available spaces: ${carpool.spacesAvailable - (existingRequests.length + 1)}`);
+      
       res.status(201).json(newRequest);
     } catch (error) {
       console.error("Error creating carpool request:", error);
