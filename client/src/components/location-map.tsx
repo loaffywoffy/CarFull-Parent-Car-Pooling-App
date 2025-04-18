@@ -55,17 +55,6 @@ const postcodeToCoordinates = async (postcode: string): Promise<[number, number]
   }
 };
 
-// External helper function for geocoding addresses
-export async function getCoordinatesFromAddress(
-  address: string,
-  city: string,
-  postcode: string
-): Promise<[number, number] | null> {
-  // In a real app, we would use the full address
-  // For this demo, we'll just use the postcode
-  return postcodeToCoordinates(postcode);
-}
-
 // Component for displaying a map with location markers
 function LocationMap({
   locations,
@@ -182,7 +171,8 @@ function LocationMap({
               try {
                 // Use a timeout to ensure the fitBounds operation happens after the map is fully rendered
                 setTimeout(() => {
-                  if (map && !map.isRemoved()) {
+                  // Check if map still exists and is not removed
+                  if (map && mapRef.current && document.getElementById(mapInstanceId)) {
                     map.invalidateSize();
                     map.fitBounds(bounds, { padding: [30, 30] });
                   }
@@ -208,7 +198,8 @@ function LocationMap({
         
         // Force a map redraw after a short delay to fix rendering issues
         setTimeout(() => {
-          if (map && !map.isRemoved()) {
+          // Check if map still exists and is not removed
+          if (map && mapRef.current && document.getElementById(mapInstanceId)) {
             map.invalidateSize();
           }
         }, 100);
