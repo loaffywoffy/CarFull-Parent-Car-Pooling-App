@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { createCarpoolRequest } from "@/api/carpools";
+import { getCarpoolById } from "@/api/carpools";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useQuery } from "@tanstack/react-query";
 
-// Define the form schema
+// Define the form schema with direction preferences
 const carpoolRequestFormSchema = z.object({
   carpoolId: z.number(),
   parentName: z.string().min(2, { message: "Please enter your name" }),
@@ -19,6 +22,11 @@ const carpoolRequestFormSchema = z.object({
   city: z.string().min(2, { message: "Please enter your city" }),
   postcode: z.string().min(3, { message: "Please enter your postcode" }),
   specialRequirements: z.string().optional(),
+  needsPickup: z.boolean().optional().default(false),
+  needsDropoff: z.boolean().optional().default(false),
+}).refine(data => data.needsPickup || data.needsDropoff, {
+  message: "Please select at least one direction (to party or from party)",
+  path: ["needsPickup"]
 });
 
 type CarpoolRequestFormValues = z.infer<typeof carpoolRequestFormSchema>;
@@ -32,6 +40,13 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Fetch the carpool details to determine available directions
+  const { data: carpoolDetails } = useQuery({
+    queryKey: ["/api/carpools", selectedCarpoolId],
+    queryFn: () => selectedCarpoolId ? getCarpoolById(selectedCarpoolId) : null,
+    enabled: !!selectedCarpoolId
+  });
+
   const form = useForm<CarpoolRequestFormValues>({
     resolver: zodResolver(carpoolRequestFormSchema),
     defaultValues: {
@@ -42,9 +57,19 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       address: "",
       city: "",
       postcode: "",
-      specialRequirements: ""
+      specialRequirements: "",
+      needsPickup: false,
+      needsDropoff: false
     }
   });
+  
+  // Set both checkboxes when carpool details load if it's a round-trip carpool
+  useEffect(() => {
+    if (carpoolDetails && carpoolDetails.canBoth) {
+      form.setValue('needsPickup', true);
+      form.setValue('needsDropoff', true);
+    }
+  }, [carpoolDetails, form]);
 
   const onSubmit = async (values: CarpoolRequestFormValues) => {
     if (!selectedCarpoolId) {
@@ -62,12 +87,21 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       // Update with the selected carpool ID
       values.carpoolId = selectedCarpoolId;
       
-      // Create the carpool request
-      await createCarpoolRequest(values);
+      // Calculate needsBoth based on both directions being selected
+      const needsBoth = values.needsPickup && values.needsDropoff;
+      
+      // Create the carpool request with the correct direction flags
+      await createCarpoolRequest({
+        ...values,
+        needsBoth: needsBoth,
+        // If both are selected, set individual flags to false to avoid double-counting
+        needsPickup: needsBoth ? false : values.needsPickup,
+        needsDropoff: needsBoth ? false : values.needsDropoff
+      });
       
       toast({
         title: "Success!",
-        description: "Your request has been submitted. The driver will be in touch soon."
+        description: `Your ${needsBoth ? "round trip" : (values.needsPickup ? "to party" : "from party")} ride request has been submitted.`
       });
       
       // Reset the form
@@ -189,6 +223,58 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
             </FormItem>
           )}
         />
+
+        <div className="border p-4 rounded-md bg-gray-50">
+          <h3 className="font-medium mb-2">Direction(s) Needed</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Please select which directions you need for this carpool
+          </p>
+
+          <div className="space-y-3">
+            {(!carpoolDetails || carpoolDetails.canPickup || carpoolDetails.canBoth) && (
+              <FormField
+                control={form.control}
+                name="needsPickup"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value} 
+                        onCheckedChange={field.onChange}
+                        disabled={carpoolDetails && !carpoolDetails.canPickup && !carpoolDetails.canBoth}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal cursor-pointer">
+                      To party (pickup)
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {(!carpoolDetails || carpoolDetails.canDropoff || carpoolDetails.canBoth) && (
+              <FormField
+                control={form.control}
+                name="needsDropoff"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value} 
+                        onCheckedChange={field.onChange}
+                        disabled={carpoolDetails && !carpoolDetails.canDropoff && !carpoolDetails.canBoth}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal cursor-pointer">
+                      From party (dropoff)
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+          <FormMessage className="mt-2" />
+        </div>
 
         <div className="flex justify-end pt-4">
           <Button type="submit" disabled={isSubmitting}>
