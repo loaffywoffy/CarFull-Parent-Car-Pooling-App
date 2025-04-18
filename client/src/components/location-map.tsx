@@ -91,13 +91,23 @@ function LocationMap({
       leafletMapRef.current = null;
     }
 
-    // Create a new map instance with a slight delay to ensure clean DOM
+    // Create a new map instance with a longer delay to ensure DOM is fully rendered
     const initMap = setTimeout(() => {
       if (!mapRef.current) return;
       
       try {
-        // Create a new map instance
-        const map = L.map(mapRef.current);
+        // Create a new map instance with specific options to handle invalid bounds
+        const map = L.map(mapRef.current, {
+          // Prevent zooming too far
+          minZoom: 2,
+          // Handle invalid bounds more gracefully
+          maxBoundsViscosity: 1.0,
+          // Add some bounce back behavior when dragging outside bounds
+          bounceAtZoomLimits: true,
+          // Add error handling
+          attributionControl: false
+        });
+        
         leafletMapRef.current = map;
         
         // Add the OpenStreetMap tiles
@@ -105,64 +115,117 @@ function LocationMap({
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
         
-        // If there are no locations, center on a default location (London)
-        if (locations.length === 0 && initialCenter) {
-          map.setView(initialCenter, initialZoom);
-        } else if (locations.length === 0) {
-          map.setView([51.505, -0.09], initialZoom); // Default to London if no locations
-        } else {
-          // Add markers for all locations
-          const markers: L.Marker[] = [];
-          const bounds = L.latLngBounds([]);
-          
-          locations.forEach((location) => {
-            const marker = L.marker(location.position)
-              .addTo(map)
-              .bindPopup(location.label);
+        // Default fallback location (London)
+        const defaultLocation: [number, number] = [51.505, -0.09];
+        
+        // Safely set the view with a try-catch block
+        try {
+          // If there are no locations, center on a default location (London)
+          if (locations.length === 0 && initialCenter) {
+            map.setView(initialCenter, initialZoom);
+          } else if (locations.length === 0) {
+            map.setView(defaultLocation, initialZoom);
+          } else {
+            // Add markers for all locations
+            const markers: L.Marker[] = [];
+            const bounds = L.latLngBounds([]);
             
-            // Customize marker appearance based on type
-            if (location.type === 'party') {
-              marker.setIcon(L.divIcon({
-                className: 'party-location-marker',
-                html: `<div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold">P</div>`,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16],
-              }));
-            } else if (location.type === 'pickup') {
-              marker.setIcon(L.divIcon({
-                className: 'pickup-location-marker',
-                html: `<div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">P</div>`,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16],
-              }));
-            } else if (location.type === 'dropoff') {
-              marker.setIcon(L.divIcon({
-                className: 'dropoff-location-marker',
-                html: `<div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">D</div>`,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16],
-              }));
+            locations.forEach((location) => {
+              try {
+                // Validate coordinates
+                if (!location.position || 
+                    !Array.isArray(location.position) || 
+                    location.position.length !== 2 ||
+                    isNaN(location.position[0]) || 
+                    isNaN(location.position[1])) {
+                  console.warn("Invalid coordinates for location:", location);
+                  return;
+                }
+                
+                const marker = L.marker(location.position)
+                  .addTo(map)
+                  .bindPopup(location.label);
+                
+                // Customize marker appearance based on type
+                if (location.type === 'party') {
+                  marker.setIcon(L.divIcon({
+                    className: 'party-location-marker',
+                    html: `<div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold">P</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                  }));
+                } else if (location.type === 'pickup') {
+                  marker.setIcon(L.divIcon({
+                    className: 'pickup-location-marker',
+                    html: `<div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">P</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                  }));
+                } else if (location.type === 'dropoff') {
+                  marker.setIcon(L.divIcon({
+                    className: 'dropoff-location-marker',
+                    html: `<div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">D</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                  }));
+                }
+                
+                markers.push(marker);
+                bounds.extend(location.position);
+              } catch (markerError) {
+                console.error("Error adding marker:", markerError);
+              }
+            });
+            
+            // Fit the map to show all markers with padding, but only if we have valid bounds
+            if (markers.length > 0) {
+              try {
+                // Use a timeout to ensure the fitBounds operation happens after the map is fully rendered
+                setTimeout(() => {
+                  if (map && !map.isRemoved()) {
+                    map.invalidateSize();
+                    map.fitBounds(bounds, { padding: [30, 30] });
+                  }
+                }, 50);
+              } catch (boundsError) {
+                console.error("Error fitting bounds:", boundsError);
+                map.setView(defaultLocation, initialZoom);
+              }
+            } else {
+              // Fallback to default location if no valid markers
+              map.setView(defaultLocation, initialZoom);
             }
-            
-            markers.push(marker);
-            bounds.extend(location.position);
-          });
-          
-          // Fit the map to show all markers with padding
-          if (locations.length > 0) {
-            map.fitBounds(bounds, { padding: [30, 30] });
+          }
+        } catch (viewError) {
+          console.error("Error setting map view:", viewError);
+          // Fallback to a safe default
+          try {
+            map.setView(defaultLocation, initialZoom);
+          } catch (e) {
+            console.error("Critical map error:", e);
           }
         }
+        
+        // Force a map redraw after a short delay to fix rendering issues
+        setTimeout(() => {
+          if (map && !map.isRemoved()) {
+            map.invalidateSize();
+          }
+        }, 100);
       } catch (error) {
         console.error("Error initializing map:", error);
       }
-    }, 10);
+    }, 100); // Increased delay for better reliability
 
     // Clean up when the component unmounts or when dependencies change
     return () => {
       clearTimeout(initMap);
       if (leafletMapRef.current) {
-        leafletMapRef.current.remove();
+        try {
+          leafletMapRef.current.remove();
+        } catch (e) {
+          console.error("Error removing map:", e);
+        }
         leafletMapRef.current = null;
       }
     };
