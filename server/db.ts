@@ -1,5 +1,7 @@
+
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
+import { migrate } from 'drizzle-orm/neon-serverless/migrator';
 import ws from "ws";
 import * as schema from "@shared/schema";
 
@@ -36,9 +38,11 @@ const initializePool = async () => {
       // Verify connection
       await pool.connect();
       console.log("Successfully connected to database");
-      
+
+      // Initialize drizzle
+      const db = drizzle(pool, { schema });
+
       // Run migrations
-      import { migrate } from 'drizzle-orm/neon-serverless/migrator';
       try {
         await migrate(db, { migrationsFolder: './migrations' });
         console.log("Migrations completed successfully");
@@ -46,7 +50,8 @@ const initializePool = async () => {
         console.error("Error running migrations:", error);
         process.exit(1);
       }
-      return;
+
+      return db;
     } catch (error) {
       retryCount++;
       console.error(`Database connection attempt ${retryCount} failed:`, error);
@@ -60,10 +65,6 @@ const initializePool = async () => {
   }
 };
 
-await initializePool().catch(error => {
-  console.error("Database initialization failed:", error);
-  process.exit(1);
-});
-
+// Initialize the pool and export it along with the drizzle instance
+export const db = await initializePool();
 export { pool };
-export const db = drizzle(pool, { schema });
