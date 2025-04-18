@@ -239,7 +239,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
       address: "",
       city: "",
       postcode: "",
-      specialRequirements: ""
+      specialRequirements: "",
+      needsPickup: carpool.canPickup || carpool.canBoth,
+      needsDropoff: carpool.canDropoff || carpool.canBoth
     });
     const { toast } = useToast();
 
@@ -265,7 +267,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
           address: "",
           city: "",
           postcode: "",
-          specialRequirements: ""
+          specialRequirements: "",
+          needsPickup: carpool.canPickup || carpool.canBoth,
+          needsDropoff: carpool.canDropoff || carpool.canBoth
         });
 
         // Hide the form
@@ -612,6 +616,50 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         value={formData.specialRequirements}
                         onChange={(e) => setFormData({...formData, specialRequirements: e.target.value})}
                       ></textarea>
+
+                      {/* Direction Selection */}
+                      <div className="space-y-3 border-t pt-3 mt-3">
+                        <div className="font-medium text-sm text-gray-700">
+                          Direction(s) Needed
+                        </div>
+                        <p className="text-xs text-gray-500">Select which direction(s) you need:</p>
+                        
+                        {(carpool.canPickup || carpool.canBoth) && (
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`pickup-${carpool.id}`} 
+                              checked={formData.needsPickup} 
+                              onCheckedChange={(checked) => 
+                                setFormData({...formData, needsPickup: !!checked})
+                              }
+                            />
+                            <label 
+                              htmlFor={`pickup-${carpool.id}`} 
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              To party (pickup)
+                            </label>
+                          </div>
+                        )}
+                        
+                        {(carpool.canDropoff || carpool.canBoth) && (
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`dropoff-${carpool.id}`} 
+                              checked={formData.needsDropoff}
+                              onCheckedChange={(checked) => 
+                                setFormData({...formData, needsDropoff: !!checked})
+                              }
+                            />
+                            <label 
+                              htmlFor={`dropoff-${carpool.id}`} 
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              From party (dropoff)
+                            </label>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -625,10 +673,22 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                     </Button>
                     <Button 
                       onClick={() => {
-                        // Determine trip type based on carpool capabilities
-                        const needsBoth = carpool.canBoth;
-                        const needsPickup = !needsBoth && carpool.canPickup;
-                        const needsDropoff = !needsBoth && carpool.canDropoff;
+                        // Validation: at least one direction must be selected
+                        if (!formData.needsPickup && !formData.needsDropoff) {
+                          toast({
+                            title: "Missing Direction",
+                            description: "Please select at least one direction (To party or From party)",
+                            variant: "destructive"
+                          });
+                          return;
+                        }
+
+                        // Determine if both directions are selected
+                        const needsBoth = formData.needsPickup && formData.needsDropoff;
+                        
+                        // If both are selected, set individual flags to false to avoid double-counting
+                        const needsPickup = needsBoth ? false : formData.needsPickup;
+                        const needsDropoff = needsBoth ? false : formData.needsDropoff;
 
                         // Submit request
                         requestMutation.mutate({
