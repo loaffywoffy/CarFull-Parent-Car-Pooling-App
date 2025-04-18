@@ -1,85 +1,86 @@
 import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getCarpoolsByPartyGroupId } from "@/api/partyGroups";
-import { getCarpoolRequests, deleteCarpoolRequest } from "@/api/carpools";
+import { getCarpoolRequests } from "@/api/carpools";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Clock, Phone, Search, ArrowRight, ArrowLeft, Car, Pencil, Trash2 } from "lucide-react";
+import { MapPin, Clock, Phone, Search, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { Carpool, CarpoolRequest } from "@shared/schema";
 import LocationMap from "@/components/location-map";
-import { apiRequest } from "@/utils/api"; // Assumed import
-import { toast } from "@/components/ui/toast"; // Assumed import
-import CarpoolOfferForm from "@/components/carpool-offer-form"; // Assumed import
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogTrigger } from "@/components/ui/alert-dialog"; // Assumed imports
-
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
   onRequestSpot?: (carpoolId: number) => void;
   onBackToEvents?: () => void;
-  userPhoneNumber: string; // Added prop for user phone number
 }
 
-export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEvents, userPhoneNumber }: CarpoolSummaryProps) {
+export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEvents }: CarpoolSummaryProps) {
   const [carpoolRequests, setCarpoolRequests] = useState<Record<number, CarpoolRequest[]>>({});
-  const queryClient = useQueryClient(); // Added useQueryClient hook
-
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
   // Fetch carpools for this party group
   const { data: carpools, isLoading: isLoadingCarpools } = useQuery({
     queryKey: ["/api/carpools", partyGroupId],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
   });
-
+  
   // Fetch party group details for geocoding
   const { data: partyGroup } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId],
     queryFn: () => partyGroupId ? getCarpoolsByPartyGroupId(partyGroupId) : null,
     enabled: !!partyGroupId,
   });
-
+  
   // Function to fetch latest requests for all carpools
   const fetchAllRequests = async () => {
     if (!carpools) return;
-
-    const requestsMap: Record<number, CarpoolRequest[]> = {};
-
-    for (const carpool of carpools) {
-      try {
-        const requests = await getCarpoolRequests(carpool.id);
-        requestsMap[carpool.id] = requests;
-      } catch (error) {
-        console.error(`Error fetching requests for carpool ${carpool.id}:`, error);
-        requestsMap[carpool.id] = [];
+    
+    setIsRefreshing(true);
+    
+    try {
+      const requestsMap: Record<number, CarpoolRequest[]> = {};
+      
+      for (const carpool of carpools) {
+        try {
+          const requests = await getCarpoolRequests(carpool.id);
+          requestsMap[carpool.id] = requests;
+        } catch (error) {
+          console.error(`Error fetching requests for carpool ${carpool.id}:`, error);
+          requestsMap[carpool.id] = [];
+        }
       }
+      
+      setCarpoolRequests(requestsMap);
+    } finally {
+      setIsRefreshing(false);
     }
-
-    setCarpoolRequests(requestsMap);
   };
-
+  
   useEffect(() => {
     // Initial fetch of carpool requests
     fetchAllRequests();
-
+    
     // Set up an interval to refresh the requests data every 5 seconds
     const intervalId = setInterval(() => {
       fetchAllRequests();
     }, 5000);
-
+    
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, [carpools]);
-
+  
   // No carpools to display yet
   if (isLoadingCarpools) {
     return (
-      <div className="flex justify-center items-center p-8">
+      <div className="flex flex-col justify-center items-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
         <p>Loading carpools...</p>
       </div>
     );
   }
-
+  
   if (!carpools || carpools.length === 0) {
     return (
       <div className="text-center p-8">
@@ -88,19 +89,39 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
       </div>
     );
   }
-
+  
   const carpoolsArray = carpools || [];
   const toPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canPickup || c.canBoth);
   const fromPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canDropoff || c.canBoth);
-
+  
   return (
     <div>
-      {onBackToEvents && (
-        <Button variant="outline" onClick={onBackToEvents} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Events
+      <div className="flex justify-between items-center mb-4">
+        {onBackToEvents && (
+          <Button variant="outline" onClick={onBackToEvents}>
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Events
+          </Button>
+        )}
+        
+        {/* Refresh button with loading spinner */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={fetchAllRequests} 
+          disabled={isRefreshing}
+          className="flex items-center gap-1"
+        >
+          {isRefreshing ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Refreshing...</span>
+            </>
+          ) : (
+            <span>Refresh</span>
+          )}
         </Button>
-      )}
-
+      </div>
+      
       {/* Side-by-side layout for TO and FROM Party carpools */}
       <div className="grid md:grid-cols-2 gap-4">
         {/* TO Party Section */}
@@ -121,11 +142,11 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                         <h4 className="font-medium">{carpool.parentName}</h4>
                         <p className="text-sm text-gray-600">
                           {carpoolRequests[carpool.id] 
-                            ? `${carpool.spacesAvailable - carpoolRequests[carpool.id].length} of ${carpool.spacesAvailable} spaces available`
+                            ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} spaces available`
                             : `${carpool.spacesAvailable} spaces available`
                           }
                         </p>
-
+                        
                         {/* Summary of key details */}
                         <div className="mt-3 text-sm text-gray-600 space-y-1">
                           <div className="flex items-center gap-2">
@@ -141,7 +162,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             <span>Contact: {carpool.phoneNumber}</span>
                           </div>
                         </div>
-
+                        
                         {/* Kids already in this carpool */}
                         {carpoolRequests[carpool.id]?.length > 0 && (
                           <div className="mt-3 text-sm">
@@ -150,130 +171,127 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                               {carpoolRequests[carpool.id].map(request => (
                                 <li key={request.id} className="flex items-center gap-1">
                                   • {request.childName}
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button variant="destructive" size="xs" className="ml-2">
-                                        Remove
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <p>Are you sure you want to remove {request.childName}?</p>
-                                      <div className="flex justify-end">
-                                        <Button variant="destructive" size="sm"
-                                          onClick={async () => {
-                                            try {
-                                              await deleteCarpoolRequest(request.id);
-                                              queryClient.invalidateQueries(['/api/carpools', carpool.id, 'requests']);
-                                              toast({
-                                                title: "Passenger removed",
-                                                description: `${request.childName} has been removed from the carpool.`
-                                              });
-                                            } catch (error) {
-                                              toast({
-                                                title: "Error",
-                                                description: "Failed to remove passenger. Please try again.",
-                                                variant: "destructive"
-                                              });
-                                            }
-                                          }}
-                                        >
-                                          Remove
-                                        </Button>
-                                        <Button variant="outline" size="sm">Cancel</Button>
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
-
                                 </li>
                               ))}
                             </ul>
                           </div>
                         )}
                       </div>
-
-                      {/* Carpool Provider Actions */}
-                      {carpool.phoneNumber === userPhoneNumber && (
-                        <div className="mt-4 pt-4 border-t">
-                          <h4 className="font-medium mb-2">Manage Your Carpool</h4>
-                          <div className="flex gap-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Pencil className="h-4 w-4 mr-2" />
-                                  Edit Carpool
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Edit Carpool</DialogTitle>
-                                  <DialogDescription>
-                                    Update your carpool details
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <CarpoolOfferForm 
-                                  initialData={carpool}
-                                  onSubmit={async (data) => {
-                                    try {
-                                      await apiRequest("PUT", `/api/carpools/${carpool.id}`, data);
-                                      queryClient.invalidateQueries(['/api/party-groups', partyGroupId, 'carpools']);
-                                      toast({
-                                        title: "Carpool Updated",
-                                        description: "Your carpool details have been updated successfully."
-                                      });
-                                    } catch (error) {
-                                      toast({
-                                        title: "Error",
-                                        description: "Failed to update carpool. Please try again.",
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                />
-                              </DialogContent>
-                            </Dialog>
-
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm">
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete Carpool
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Carpool</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete this carpool? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={async () => {
-                                      try {
-                                        await apiRequest("DELETE", `/api/carpools/${carpool.id}`);
-                                        queryClient.invalidateQueries(['/api/party-groups', partyGroupId, 'carpools']);
-                                        toast({
-                                          title: "Carpool Deleted",
-                                          description: "Your carpool has been deleted successfully."
-                                        });
-                                      } catch (error) {
-                                        toast({
-                                          title: "Error",
-                                          description: "Failed to delete carpool. Please try again.",
-                                          variant: "destructive"
-                                        });
-                                      }
-                                    }}
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                      
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline">View Details</Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                          <DialogHeader>
+                            <DialogTitle>Carpool Details - {carpool.parentName}'s Car</DialogTitle>
+                            <DialogDescription>
+                              View detailed information and book a ride
+                            </DialogDescription>
+                          </DialogHeader>
+                          
+                          <div className="grid gap-6 py-4">
+                            {/* Driver Info */}
+                            <div>
+                              <h4 className="font-medium mb-2">Driver Information</h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Name:</span>
+                                  <span>{carpool.parentName}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Phone:</span>
+                                  <span>{carpool.phoneNumber}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Address:</span>
+                                  <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Car:</span>
+                                  <span>Family Car</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <Separator />
+                            
+                            {/* Pickup Details */}
+                            <div>
+                              <h4 className="font-medium mb-2">Pickup Details</h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Time:</span>
+                                  <span>{carpool.pickupTime || "Not specified"}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Spaces:</span>
+                                  <span>{carpoolRequests[carpool.id] 
+                                    ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} available`
+                                    : `${carpool.spacesAvailable} available`}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Location:</span>
+                                  <span>{carpool.address ? `Drop off at ${carpool.parentName}'s house (${carpool.address})` : 'Location not specified'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Notes:</span>
+                                  <span>{carpool.additionalNotes || "No additional notes"}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <Separator />
+                            
+                            {/* Map */}
+                            <div>
+                              <h4 className="font-medium mb-2">Location</h4>
+                              <LocationMap
+                                locations={[
+                                  {
+                                    label: `${carpool.parentName}'s Location`,
+                                    position: [
+                                      51.5074, // Default coordinates since the carpool doesn't have latitude/longitude
+                                      -0.1278
+                                    ],
+                                    type: 'pickup'
+                                  }
+                                ]}
+                                height="200px"
+                                initialZoom={13}
+                              />
+                            </div>
+                            
+                            <Separator />
+                            
+                            {/* Book a spot button */}
+                            <Button 
+                              className="w-full"
+                              onClick={() => onRequestSpot && onRequestSpot(carpool.id)}
+                            >
+                              <Search className="h-4 w-4 mr-2" /> Book This Ride
+                            </Button>
+                            
+                            {/* Kids already in this carpool */}
+                            {carpoolRequests[carpool.id]?.length > 0 && (
+                              <div className="mt-2">
+                                <h4 className="font-medium mb-2">Kids Already Booked</h4>
+                                <ul className="space-y-1">
+                                  {carpoolRequests[carpool.id].map(request => (
+                                    <li key={request.id} className="text-sm flex gap-2">
+                                      <span className="font-medium">{request.childName}</span>
+                                      <span className="text-gray-500">
+                                        - {request.address.substring(0, 20)}...
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      )}
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 ))}
@@ -293,7 +311,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
             </Card>
           )}
         </div>
-
+        
         {/* FROM Party Section */}
         <div>
           {fromPartyCarpools.length > 0 ? (
@@ -312,11 +330,11 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                         <h4 className="font-medium">{carpool.parentName}</h4>
                         <p className="text-sm text-gray-600">
                           {carpoolRequests[carpool.id] 
-                            ? `${carpool.spacesAvailable - carpoolRequests[carpool.id].length} of ${carpool.spacesAvailable} spaces available`
+                            ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} spaces available`
                             : `${carpool.spacesAvailable} spaces available`
                           }
                         </p>
-
+                        
                         {/* Summary of key details */}
                         <div className="mt-3 text-sm text-gray-600 space-y-1">
                           <div className="flex items-center gap-2">
@@ -332,7 +350,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                             <span>Contact: {carpool.phoneNumber}</span>
                           </div>
                         </div>
-
+                        
                         {/* Kids already in this carpool */}
                         {carpoolRequests[carpool.id]?.length > 0 && (
                           <div className="mt-3 text-sm">
@@ -341,129 +359,127 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                               {carpoolRequests[carpool.id].map(request => (
                                 <li key={request.id} className="flex items-center gap-1">
                                   • {request.childName}
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button variant="destructive" size="xs" className="ml-2">
-                                        Remove
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <p>Are you sure you want to remove {request.childName}?</p>
-                                      <div className="flex justify-end">
-                                        <Button variant="destructive" size="sm"
-                                          onClick={async () => {
-                                            try {
-                                              await deleteCarpoolRequest(request.id);
-                                              queryClient.invalidateQueries(['/api/carpools', carpool.id, 'requests']);
-                                              toast({
-                                                title: "Passenger removed",
-                                                description: `${request.childName} has been removed from the carpool.`
-                                              });
-                                            } catch (error) {
-                                              toast({
-                                                title: "Error",
-                                                description: "Failed to remove passenger. Please try again.",
-                                                variant: "destructive"
-                                              });
-                                            }
-                                          }}
-                                        >
-                                          Remove
-                                        </Button>
-                                        <Button variant="outline" size="sm">Cancel</Button>
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
                                 </li>
                               ))}
                             </ul>
                           </div>
                         )}
                       </div>
-
-                      {/* Carpool Provider Actions */}
-                      {carpool.phoneNumber === userPhoneNumber && (
-                        <div className="mt-4 pt-4 border-t">
-                          <h4 className="font-medium mb-2">Manage Your Carpool</h4>
-                          <div className="flex gap-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Pencil className="h-4 w-4 mr-2" />
-                                  Edit Carpool
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Edit Carpool</DialogTitle>
-                                  <DialogDescription>
-                                    Update your carpool details
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <CarpoolOfferForm 
-                                  initialData={carpool}
-                                  onSubmit={async (data) => {
-                                    try {
-                                      await apiRequest("PUT", `/api/carpools/${carpool.id}`, data);
-                                      queryClient.invalidateQueries(['/api/party-groups', partyGroupId, 'carpools']);
-                                      toast({
-                                        title: "Carpool Updated",
-                                        description: "Your carpool details have been updated successfully."
-                                      });
-                                    } catch (error) {
-                                      toast({
-                                        title: "Error",
-                                        description: "Failed to update carpool. Please try again.",
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                />
-                              </DialogContent>
-                            </Dialog>
-
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm">
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete Carpool
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Carpool</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete this carpool? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={async () => {
-                                      try {
-                                        await apiRequest("DELETE", `/api/carpools/${carpool.id}`);
-                                        queryClient.invalidateQueries(['/api/party-groups', partyGroupId, 'carpools']);
-                                        toast({
-                                          title: "Carpool Deleted",
-                                          description: "Your carpool has been deleted successfully."
-                                        });
-                                      } catch (error) {
-                                        toast({
-                                          title: "Error",
-                                          description: "Failed to delete carpool. Please try again.",
-                                          variant: "destructive"
-                                        });
-                                      }
-                                    }}
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                      
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline">View Details</Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                          <DialogHeader>
+                            <DialogTitle>Carpool Details - {carpool.parentName}'s Car</DialogTitle>
+                            <DialogDescription>
+                              View detailed information and book a ride
+                            </DialogDescription>
+                          </DialogHeader>
+                          
+                          <div className="grid gap-6 py-4">
+                            {/* Driver Info */}
+                            <div>
+                              <h4 className="font-medium mb-2">Driver Information</h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Name:</span>
+                                  <span>{carpool.parentName}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Phone:</span>
+                                  <span>{carpool.phoneNumber}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Address:</span>
+                                  <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Car:</span>
+                                  <span>Family Car</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <Separator />
+                            
+                            {/* Pickup Details */}
+                            <div>
+                              <h4 className="font-medium mb-2">Return Details</h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Time:</span>
+                                  <span>{carpool.returnCollectionTime || "Not specified"}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Spaces:</span>
+                                  <span>{carpoolRequests[carpool.id] 
+                                    ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} available`
+                                    : `${carpool.spacesAvailable} available`}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Location:</span>
+                                  <span>{carpool.address ? `Drop off at ${carpool.parentName}'s house (${carpool.address})` : 'Location not specified'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium w-20">Notes:</span>
+                                  <span>{carpool.additionalNotes || "No additional notes"}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <Separator />
+                            
+                            {/* Map */}
+                            <div>
+                              <h4 className="font-medium mb-2">Location</h4>
+                              <LocationMap
+                                locations={[
+                                  {
+                                    label: `${carpool.parentName}'s Location`,
+                                    position: [
+                                      51.5074, // Default coordinates since the carpool doesn't have latitude/longitude
+                                      -0.1278
+                                    ],
+                                    type: 'pickup'
+                                  }
+                                ]}
+                                height="200px"
+                                initialZoom={13}
+                              />
+                            </div>
+                            
+                            <Separator />
+                            
+                            {/* Book a spot button */}
+                            <Button 
+                              className="w-full"
+                              onClick={() => onRequestSpot && onRequestSpot(carpool.id)}
+                            >
+                              <Search className="h-4 w-4 mr-2" /> Book This Ride
+                            </Button>
+                            
+                            {/* Kids already in this carpool */}
+                            {carpoolRequests[carpool.id]?.length > 0 && (
+                              <div className="mt-2">
+                                <h4 className="font-medium mb-2">Kids Already Booked</h4>
+                                <ul className="space-y-1">
+                                  {carpoolRequests[carpool.id].map(request => (
+                                    <li key={request.id} className="text-sm flex gap-2">
+                                      <span className="font-medium">{request.childName}</span>
+                                      <span className="text-gray-500">
+                                        - {request.address.substring(0, 20)}...
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      )}
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 ))}
