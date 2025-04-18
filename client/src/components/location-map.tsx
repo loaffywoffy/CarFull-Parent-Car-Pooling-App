@@ -61,7 +61,7 @@ function LocationMap({
   height = '400px',
   width = '100%',
   className = '',
-  initialZoom = 12,
+  initialZoom = 14, // Higher zoom level for better detail
   initialCenter,
 }: LocationMapProps) {
   // Generate a unique map instance ID
@@ -135,27 +135,30 @@ function LocationMap({
                   .addTo(map)
                   .bindPopup(location.label);
                 
-                // Customize marker appearance based on type
+                // Customize marker appearance based on type with improved visibility
                 if (location.type === 'party') {
                   marker.setIcon(L.divIcon({
                     className: 'party-location-marker',
-                    html: `<div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold">P</div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
+                    html: `<div class="w-10 h-10 rounded-full bg-primary-500 border-2 border-white shadow-lg flex items-center justify-center text-white font-bold">🎉</div>`,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20],
+                    popupAnchor: [0, -20],
                   }));
                 } else if (location.type === 'pickup') {
                   marker.setIcon(L.divIcon({
                     className: 'pickup-location-marker',
-                    html: `<div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">P</div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
+                    html: `<div class="w-10 h-10 rounded-full bg-green-500 border-2 border-white shadow-lg flex items-center justify-center text-white font-bold">🚙</div>`,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20],
+                    popupAnchor: [0, -20],
                   }));
                 } else if (location.type === 'dropoff') {
                   marker.setIcon(L.divIcon({
                     className: 'dropoff-location-marker',
-                    html: `<div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">D</div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
+                    html: `<div class="w-10 h-10 rounded-full bg-blue-500 border-2 border-white shadow-lg flex items-center justify-center text-white font-bold">🏠</div>`,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20],
+                    popupAnchor: [0, -20],
                   }));
                 }
                 
@@ -174,7 +177,19 @@ function LocationMap({
                   // Check if map still exists and is not removed
                   if (map && mapRef.current && document.getElementById(mapInstanceId)) {
                     map.invalidateSize();
-                    map.fitBounds(bounds, { padding: [30, 30] });
+                    
+                    // If there's only one marker, use setView with higher zoom instead of fitBounds
+                    if (markers.length === 1) {
+                      const marker = markers[0];
+                      const position = marker.getLatLng();
+                      map.setView([position.lat, position.lng], 15); // Higher zoom for single location
+                    } else {
+                      // For multiple markers, fit bounds with padding
+                      map.fitBounds(bounds, { 
+                        padding: [50, 50],  // More padding for better visibility
+                        maxZoom: 15         // Limit maximum zoom when fitting bounds
+                      });
+                    }
                   }
                 }, 50);
               } catch (boundsError) {

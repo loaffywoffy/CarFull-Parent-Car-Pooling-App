@@ -1,22 +1,40 @@
-// Function to convert UK postcodes to coordinates using a free geocoding service
-// In a production app, you would want to use a more reliable geocoding service
+// Function to convert UK postcodes to coordinates using deterministic mapping
+// In a production app, you would want to use a real geocoding API service
 export const postcodeToCoordinates = async (postcode: string): Promise<[number, number] | null> => {
   try {
-    // For demo purposes only - in a real app you would use a geocoding API service
-    // This is a mock that returns random coordinates near London
-    // We'll pretend this is a geocoding API for now
+    // For demo purposes, use deterministic coordinates based on postcode string
+    // This gives consistent results for the same postcode and spreads different postcodes apart
+    if (!postcode) return null;
     
-    // Random coordinate near London (51.5074° N, 0.1278° W)
-    const baseLat = 51.5074;
-    const baseLng = -0.1278;
+    // Hash function to generate consistent coordinates for the same input
+    const hashCode = (str: string): number => {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      return hash;
+    };
     
-    // Add some random variation (±0.1 degrees)
-    const lat = baseLat + (Math.random() * 0.2 - 0.1);
-    const lng = baseLng + (Math.random() * 0.2 - 0.1);
+    // Central London coordinates as the base
+    const londonLat = 51.5074;
+    const londonLng = -0.1278;
+    
+    // Generate variation based on postcode (±0.05 degrees ~ 5.5km max)
+    const hash = hashCode(postcode.toUpperCase());
+    const latVariation = (hash % 100) / 1000; // ±0.05 degree variation
+    const lngVariation = ((hash >> 8) % 100) / 1000; // Different variation for longitude
+    
+    const lat = londonLat + latVariation;
+    const lng = londonLng + lngVariation;
+    
+    // Debug log
+    console.log(`Generated coordinates for ${postcode}: [${lat.toFixed(6)}, ${lng.toFixed(6)}]`);
     
     return [lat, lng];
   } catch (error) {
-    console.error('Error geocoding postcode:', error);
+    console.error('Error processing postcode:', error);
     return null;
   }
 };
