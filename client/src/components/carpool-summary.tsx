@@ -197,10 +197,6 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   <span className="font-medium w-20">Address:</span>
                                   <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Car:</span>
-                                  <span>Family Car</span>
-                                </div>
                               </div>
                             </div>
                             
@@ -386,10 +382,6 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium w-20">Address:</span>
                                   <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Car:</span>
-                                  <span>Family Car</span>
                                 </div>
                               </div>
                             </div>
