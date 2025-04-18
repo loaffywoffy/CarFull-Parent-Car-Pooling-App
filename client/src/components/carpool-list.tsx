@@ -60,12 +60,13 @@ const StableLocationMap = memo(({
 interface CarpoolListProps {
   partyGroupId: number;
   onRequestSpot: (carpoolId: number) => void;
+  selectedCarpoolId?: number | null; // Optional prop to auto-expand a carpool
 }
 
 // Map functionality has been removed
 type SortOption = "distance" | "spaces" | "name";
 
-export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolListProps) {
+export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpoolId }: CarpoolListProps) {
   // States for filtering and sorting
   const [sortBy, setSortBy] = useState<SortOption>("spaces");
   const [searchTerm, setSearchTerm] = useState("");
@@ -228,9 +229,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
   const filteredCarpools = filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []);
 
   const CarpoolCard = ({ carpool }: { carpool: any }) => {
-    const [showDetails, setShowDetails] = useState(false);
-    const [showRequestForm, setShowRequestForm] = useState(false);
-    const [mapVisible, setMapVisible] = useState(false);
+    const [showDetails, setShowDetails] = useState(selectedCarpoolId === carpool.id);
+    const [showRequestForm, setShowRequestForm] = useState(selectedCarpoolId === carpool.id);
+    const [mapVisible, setMapVisible] = useState(selectedCarpoolId === carpool.id);
     const [formData, setFormData] = useState({
       parentName: "",
       childName: "",
@@ -302,6 +303,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot }: CarpoolList
     // Format coordinates for map display
     const [carpoolCoordinates, setCarpoolCoordinates] = useState<[number, number] | null>(null);
     const [partyCoordinates, setPartyCoordinates] = useState<[number, number] | null>(null);
+
+    // Effect to respond to the selectedCarpoolId prop changes
+    useEffect(() => {
+      if (selectedCarpoolId === carpool.id) {
+        setShowDetails(true);
+        setMapVisible(true);
+      }
+    }, [selectedCarpoolId, carpool.id]);
 
     useEffect(() => {
       if (!partyGroup) return;

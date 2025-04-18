@@ -73,12 +73,12 @@ export default function Home() {
   };
 
   const handleRequestSpot = (carpoolId: number) => {
-    // Instead of switching to a separate "request" tab,
-    // we'll store the carpool ID and use the inline form in carpool-list
+    // Store the carpool ID for the request form
     setSelectedCarpoolId(carpoolId);
     
-    // No more switching to "request" tab, just stay on the current view
-    // and let the inline form handle the request
+    // If we're in the "summary" tab, switch to "find" tab to see the carpool list
+    // with the selected carpool expanded
+    setInnerTabValue("find");
   };
   
   // Calendar feature removed
@@ -365,7 +365,7 @@ export default function Home() {
               </Button>
             </div>
             
-            <Tabs defaultValue="find">
+            <Tabs value={innerTabValue} onValueChange={setInnerTabValue}>
               <div className="bg-gray-100 rounded-lg p-1.5 border shadow-sm mb-6">
                 <TabsList className="grid grid-cols-2 w-full h-full">
                   <TabsTrigger 
@@ -393,6 +393,7 @@ export default function Home() {
                 <CarpoolList 
                   partyGroupId={selectedPartyGroup.id}
                   onRequestSpot={handleRequestSpot}
+                  selectedCarpoolId={selectedCarpoolId}
                 />
               </TabsContent>
               
