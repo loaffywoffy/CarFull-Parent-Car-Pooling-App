@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Checkbox } from "@/components/ui/checkbox";
 import LocationMap from "@/components/location-map";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
@@ -275,10 +276,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
         // Hide the form
         setShowRequestForm(false);
 
-        // Show success message
+        // Show success message with direction info
+        const needsBoth = formData.needsPickup && formData.needsDropoff;
+        const directionText = needsBoth ? "round trip" : 
+                              (formData.needsPickup ? "to party" : "from party");
+        
         toast({
           title: "Request Submitted",
-          description: "Your carpool request has been submitted successfully.",
+          description: `Your ${directionText} ride request has been submitted successfully.`,
         });
 
         // Invalidate queries to refresh data
@@ -629,8 +634,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             <Checkbox 
                               id={`pickup-${carpool.id}`} 
                               checked={formData.needsPickup} 
-                              onCheckedChange={(checked) => 
-                                setFormData({...formData, needsPickup: !!checked})
+                              onCheckedChange={(checked: boolean) => 
+                                setFormData({...formData, needsPickup: checked})
                               }
                             />
                             <label 
@@ -647,8 +652,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             <Checkbox 
                               id={`dropoff-${carpool.id}`} 
                               checked={formData.needsDropoff}
-                              onCheckedChange={(checked) => 
-                                setFormData({...formData, needsDropoff: !!checked})
+                              onCheckedChange={(checked: boolean) => 
+                                setFormData({...formData, needsDropoff: checked})
                               }
                             />
                             <label 
