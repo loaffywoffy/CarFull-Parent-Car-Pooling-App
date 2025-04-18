@@ -9,27 +9,40 @@ let pool: Pool;
 
 const initializePool = async () => {
   if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL environment variable is not set");
+    console.error("DATABASE_URL environment variable is not set");
+    process.exit(1);
   }
 
-  pool = new Pool({ 
-    connectionString: process.env.DATABASE_URL,
-    connectionTimeoutMillis: 10000,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    retryDelay: 1000,
-    ssl: {
-      rejectUnauthorized: false
+  const maxRetries = 3;
+  let retryCount = 0;
+
+  while (retryCount < maxRetries) {
+    try {
+      pool = new Pool({ 
+        connectionString: process.env.DATABASE_URL,
+        connectionTimeoutMillis: 15000,
+        max: 5,
+        idleTimeoutMillis: 30000,
+        retryDelay: 2000,
+        ssl: {
+          rejectUnauthorized: false
+        }
+      });
+    
+      // Verify connection
+      await pool.connect();
+      console.log("Successfully connected to database");
+      return;
+    } catch (error) {
+      retryCount++;
+      console.error(`Database connection attempt ${retryCount} failed:`, error);
+      if (retryCount === maxRetries) {
+        console.error("Maximum retry attempts reached. Exiting.");
+        process.exit(1);
+      }
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
-  });
-  
-  try {
-    // Verify connection
-    await pool.connect();
-    console.log("Successfully connected to database");
-  } catch (error) {
-    console.error("Failed to connect to database:", error);
-    throw error;
   }
 };
 
