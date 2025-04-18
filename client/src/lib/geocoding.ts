@@ -38,10 +38,32 @@ export async function geocodeAddress(
   
   // If we're running in development, use mock data due to API rate limits
   try {
-    // For demo purposes, use deterministic coordinates
-    const deterministicCoords = generateDeterministicCoordinates(address, city);
-    geocodeCache[cacheKey] = deterministicCoords;
-    return deterministicCoords;
+    const encodedQuery = encodeURIComponent(query);
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=json&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'CarpoolApp/1.0'
+        }
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Geocoding failed: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.length === 0) {
+      throw new Error('Location not found');
+    }
+    
+    const [result] = data;
+    const coordinates: [number, number] = [parseFloat(result.lat), parseFloat(result.lon)];
+    
+    // Save to cache
+    geocodeCache[cacheKey] = coordinates;
+    return coordinates;
     
     // Real API implementation (commented out to prevent rate limiting issues)
     /*
