@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getCarpoolsByPartyGroupId } from "@/api/partyGroups";
+import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups";
 import { getCarpoolRequests } from "@/api/carpools";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { MapPin, Clock, Phone, Search, ArrowRight, ArrowLeft } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Carpool, CarpoolRequest } from "@shared/schema";
-import LocationMap from "@/components/location-map";
+import LocationMapWrapper from "@/components/location-map-wrapper";
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
@@ -20,6 +20,8 @@ interface CarpoolSummaryProps {
 export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEvents }: CarpoolSummaryProps) {
   const [carpoolRequests, setCarpoolRequests] = useState<Record<number, CarpoolRequest[]>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // Store geocoded coordinates for carpools
+  const [carpoolCoordinates, setCarpoolCoordinates] = useState<Record<number, [number, number]>>({});
   
   // Fetch carpools for this party group
   const { data: carpools, isLoading: isLoadingCarpools } = useQuery({
@@ -30,7 +32,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
   // Fetch party group details for geocoding
   const { data: partyGroup } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId],
-    queryFn: () => partyGroupId ? getCarpoolsByPartyGroupId(partyGroupId) : null,
+    queryFn: () => partyGroupId ? getPartyGroupById(partyGroupId) : null,
     enabled: !!partyGroupId,
   });
   
@@ -71,6 +73,34 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, [carpools]);
+  
+  // Geocode all carpool addresses
+  useEffect(() => {
+    if (!carpools || carpools.length === 0) return;
+    
+    const geocodeAddresses = async () => {
+      const newCoordinates: Record<number, [number, number]> = { ...carpoolCoordinates };
+      
+      for (const carpool of carpools) {
+        if (carpool.address && carpool.postcode && !carpoolCoordinates[carpool.id]) {
+          try {
+            const coords = await geocodeAddress(
+              carpool.address,
+              carpool.city || '',
+              carpool.postcode
+            );
+            newCoordinates[carpool.id] = coords;
+          } catch (error) {
+            console.error(`Error geocoding carpool ${carpool.id}:`, error);
+          }
+        }
+      }
+      
+      setCarpoolCoordinates(newCoordinates);
+    };
+    
+    geocodeAddresses();
+  }, [carpools, carpoolCoordinates]);
   
   // No carpools to display yet
   if (isLoadingCarpools) {
