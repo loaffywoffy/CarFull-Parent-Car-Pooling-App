@@ -501,21 +501,25 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Car size={16} className="text-gray-400" />
-                      <span>
+                    <div className="flex flex-col gap-1 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Car size={16} className="text-gray-400" />
                         {carpool.canPickup || carpool.canBoth ? (
-                          carpoolRequests?.length 
-                            ? `To event: ${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces available`
-                            : `To event: ${carpool.spacesAvailable} spaces available`
+                          <span>
+                            {carpoolRequests?.length 
+                              ? `To event: ${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces available`
+                              : `To event: ${carpool.spacesAvailable} spaces available`}
+                          </span>
                         ) : null}
-                        {carpool.canPickup && carpool.canDropoff ? " | " : ""}
-                        {carpool.canDropoff || carpool.canBoth ? (
-                          carpoolRequests?.length 
+                      </div>
+                      
+                      {(carpool.canDropoff || carpool.canBoth) && (
+                        <div className="flex items-center gap-2 ml-6">
+                          {carpoolRequests?.length 
                             ? `From event: ${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter(r => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces available`
-                            : `From event: ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces available`
-                        ) : null}
-                      </span>
+                            : `From event: ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces available`}
+                        </div>
+                      )}
                     </div>
 
                     {/* Display booked kids information */}
