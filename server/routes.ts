@@ -292,16 +292,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get current requests for this carpool to check available spaces
       const existingRequests = await storage.getCarpoolRequestsByCarpoolId(carpoolId);
       
-      // Check if there are still available spaces
-      if (existingRequests.length >= carpool.spacesAvailable) {
-        return res.status(400).json({ message: "No spaces available in this carpool" });
+      const { needsPickup, needsDropoff, needsBoth } = validationResult.data;
+      
+      // Count the existing requests by direction
+      const pickupRequests = existingRequests.filter(req => req.needsPickup || req.needsBoth).length;
+      const dropoffRequests = existingRequests.filter(req => req.needsDropoff || req.needsBoth).length;
+      
+      // Check if there are spaces available based on the requested direction
+      let hasSpaceAvailable = true;
+      
+      if ((needsPickup || needsBoth) && (!carpool.canPickup && !carpool.canBoth)) {
+        // Request is for pickup, but carpool doesn't offer pickup
+        hasSpaceAvailable = false;
+      }
+      
+      if ((needsDropoff || needsBoth) && (!carpool.canDropoff && !carpool.canBoth)) {
+        // Request is for dropoff, but carpool doesn't offer dropoff
+        hasSpaceAvailable = false;
+      }
+      
+      // For outbound (to party), use spacesAvailable field
+      const outboundSpaces = carpool.spacesAvailable;
+      // For return (from party), use returnSpacesAvailable if present, otherwise spacesAvailable
+      const returnSpaces = carpool.returnSpacesAvailable || carpool.spacesAvailable;
+      
+      // Check for available spaces in each requested direction
+      if ((needsPickup || needsBoth) && (pickupRequests >= outboundSpaces)) {
+        hasSpaceAvailable = false;
+      }
+      
+      if ((needsDropoff || needsBoth) && (dropoffRequests >= returnSpaces)) {
+        hasSpaceAvailable = false;
+      }
+      
+      if (!hasSpaceAvailable) {
+        return res.status(400).json({ message: "No spaces available for the requested direction(s)" });
       }
       
       const newRequest = await storage.createCarpoolRequest(validationResult.data);
       
       // Log for debugging
       console.log(`[INFO] New request created for carpool ${carpoolId}. Total requests: ${existingRequests.length + 1}`);
-      console.log(`[INFO] Available spaces: ${carpool.spacesAvailable - (existingRequests.length + 1)}`);
+      console.log(`[INFO] Direction: ${needsBoth ? "Both ways" : (needsPickup ? "To party" : "From party")}`);
+      console.log(`[INFO] Remaining spaces - Outbound: ${outboundSpaces - (pickupRequests + (needsPickup || needsBoth ? 1 : 0))}, Return: ${returnSpaces - (dropoffRequests + (needsDropoff || needsBoth ? 1 : 0))}`);
       
       res.status(201).json(newRequest);
     } catch (error) {
