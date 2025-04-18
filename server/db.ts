@@ -33,6 +33,21 @@ const initializePool = async () => {
         }
       });
     
+
+
+// Run migrations
+import { migrate } from 'drizzle-orm/neon-serverless/migrator';
+
+// After db initialization, run migrations
+try {
+  await migrate(db, { migrationsFolder: './migrations' });
+  console.log("Migrations completed successfully");
+} catch (error) {
+  console.error("Error running migrations:", error);
+  process.exit(1);
+}
+
+
       // Verify connection
       await pool.connect();
       console.log("Successfully connected to database");
