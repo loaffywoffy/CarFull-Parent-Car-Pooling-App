@@ -38,6 +38,7 @@ export default function Home() {
   const [selectedCarpoolId, setSelectedCarpoolId] = useState<number | null>(null);
   const [selectedPartyGroup, setSelectedPartyGroup] = useState<PartyGroup | null>(null);
   const [joinPartyId, setJoinPartyId] = useState<string>("");
+  const [innerTabValue, setInnerTabValue] = useState<string>("find");
   const [createdGroupIds, setCreatedGroupIds] = useState<number[]>([]);
 
   // Query to fetch all party groups
