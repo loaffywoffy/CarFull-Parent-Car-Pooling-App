@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import DeleteCarpoolRequestButton from "@/components/delete-carpool-request-button";
+import DeleteCarpoolButton from "@/components/delete-carpool-button";
 
 // Memoized stable location map component that won't re-render on parent state changes
 const StableLocationMap = memo(({ 
@@ -498,6 +499,21 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                  (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)
                  ? "No Spots Available" : "Request Spot"}
               </Button>
+              
+              {/* Delete Carpool Button */}
+              <div onClick={(e) => e.stopPropagation()} className="ml-1">
+                <DeleteCarpoolButton 
+                  carpool={carpool} 
+                  partyGroupId={partyGroupId}
+                  variant="icon"
+                  onDelete={() => {
+                    // After successful deletion, refresh the carpools list
+                    queryClient.invalidateQueries({
+                      queryKey: ["/api/party-groups", partyGroupId, "carpools"]
+                    });
+                  }}
+                />
+              </div>
             </div>
           </div>
 
