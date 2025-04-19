@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home } from "lucide-react";
+import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home, AlertCircle, Timer } from "lucide-react";
 import { geocodeAddress, calculateDistance } from "@/lib/geocoding";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -556,52 +556,98 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         </div>
                         
                         <div className="pl-6 space-y-1 text-xs">
+                          {/* When the driver is departing from the venue */}
                           {carpool.returnDepartureTime && (
                             <div className="flex items-center gap-2 text-sm text-gray-700">
                               <Clock size={14} className="text-red-600" />
                               <span>
-                                <span className="font-medium">Collection time:</span> {carpool.returnDepartureTime} 
-                                {carpool.returnDropoffPreference === 'direct-home' 
-                                  ? ' (direct to your home)' 
-                                  : carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address' 
-                                  ? ` (to driver's address)` 
-                                  : ' (to meeting point)'}
+                                <span className="font-medium">
+                                  {partyGroup && partyGroup.endTime ? 'Departure from venue:' : 'Collection time:'}
+                                </span> {carpool.returnDepartureTime} 
+                                <span className="italic text-xs">
+                                  {carpool.returnDropoffPreference === 'direct-home' 
+                                    ? ' (driver will drop off at your home)' 
+                                    : carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address' 
+                                    ? ` (driver will drop off at their address)` 
+                                    : ' (driver will drop off at meeting point)'}
+                                </span>
                               </span>
                             </div>
                           )}
                           
-                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                          {/* When parents need to pick up their kids */}
+                          {partyGroup && partyGroup.endTime && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700 bg-amber-50 p-1.5 rounded border border-amber-100 mt-1">
+                              <AlertCircle size={14} className="text-amber-600" />
+                              <span>
+                                <span className="font-medium">Note:</span> Event ends at <span className="font-medium">{partyGroup.endTime}</span>
+                                {carpool.returnDepartureTime 
+                                  ? `. Driver leaves ${carpool.returnDepartureTime < partyGroup.endTime 
+                                      ? 'before' 
+                                      : carpool.returnDepartureTime > partyGroup.endTime 
+                                      ? 'after' 
+                                      : 'at'} official end time.`
+                                  : ` but no specific departure time was provided by the driver.`
+                                }
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Dropoff location details */}
+                          <div className="flex items-center gap-2 text-sm text-gray-700 mt-1">
                             <MapPin size={14} className="text-red-600" />
                             <span>
-                              <span className="font-medium">Dropoff:</span> {carpool.returnDropoffPreference === 'direct-home' ? 'At your home address' : 
-                              (carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address') ? `At driver's address` : 
+                              <span className="font-medium">Final dropoff:</span> {carpool.returnDropoffPreference === 'direct-home' ? 'At your home address' : 
+                              (carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address') ? `At driver's address (${carpool.address})` : 
                               carpool.returnDropoffPreference === 'pickup-point' || carpool.returnDropoffPreference === 'other-location' ? 'At designated meeting point' :
                               'At your home address'}
                             </span>
                           </div>
+                          
+                          {/* Estimated arrival time if available */}
+                          {carpool.returnDepartureTime && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                              <Timer size={14} className="text-gray-500" />
+                              <span>
+                                <span className="font-medium">Estimated arrival:</span> Will depend on traffic and number of dropoffs
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
 
-                    <div className="flex flex-col gap-1 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <Car size={16} className="text-gray-400" />
-                        {carpool.canPickup || carpool.canBoth ? (
-                          <span>
-                            {carpoolRequests?.length 
-                              ? `To event: ${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
-                              : `To event: ${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`}
-                          </span>
-                        ) : null}
+                    <div className="bg-gray-50 p-2 rounded-md border border-gray-100 mt-3">
+                      <div className="flex items-center gap-2 text-sm text-gray-800 font-medium mb-1">
+                        <Car size={16} className="text-gray-500" />
+                        <span>Available Spaces</span>
                       </div>
                       
-                      {(carpool.canDropoff || carpool.canBoth) && (
-                        <div className="flex items-center gap-2 ml-6">
-                          {carpoolRequests?.length 
-                            ? `From event: ${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
-                            : `From event: ${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`}
-                        </div>
-                      )}
+                      <div className="pl-6 space-y-2 text-sm">
+                        {/* To Event spaces */}
+                        {(carpool.canPickup || carpool.canBoth) && (
+                          <div className="flex items-center gap-2 text-gray-700">
+                            <ArrowRight size={14} className="text-green-600" />
+                            <span>
+                              <span className="font-medium">To event:</span> {carpoolRequests?.length 
+                                ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
+                                : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* From Event spaces */}
+                        {(carpool.canDropoff || carpool.canBoth) && (
+                          <div className="flex items-center gap-2 text-gray-700">
+                            <ArrowLeft size={14} className="text-red-600" />
+                            <span>
+                              <span className="font-medium">From event:</span> {carpoolRequests?.length 
+                                ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                                : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Display booked kids information */}
