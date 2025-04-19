@@ -39,7 +39,7 @@ interface CarpoolRequestFormProps {
 export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: CarpoolRequestFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Fetch the carpool details to determine available directions
   const { data: carpoolDetails } = useQuery({
     queryKey: ["/api/carpools", selectedCarpoolId],
@@ -62,7 +62,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       needsDropoff: false
     }
   });
-  
+
   // Set both checkboxes when carpool details load if it's a round-trip carpool
   useEffect(() => {
     if (carpoolDetails && carpoolDetails.canBoth) {
@@ -82,14 +82,14 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
     }
 
     setIsSubmitting(true);
-    
+
     try {
       // Update with the selected carpool ID
       values.carpoolId = selectedCarpoolId;
-      
+
       // Calculate needsBoth based on both directions being selected
       const needsBoth = values.needsPickup && values.needsDropoff;
-      
+
       // Create the carpool request with the correct direction flags
       await createCarpoolRequest({
         ...values,
@@ -98,15 +98,15 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
         needsPickup: needsBoth ? false : values.needsPickup,
         needsDropoff: needsBoth ? false : values.needsDropoff
       });
-      
+
       toast({
         title: "Success!",
         description: `Your ${needsBoth ? "round trip" : (values.needsPickup ? "to party" : "from party")} ride request has been submitted.`
       });
-      
+
       // Reset the form
       form.reset();
-      
+
       // Call onSuccess callback
       onSuccess();
     } catch (error) {
@@ -123,34 +123,36 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="parentName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Your Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Responsive layout */}
+          <FormField
+            control={form.control}
+            name="parentName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Your Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your name" {...field} className="w-full" /> {/* Added w-full */}
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="childName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Child's Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter child's name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="childName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Child's Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter child's name" {...field} className="w-full" /> {/* Added w-full */}
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
@@ -159,7 +161,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
             <FormItem>
               <FormLabel>Your Phone Number</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your phone number" {...field} />
+                <Input placeholder="Enter your phone number" {...field} className="w-full" /> {/* Added w-full */}
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -173,14 +175,14 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
             <FormItem>
               <FormLabel>Address</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your address" {...field} />
+                <Input placeholder="Enter your address" {...field} className="w-full" /> {/* Added w-full */}
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6"> {/* Improved gap */}
           <FormField
             control={form.control}
             name="city"
@@ -188,7 +190,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
               <FormItem>
                 <FormLabel>City</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your city" {...field} />
+                  <Input placeholder="Enter your city" {...field} className="w-full" /> {/* Added w-full */}
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -202,7 +204,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
               <FormItem>
                 <FormLabel>Postcode</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your postcode" {...field} />
+                  <Input placeholder="Enter your postcode" {...field} className="w-full" /> {/* Added w-full */}
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -217,7 +219,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
             <FormItem>
               <FormLabel>Special Requirements (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="Any special requirements or notes" {...field} />
+                <Input placeholder="Any special requirements or notes" {...field} className="w-full" /> {/* Added w-full */}
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -230,7 +232,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
             Please select which directions you need for this carpool
           </p>
 
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Responsive layout for checkboxes */}
             {(!carpoolDetails || carpoolDetails.canPickup || carpoolDetails.canBoth) && (
               <FormField
                 control={form.control}
@@ -238,8 +240,8 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                 render={({ field }) => (
                   <FormItem className="flex items-center space-x-2 space-y-0">
                     <FormControl>
-                      <Checkbox 
-                        checked={field.value} 
+                      <Checkbox
+                        checked={field.value}
                         onCheckedChange={field.onChange}
                         disabled={carpoolDetails && !carpoolDetails.canPickup && !carpoolDetails.canBoth}
                       />
@@ -259,8 +261,8 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                 render={({ field }) => (
                   <FormItem className="flex items-center space-x-2 space-y-0">
                     <FormControl>
-                      <Checkbox 
-                        checked={field.value} 
+                      <Checkbox
+                        checked={field.value}
                         onCheckedChange={field.onChange}
                         disabled={carpoolDetails && !carpoolDetails.canDropoff && !carpoolDetails.canBoth}
                       />
