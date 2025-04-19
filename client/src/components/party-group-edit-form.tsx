@@ -12,7 +12,17 @@ import { useMutation } from "@tanstack/react-query";
 import { updatePartyGroup } from "@/api/partyGroups";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 interface PartyGroupEditFormProps {
   partyGroup: PartyGroup;
@@ -62,6 +72,8 @@ type PartyGroupFormValues = z.infer<typeof partyGroupFormSchema>;
 
 export default function PartyGroupEditForm({ partyGroup, onSuccess, onCancel }: PartyGroupEditFormProps) {
   const { toast } = useToast();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingValues, setPendingValues] = useState<PartyGroupFormValues | null>(null);
 
   const form = useForm<PartyGroupFormValues>({
     resolver: zodResolver(partyGroupFormSchema),
@@ -115,7 +127,16 @@ export default function PartyGroupEditForm({ partyGroup, onSuccess, onCancel }: 
   });
 
   const onSubmit = (values: PartyGroupFormValues) => {
-    partyGroupMutation.mutate(values);
+    // Store values and show confirmation dialog instead of immediately submitting
+    setPendingValues(values);
+    setShowConfirmDialog(true);
+  };
+  
+  const handleConfirmEdit = () => {
+    if (pendingValues) {
+      partyGroupMutation.mutate(pendingValues);
+    }
+    setShowConfirmDialog(false);
   };
 
   return (
@@ -545,6 +566,32 @@ export default function PartyGroupEditForm({ partyGroup, onSuccess, onCancel }: 
           </div>
         </form>
       </Form>
+      
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              Confirm Event Updates
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You're about to update event details. These changes may affect existing carpool arrangements.
+              <br /><br />
+              Are you sure you want to proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmEdit}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Yes, Update Event
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
