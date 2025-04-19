@@ -397,12 +397,7 @@ export default function PartyGroupDetails({
           </CardContent>
         </TabsContent>
 
-        <TabsContent value="map" className="pt-0 pb-0 px-0 m-0">
-          <div className="px-6 py-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Party Location</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                View the party location on the map to help plan your journey.
+        
               </p>
 
               {isMapLoading && (

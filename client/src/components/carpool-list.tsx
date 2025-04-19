@@ -563,33 +563,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium text-sm text-gray-700">Location</h4>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setMapVisible(!mapVisible)}
-                      className="h-8 px-2 text-xs"
-                    >
-                      {mapVisible ? "Hide Map" : "Show Map"}
-                    </Button>
-                  </div>
-
-                  {mapVisible && carpoolCoordinates && partyCoordinates && (
-                    <div className="rounded-md border border-gray-200 overflow-hidden mt-2">
-                      {/* Use React.memo-ed component to prevent re-renders */}
-                      <StableLocationMap
-                        partyName={partyGroup?.name || "Event"}
-                        partyCoordinates={partyCoordinates}
-                        carpoolName={carpool.parentName}
-                        carpoolCoordinates={carpoolCoordinates}
-                        height="200px"
-                        initialZoom={11}
-                      />
-                    </div>
-                  )}
-                </div>
+                
               </div>
 
               {showRequestForm && (

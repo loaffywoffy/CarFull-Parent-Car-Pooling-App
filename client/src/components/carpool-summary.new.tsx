@@ -424,21 +424,7 @@ export default function CarpoolSummaryNew({ partyGroupId, onRequestSpot, onBackT
                             
                             <Separator />
                             
-                            {/* Map */}
-                            <div>
-                              <h4 className="font-medium mb-2">Destination</h4>
-                              <LocationMapWrapper
-                                id={carpool.id}
-                                parentName={carpool.parentName}
-                                address={carpool.address}
-                                city={carpool.city}
-                                postcode={carpool.postcode}
-                                height="200px"
-                                type="dropoff"
-                              />
-                            </div>
                             
-                            <Separator />
                             
                             {/* Book a spot button */}
                             <Button 
