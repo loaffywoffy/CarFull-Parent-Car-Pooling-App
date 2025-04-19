@@ -596,7 +596,6 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                 <span className="font-medium">
                                   Collection time:
                                 </span> {carpool.returnCollectionTime || carpool.returnDepartureTime || (partyGroup && partyGroup.endTime)}
-                                {carpool.id === 33 ? ` (ID 33, canDropoff: ${carpool.canDropoff})` : ''}
                               </span>
                             </div>
                           )}
