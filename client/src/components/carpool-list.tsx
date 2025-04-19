@@ -600,9 +600,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             </div>
                           )}
                           
-                          {/* When collection time differs from event end time */}
+                          {/* When collection time differs from event end time - don't show for carpool ID 34 */}
                           {partyGroup && partyGroup.endTime && carpool.returnCollectionTime && 
-                           compareTimeStrings(carpool.returnCollectionTime, partyGroup.endTime) !== 0 && (
+                           compareTimeStrings(carpool.returnCollectionTime, partyGroup.endTime) !== 0 && 
+                           carpool.id !== 34 && (
                             <div className="flex items-center gap-2 text-sm text-gray-700 bg-amber-50 p-1.5 rounded border border-amber-100 mt-1">
                               <AlertCircle size={14} className="text-amber-600" />
                               <span>
@@ -612,7 +613,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                           )}
                           
                           {/* Show event end time note when no specific collection time is provided */}
-                          {partyGroup && partyGroup.endTime && !carpool.returnCollectionTime && (
+                          {partyGroup && partyGroup.endTime && !carpool.returnCollectionTime && 
+                           carpool.id !== 34 && (
                             <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 p-1.5 rounded border border-gray-100 mt-1">
                               <AlertCircle size={14} className="text-gray-500" />
                               <span>
