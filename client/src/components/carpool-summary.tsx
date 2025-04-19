@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Clock, Phone, ArrowRight, ArrowLeft } from "lucide-react";
+import { MapPin, Clock, Phone, ArrowRight, ArrowLeft, User } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Carpool, CarpoolRequest } from "@shared/schema";
 import LocationMapWrapper from "@/components/location-map-wrapper";
@@ -221,6 +221,83 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                     <span className="font-medium w-20">Address:</span>
                                     <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
                                   </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium w-20">Child:</span>
+                                    <span>{carpool.childName}</span>
+                                  </div>
+                                  {carpool.emergencyContactName && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium w-20">Emergency:</span>
+                                      <span>{carpool.emergencyContactName} ({carpool.emergencyContactPhone})</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <Separator />
+                              
+                              {/* Ride Details */}
+                              <div>
+                                <h4 className="font-medium mb-2">Ride Details</h4>
+                                <div className="bg-gray-50 rounded-md p-3">
+                                  <div className="space-y-2 text-sm">
+                                    {carpool.canPickup || carpool.canBoth ? (
+                                      <div>
+                                        <h5 className="text-sm font-medium flex items-center">
+                                          <ArrowRight className="h-4 w-4 mr-2 text-green-500" /> 
+                                          To Party
+                                        </h5>
+                                        <div className="ml-6 mt-1 space-y-1">
+                                          <div className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3 text-gray-400" />
+                                            <span>Pickup time: {carpool.outboundDepartureTime || "Not specified"}</span>
+                                          </div>
+                                          <div className="flex items-center gap-1">
+                                            <User className="h-3 w-3 text-gray-400" />
+                                            <span>Spaces: {carpool.spacesAvailable || 0} available</span>
+                                          </div>
+                                          {carpool.outboundPickupLocation && (
+                                            <div className="flex items-center gap-1">
+                                              <MapPin className="h-3 w-3 text-gray-400" />
+                                              <span>Pickup location: {carpool.outboundPickupLocation}, {carpool.outboundPickupLocationCity}, {carpool.outboundPickupLocationPostcode}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ) : null}
+                                    
+                                    {carpool.canDropoff || carpool.canBoth ? (
+                                      <div className="mt-2">
+                                        <h5 className="text-sm font-medium flex items-center">
+                                          <ArrowLeft className="h-4 w-4 mr-2 text-red-500" /> 
+                                          From Party
+                                        </h5>
+                                        <div className="ml-6 mt-1 space-y-1">
+                                          <div className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3 text-gray-400" />
+                                            <span>Return time: {carpool.returnCollectionTime || "Not specified"}</span>
+                                          </div>
+                                          <div className="flex items-center gap-1">
+                                            <User className="h-3 w-3 text-gray-400" />
+                                            <span>Spaces: {carpool.returnSpacesAvailable || 0} available</span>
+                                          </div>
+                                          {carpool.returnPickupLocation && (
+                                            <div className="flex items-center gap-1">
+                                              <MapPin className="h-3 w-3 text-gray-400" />
+                                              <span>Pickup location: {carpool.returnPickupLocation}, {carpool.returnPickupLocationCity}, {carpool.returnPickupLocationPostcode}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ) : null}
+                                    
+                                    {carpool.additionalNotes && (
+                                      <div className="mt-2">
+                                        <h5 className="text-sm font-medium">Additional Notes</h5>
+                                        <p className="text-xs text-gray-600 mt-1">{carpool.additionalNotes}</p>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                               
@@ -228,7 +305,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                               
                               {/* Map Section */}
                               <div>
-                                <h4 className="font-medium mb-2">Pick-up Location</h4>
+                                <h4 className="font-medium mb-2">Location Map</h4>
                                 <LocationMapWrapper 
                                   id={carpool.id}
                                   parentName={carpool.parentName}
@@ -236,7 +313,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   city={carpool.city}
                                   postcode={carpool.postcode}
                                   height="250px"
-                                  type="pickup"
+                                  type={carpool.canPickup || carpool.canBoth ? "pickup" : "dropoff"}
                                 />
                               </div>
                               
@@ -402,6 +479,58 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                     <span className="font-medium w-20">Address:</span>
                                     <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
                                   </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium w-20">Child:</span>
+                                    <span>{carpool.childName}</span>
+                                  </div>
+                                  {carpool.emergencyContactName && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium w-20">Emergency:</span>
+                                      <span>{carpool.emergencyContactName} ({carpool.emergencyContactPhone})</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <Separator />
+                              
+                              {/* Ride Details */}
+                              <div>
+                                <h4 className="font-medium mb-2">Ride Details</h4>
+                                <div className="bg-gray-50 rounded-md p-3">
+                                  <div className="space-y-2 text-sm">
+                                    {carpool.canDropoff || carpool.canBoth ? (
+                                      <div className="mt-2">
+                                        <h5 className="text-sm font-medium flex items-center">
+                                          <ArrowLeft className="h-4 w-4 mr-2 text-red-500" /> 
+                                          From Party
+                                        </h5>
+                                        <div className="ml-6 mt-1 space-y-1">
+                                          <div className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3 text-gray-400" />
+                                            <span>Return time: {carpool.returnCollectionTime || "Not specified"}</span>
+                                          </div>
+                                          <div className="flex items-center gap-1">
+                                            <User className="h-3 w-3 text-gray-400" />
+                                            <span>Spaces: {carpool.returnSpacesAvailable || 0} available</span>
+                                          </div>
+                                          {carpool.returnPickupLocation && (
+                                            <div className="flex items-center gap-1">
+                                              <MapPin className="h-3 w-3 text-gray-400" />
+                                              <span>Pickup location: {carpool.returnPickupLocation}, {carpool.returnPickupLocationCity}, {carpool.returnPickupLocationPostcode}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ) : null}
+                                    
+                                    {carpool.additionalNotes && (
+                                      <div className="mt-2">
+                                        <h5 className="text-sm font-medium">Additional Notes</h5>
+                                        <p className="text-xs text-gray-600 mt-1">{carpool.additionalNotes}</p>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                               
@@ -409,7 +538,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                               
                               {/* Map Section */}
                               <div>
-                                <h4 className="font-medium mb-2">Drop-off Location</h4>
+                                <h4 className="font-medium mb-2">Location Map</h4>
                                 <LocationMapWrapper 
                                   id={carpool.id}
                                   parentName={carpool.parentName}
