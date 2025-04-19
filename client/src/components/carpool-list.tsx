@@ -503,31 +503,83 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
 
                   <h4 className="font-medium text-sm text-gray-700 mt-4">Ride Details</h4>
 
-                  <div className="space-y-2">
-                    {carpool.pickupTime && (carpool.canPickup || carpool.canBoth) && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock size={16} className="text-gray-400" />
-                        <span>Pickup time: {carpool.pickupTime}</span>
-                      </div>
-                    )}
-
+                  <div className="space-y-3">
+                    {/* To Event Information (Outbound Journey) */}
                     {(carpool.canPickup || carpool.canBoth) && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <ArrowRight size={16} className="text-gray-400" />
-                        <span>To event: {carpool.outboundDropoffPreference === 'direct-home' || carpool.outboundDropoffPreference === 'venue' ? 'Drops directly at venue' : 
-                          (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') ? `Drop off at driver's address` : 
-                          carpool.outboundDropoffPreference === 'pickup-point' || carpool.outboundDropoffPreference === 'other-location' ? 'Designated pickup point' :
-                          'Direct to venue'}</span>
+                      <div className="bg-green-50 p-2 rounded-md border border-green-100">
+                        <div className="flex items-center gap-2 text-sm text-green-800 font-medium mb-1">
+                          <ArrowRight size={16} className="text-green-600" />
+                          <span>To Event (Outbound Journey)</span>
+                        </div>
+                        
+                        <div className="pl-6 space-y-1 text-xs">
+                          {carpool.outboundDepartureTime && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                              <Clock size={14} className="text-green-600" />
+                              <span>
+                                <span className="font-medium">Target departure:</span> {carpool.outboundDepartureTime} 
+                                {carpool.outboundDropoffPreference === 'direct-home' || carpool.outboundDropoffPreference === 'venue' 
+                                  ? ' (direct to venue)' 
+                                  : carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address' 
+                                  ? ` (from driver's address)` 
+                                  : ' (from meeting point)'}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {carpool.pickupTime && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                              <Clock size={14} className="text-green-600" />
+                              <span><span className="font-medium">Pickup time:</span> {carpool.pickupTime}</span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <MapPin size={14} className="text-green-600" />
+                            <span>
+                              <span className="font-medium">Dropoff:</span> {carpool.outboundDropoffPreference === 'direct-home' || carpool.outboundDropoffPreference === 'venue' ? 'Directly at venue' : 
+                              (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') ? `At driver's address` : 
+                              carpool.outboundDropoffPreference === 'pickup-point' || carpool.outboundDropoffPreference === 'other-location' ? 'At designated meeting point' :
+                              'Directly at venue'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     )}
-
+                    
+                    {/* From Event Information (Return Journey) */}
                     {(carpool.canDropoff || carpool.canBoth) && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <ArrowLeft size={16} className="text-gray-400" />
-                        <span>From event: {carpool.returnDropoffPreference === 'direct-home' ? 'Drops at child\'s home' : 
-                          (carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address') ? `Drop off at driver's address` : 
-                          carpool.returnDropoffPreference === 'pickup-point' || carpool.returnDropoffPreference === 'other-location' ? 'Designated pickup point' :
-                          'Drops at child\'s home'}</span>
+                      <div className="bg-red-50 p-2 rounded-md border border-red-100">
+                        <div className="flex items-center gap-2 text-sm text-red-800 font-medium mb-1">
+                          <ArrowLeft size={16} className="text-red-600" />
+                          <span>From Event (Return Journey)</span>
+                        </div>
+                        
+                        <div className="pl-6 space-y-1 text-xs">
+                          {carpool.returnDepartureTime && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                              <Clock size={14} className="text-red-600" />
+                              <span>
+                                <span className="font-medium">Collection time:</span> {carpool.returnDepartureTime} 
+                                {carpool.returnDropoffPreference === 'direct-home' 
+                                  ? ' (direct to your home)' 
+                                  : carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address' 
+                                  ? ` (to driver's address)` 
+                                  : ' (to meeting point)'}
+                              </span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <MapPin size={14} className="text-red-600" />
+                            <span>
+                              <span className="font-medium">Dropoff:</span> {carpool.returnDropoffPreference === 'direct-home' ? 'At your home address' : 
+                              (carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address') ? `At driver's address` : 
+                              carpool.returnDropoffPreference === 'pickup-point' || carpool.returnDropoffPreference === 'other-location' ? 'At designated meeting point' :
+                              'At your home address'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     )}
 
