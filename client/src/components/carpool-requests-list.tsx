@@ -78,13 +78,16 @@ export default function CarpoolRequestsList({ carpoolId }: CarpoolRequestsListPr
             {pickupPassengers.map((request: CarpoolRequest) => (
               <div key={`pickup-${request.id}`} className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
                 <p className="text-sm font-medium">{request.childName} <span className="font-normal text-gray-500">(Child)</span></p>
-                <p className="text-xs text-gray-600">Parent: {request.parentName}</p>
-                <p className="text-xs text-gray-600">
-                  Address: {request.address}{request.city ? `, ${request.city}` : ''}{request.postcode ? ` ${request.postcode}` : ''}
-                </p>
-                <p className="text-xs text-gray-600">Contact: {request.phoneNumber}</p>
+                <div className="mt-2 bg-white p-2 rounded border border-gray-100">
+                  <h4 className="text-xs font-semibold text-gray-700 mb-1">Parent Details</h4>
+                  <p className="text-xs text-gray-600"><span className="font-medium">Name:</span> {request.parentName}</p>
+                  <p className="text-xs text-gray-600"><span className="font-medium">Phone:</span> {request.phoneNumber}</p>
+                  <p className="text-xs text-gray-600">
+                    <span className="font-medium">Address:</span> {request.address}{request.city ? `, ${request.city}` : ''}{request.postcode ? ` ${request.postcode}` : ''}
+                  </p>
+                </div>
                 {request.specialRequirements && (
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-gray-600 mt-2">
                     <span className="font-medium">Special Requirements:</span> {request.specialRequirements}
                   </p>
                 )}
@@ -102,13 +105,16 @@ export default function CarpoolRequestsList({ carpoolId }: CarpoolRequestsListPr
             {dropoffPassengers.map((request: CarpoolRequest) => (
               <div key={`dropoff-${request.id}`} className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
                 <p className="text-sm font-medium">{request.childName} <span className="font-normal text-gray-500">(Child)</span></p>
-                <p className="text-xs text-gray-600">Parent: {request.parentName}</p>
-                <p className="text-xs text-gray-600">
-                  Address: {request.address}{request.city ? `, ${request.city}` : ''}{request.postcode ? ` ${request.postcode}` : ''}
-                </p>
-                <p className="text-xs text-gray-600">Contact: {request.phoneNumber}</p>
+                <div className="mt-2 bg-white p-2 rounded border border-gray-100">
+                  <h4 className="text-xs font-semibold text-gray-700 mb-1">Parent Details</h4>
+                  <p className="text-xs text-gray-600"><span className="font-medium">Name:</span> {request.parentName}</p>
+                  <p className="text-xs text-gray-600"><span className="font-medium">Phone:</span> {request.phoneNumber}</p>
+                  <p className="text-xs text-gray-600">
+                    <span className="font-medium">Address:</span> {request.address}{request.city ? `, ${request.city}` : ''}{request.postcode ? ` ${request.postcode}` : ''}
+                  </p>
+                </div>
                 {request.specialRequirements && (
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-gray-600 mt-2">
                     <span className="font-medium">Special Requirements:</span> {request.specialRequirements}
                   </p>
                 )}

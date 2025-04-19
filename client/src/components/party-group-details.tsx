@@ -224,13 +224,13 @@ export default function PartyGroupDetails({
                     <div className="flex items-center gap-2 mb-3">
                       <Input 
                         readOnly 
-                        value={`https://${window.location.hostname}?partyId=${partyGroup.id}`} 
+                        value={`https://carpool.replit.app?partyId=${partyGroup.id}`} 
                         className="font-mono text-xs bg-gray-50" 
                       />
                       <Button 
                         variant="outline" 
                         onClick={() => {
-                          navigator.clipboard.writeText(`https://${window.location.hostname}?partyId=${partyGroup.id}`);
+                          navigator.clipboard.writeText(`https://carpool.replit.app?partyId=${partyGroup.id}`);
                           setCopySuccess({ ...copySuccess, link: true });
                           setTimeout(() => setCopySuccess(prev => ({ ...prev, link: false })), 2000);
                         }}

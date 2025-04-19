@@ -283,7 +283,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                       <div className="ml-6 mt-1 space-y-1">
                                         <div className="flex items-center gap-1">
                                           <Clock className="h-3 w-3 text-gray-400" />
-                                          <span>Pickup time: {carpool.outboundDepartureTime || "Not specified"}</span>
+                                          <span>Target departure time: {carpool.outboundDepartureTime || "Not specified"}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                           <User className="h-3 w-3 text-gray-400" />
@@ -451,7 +451,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                         <div className="mt-3 text-sm text-gray-600 space-y-1">
                           <div className="flex items-center gap-2">
                             <Clock className="h-3 w-3 text-gray-400" />
-                            <span>Return time: {carpool.returnCollectionTime || "Not specified"}</span>
+                            <span>Collection time: {carpool.returnCollectionTime || "Not specified"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <MapPin className="h-3 w-3 text-gray-400" />
@@ -563,7 +563,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                       <div className="ml-6 mt-1 space-y-1">
                                         <div className="flex items-center gap-1">
                                           <Clock className="h-3 w-3 text-gray-400" />
-                                          <span>Pickup time: {carpool.outboundDepartureTime || "Not specified"}</span>
+                                          <span>Target departure time: {carpool.outboundDepartureTime || "Not specified"}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                           <User className="h-3 w-3 text-gray-400" />
