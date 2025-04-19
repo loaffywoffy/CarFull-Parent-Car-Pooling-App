@@ -206,12 +206,6 @@ export default function PartyGroupDetails({
               <span>Map</span>
             </div>
           </TabsTrigger>
-          <TabsTrigger value="carpools" className="data-[state=active]:bg-primary-50">
-            <div className="flex items-center gap-1">
-              <CarIcon className="h-4 w-4" />
-              <span>Carpool Summary</span>
-            </div>
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="details" className="pt-2 pb-0 px-0 m-0">
@@ -422,11 +416,7 @@ export default function PartyGroupDetails({
           </div>
         </TabsContent>
 
-        <TabsContent value="carpools" className="pt-0 pb-0 px-0 m-0">
-          <div className="px-6 py-4">
-            <CarpoolSummary partyGroupId={partyGroup.id} />
-          </div>
-        </TabsContent>
+        
       </Tabs>
 
       <CardFooter className="bg-gray-50 py-4 flex justify-end space-x-3">
