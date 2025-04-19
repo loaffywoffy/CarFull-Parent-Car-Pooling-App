@@ -23,6 +23,7 @@ import LocationMap from "@/components/location-map";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import DeleteCarpoolRequestButton from "@/components/delete-carpool-request-button";
 
 // Memoized stable location map component that won't re-render on parent state changes
 const StableLocationMap = memo(({ 
@@ -712,46 +713,64 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         <ul className="space-y-1">
                           {carpoolRequests.map((request: any) => (
                             <li key={request.id} className="text-xs text-gray-600 pb-2 mb-2 border-b border-gray-100 last:border-b-0 last:mb-0 last:pb-0">
-                              <div className="flex items-center">
-                                <Users size={12} className="text-gray-400 mr-1" />
-                                <span className="font-medium">{request.childName}</span>
-                                <span className="text-gray-400 mx-1">•</span>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <Users size={12} className="text-gray-400 mr-1" />
+                                  <span className="font-medium">{request.childName}</span>
+                                  <span className="text-gray-400 mx-1">•</span>
+                                  
+                                  {request.needsPickup && request.needsDropoff ? (
+                                    <span className="flex items-center">
+                                      <ArrowRight size={12} className="text-green-500 mr-1" />
+                                      <ArrowLeft size={12} className="text-red-500 mr-1" />
+                                      <span>Both ways</span>
+                                    </span>
+                                  ) : request.needsPickup ? (
+                                    <span className="flex items-center">
+                                      <ArrowRight size={12} className="text-green-500 mr-1" />
+                                      <span>To event</span>
+                                    </span>
+                                  ) : request.needsDropoff ? (
+                                    <span className="flex items-center">
+                                      <ArrowLeft size={12} className="text-red-500 mr-1" />
+                                      <span>From event</span>
+                                    </span>
+                                  ) : null}
+                                  {request.specialRequirements && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="ml-1 inline-flex items-center text-amber-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                              <circle cx="12" cy="12" r="10"></circle>
+                                              <line x1="12" y1="8" x2="12" y2="12"></line>
+                                              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                            </svg>
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p className="max-w-xs text-xs">{request.specialRequirements}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
+                                </div>
                                 
-                                {request.needsPickup && request.needsDropoff ? (
-                                  <span className="flex items-center">
-                                    <ArrowRight size={12} className="text-green-500 mr-1" />
-                                    <ArrowLeft size={12} className="text-red-500 mr-1" />
-                                    <span>Both ways</span>
-                                  </span>
-                                ) : request.needsPickup ? (
-                                  <span className="flex items-center">
-                                    <ArrowRight size={12} className="text-green-500 mr-1" />
-                                    <span>To event</span>
-                                  </span>
-                                ) : request.needsDropoff ? (
-                                  <span className="flex items-center">
-                                    <ArrowLeft size={12} className="text-red-500 mr-1" />
-                                    <span>From event</span>
-                                  </span>
-                                ) : null}
-                                {request.specialRequirements && (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <span className="ml-1 inline-flex items-center text-amber-500">
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                          </svg>
-                                        </span>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p className="max-w-xs text-xs">{request.specialRequirements}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
+                                {/* Delete Button */}
+                                <DeleteCarpoolRequestButton 
+                                  request={request} 
+                                  onDelete={() => {
+                                    // Refresh carpoolRequests data after deletion
+                                    const timer = setTimeout(() => {
+                                      queryClient.invalidateQueries({
+                                        queryKey: [`/api/carpools/${carpool.id}/requests`]
+                                      });
+                                    }, 300);
+                                    return () => clearTimeout(timer);
+                                  }}
+                                  variant="icon"
+                                  className="text-red-400 hover:text-red-600 transition-colors"
+                                />
                               </div>
                               
                               {/* Parent information and address */}
