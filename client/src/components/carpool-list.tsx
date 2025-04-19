@@ -2,6 +2,7 @@ import { useState, useEffect, memo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups";
 import { getCarpoolRequests } from "@/api/carpools";
+import { CarpoolRequest } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -397,9 +398,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                     <Users className="h-3 w-3 mr-1" />
                     {carpool.canPickup || carpool.canBoth 
                       ? (carpoolRequests?.length 
-                          ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces`
-                          : `${carpool.spacesAvailable} spaces`) 
-                      : `${carpool.returnSpacesAvailable || 0} spaces`}
+                          ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
+                          : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`) 
+                      : (carpoolRequests?.length
+                          ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                          : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`)}
                   </Badge>
                   {sortBy === "distance" && (
                     <Badge className="bg-gray-100 text-gray-800">
@@ -430,9 +433,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                 disabled={
                   carpoolRequests?.length && (
                     (carpool.canPickup || carpool.canBoth) &&
-                    carpool.spacesAvailable <= carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length ||
+                    carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length ||
                     (carpool.canDropoff || carpool.canBoth) &&
-                    (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter(r => r.needsDropoff || r.needsBoth).length
+                    (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length
                   )
                 }
               >
@@ -509,8 +512,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         {carpool.canPickup || carpool.canBoth ? (
                           <span>
                             {carpoolRequests?.length 
-                              ? `To event: ${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces available`
-                              : `To event: ${carpool.spacesAvailable} spaces available`}
+                              ? `To event: ${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
+                              : `To event: ${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`}
                           </span>
                         ) : null}
                       </div>
@@ -518,8 +521,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                       {(carpool.canDropoff || carpool.canBoth) && (
                         <div className="flex items-center gap-2 ml-6">
                           {carpoolRequests?.length 
-                            ? `From event: ${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter(r => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces available`
-                            : `From event: ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces available`}
+                            ? `From event: ${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter(r => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                            : `From event: ${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`}
                         </div>
                       )}
                     </div>
