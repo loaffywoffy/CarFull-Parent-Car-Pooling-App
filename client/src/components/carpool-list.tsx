@@ -616,14 +616,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             <div className="flex items-center gap-2 text-sm text-gray-700 bg-amber-50 p-1.5 rounded border border-amber-100 mt-1">
                               <AlertCircle size={14} className="text-amber-600" />
                               <span>
-                                <span className="font-medium">Note:</span> Event ends at <span className="font-medium">{partyGroup.endTime}</span>
+                                <span className="font-medium">Note:</span> While the event ends at <span className="font-medium">{partyGroup.endTime}</span>
                                 {carpool.returnDepartureTime 
-                                  ? `. Driver leaves ${compareTimeStrings(carpool.returnDepartureTime, partyGroup.endTime) < 0 
-                                      ? 'before' 
+                                  ? `, this carpool offer is for ${compareTimeStrings(carpool.returnDepartureTime, partyGroup.endTime) < 0 
+                                      ? 'an earlier departure at ' 
                                       : compareTimeStrings(carpool.returnDepartureTime, partyGroup.endTime) > 0 
-                                      ? 'after' 
-                                      : 'at'} official end time.`
-                                  : ` but no specific departure time was provided by the driver.`
+                                      ? 'a later departure at ' 
+                                      : ''}<span className="font-medium">${carpool.returnDepartureTime}</span>`
+                                  : `, the driver hasn't specified their departure time`
                                 }
                               </span>
                             </div>
