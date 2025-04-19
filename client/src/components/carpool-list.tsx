@@ -582,9 +582,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                               <span>
                                 <span className="font-medium">Note:</span> Event ends at <span className="font-medium">{partyGroup.endTime}</span>
                                 {carpool.returnDepartureTime 
-                                  ? `. Driver leaves ${carpool.returnDepartureTime < partyGroup.endTime 
+                                  ? `. Driver leaves ${compareTimeStrings(carpool.returnDepartureTime, partyGroup.endTime) < 0 
                                       ? 'before' 
-                                      : carpool.returnDepartureTime > partyGroup.endTime 
+                                      : compareTimeStrings(carpool.returnDepartureTime, partyGroup.endTime) > 0 
                                       ? 'after' 
                                       : 'at'} official end time.`
                                   : ` but no specific departure time was provided by the driver.`
