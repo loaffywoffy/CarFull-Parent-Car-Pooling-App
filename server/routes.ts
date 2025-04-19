@@ -342,6 +342,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create carpool request" });
     }
   });
+  
+  // Delete carpool request
+  app.delete("/api/carpool-requests/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid carpool request ID" });
+      }
+      
+      const success = await storage.deleteCarpoolRequest(id);
+      if (success) {
+        res.status(204).send();
+      } else {
+        res.status(500).json({ message: "Failed to delete carpool request" });
+      }
+    } catch (error) {
+      console.error("Error deleting carpool request:", error);
+      res.status(500).json({ message: "Failed to delete carpool request" });
+    }
+  });
 
   // API routes for calendar events
   app.get("/api/carpools/:id/calendar-events", async (req, res) => {

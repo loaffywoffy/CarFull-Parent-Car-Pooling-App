@@ -43,6 +43,7 @@ export interface IStorage {
   // Carpool request operations
   createCarpoolRequest(request: InsertCarpoolRequest): Promise<CarpoolRequest>;
   getCarpoolRequestsByCarpoolId(carpoolId: number): Promise<CarpoolRequest[]>;
+  deleteCarpoolRequest(id: number): Promise<boolean>;
   
   // Calendar event operations
   createCalendarEvent(event: InsertCalendarEvent): Promise<CalendarEvent>;
@@ -331,6 +332,19 @@ export class DatabaseStorage implements IStorage {
   
   async getCarpoolRequestsByCarpoolId(carpoolId: number): Promise<CarpoolRequest[]> {
     return db.select().from(carpoolRequests).where(eq(carpoolRequests.carpoolId, carpoolId));
+  }
+  
+  async deleteCarpoolRequest(id: number): Promise<boolean> {
+    try {
+      const [deleted] = await db.delete(carpoolRequests)
+        .where(eq(carpoolRequests.id, id))
+        .returning();
+      
+      return !!deleted;
+    } catch (error) {
+      console.error("Error deleting carpool request:", error);
+      return false;
+    }
   }
   
   // Calendar event methods
