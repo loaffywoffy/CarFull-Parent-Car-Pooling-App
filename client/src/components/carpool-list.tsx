@@ -577,6 +577,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <h5 className="font-medium text-sm mb-2">Your Details</h5>
+                      
                       <div className="grid grid-cols-2 gap-3 mb-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
@@ -596,45 +597,49 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         </div>
                       </div>
 
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                      <Input 
-                        placeholder="Phone number" 
-                        className="mb-4"
-                        value={formData.phoneNumber}
-                        onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
-                      />
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <Input 
+                          placeholder="Phone number" 
+                          value={formData.phoneNumber}
+                          onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                        />
+                      </div>
 
                       <h5 className="font-medium text-sm mb-2">Your Address</h5>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
-                      <Input 
-                        placeholder="Your address" 
-                        className="mb-3"
-                        value={formData.address}
-                        onChange={(e) => setFormData({...formData, address: e.target.value})}
-                      />
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+                          <Input 
+                            placeholder="Your address" 
+                            value={formData.address}
+                            onChange={(e) => setFormData({...formData, address: e.target.value})}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            <Input 
+                              placeholder="Your city" 
+                              value={formData.city}
+                              onChange={(e) => setFormData({...formData, city: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
+                            <Input 
+                              placeholder="Your postcode" 
+                              value={formData.postcode}
+                              onChange={(e) => setFormData({...formData, postcode: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <div>
-                      <div className="grid grid-cols-2 gap-3 mt-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                          <Input 
-                            placeholder="Your city" 
-                            value={formData.city}
-                            onChange={(e) => setFormData({...formData, city: e.target.value})}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
-                          <Input 
-                            placeholder="Your postcode" 
-                            value={formData.postcode}
-                            onChange={(e) => setFormData({...formData, postcode: e.target.value})}
-                          />
-                        </div>
-                      </div>
-
-                      <h5 className="font-medium text-sm mb-2 mt-4">Additional Information</h5>
+                      <h5 className="font-medium text-sm mb-2 md:mt-0 mt-4">Additional Information</h5>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Special Requirements</label>
                       <textarea 
                         placeholder="Any special requirements or notes"
