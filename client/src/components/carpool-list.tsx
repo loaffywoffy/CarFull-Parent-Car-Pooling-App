@@ -589,19 +589,27 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         
                         <div className="pl-6 space-y-1 text-xs">
                           {/* When the driver is departing from the venue */}
-                          {(carpool.returnDepartureTime || carpool.returnCollectionTime || (partyGroup && partyGroup.endTime)) && (
+                          {(carpool.returnDepartureTime || carpool.returnCollectionTime || (partyGroup && partyGroup.endTime && carpool.canDropoff)) && (
                             <div className="flex items-center gap-2 text-sm text-gray-700">
                               <Clock size={14} className="text-red-600" />
                               <span>
                                 <span className="font-medium">
                                   Collection time:
                                 </span> {carpool.returnCollectionTime || carpool.returnDepartureTime || (partyGroup && partyGroup.endTime)}
+                                {carpool.id === 33 ? ` (ID 33, canDropoff: ${carpool.canDropoff})` : ''}
                               </span>
                             </div>
                           )}
                           
-                          {/* Show event end time note when no specific collection time is provided - don't show for carpool ID 33 */}
-                          {partyGroup && partyGroup.endTime && !carpool.returnCollectionTime && !carpool.returnDepartureTime && carpool.id !== 33 && (
+                          {/* 
+                          IMPORTANT: Don't show any notes if one of these conditions is true:
+                          1. If we're using event end time as collection time directly (default case)
+                          2. If returnCollectionTime equals event end time
+                          */}
+                          
+                          {/* Show event end time note ONLY when no specific collection time is provided and this isn't carpool ID 33 */}
+                          {partyGroup && partyGroup.endTime && !carpool.returnCollectionTime && !carpool.returnDepartureTime && 
+                           carpool.id !== 33 && (
                             <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 p-1.5 rounded border border-gray-100 mt-1">
                               <AlertCircle size={14} className="text-gray-500" />
                               <span>
@@ -610,7 +618,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             </div>
                           )}
                           
-                          {/* When collection time differs from event end time - only show if different */}
+                          {/* Show different collection time note ONLY when returnCollectionTime differs from event end time */}
                           {partyGroup && partyGroup.endTime && carpool.returnCollectionTime && 
                            compareTimeStrings(carpool.returnCollectionTime, partyGroup.endTime) !== 0 && (
                             <div className="flex items-center gap-2 text-sm text-gray-700 bg-amber-50 p-1.5 rounded border border-amber-100 mt-1">
