@@ -223,7 +223,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   </p>
                                   <p className="flex items-center gap-2">
                                     <Car className="h-4 w-4 text-primary-500" />
-                                    <span>{carpool.carType || "Vehicle not specified"}</span>
+                                    <span>Vehicle not specified</span>
                                   </p>
                                   {carpool.emergencyContactName && carpool.emergencyContactPhone && (
                                     <div className="bg-amber-50 p-2 rounded border border-amber-100 mt-2">
@@ -443,7 +443,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   </p>
                                   <p className="flex items-center gap-2">
                                     <Car className="h-4 w-4 text-primary-500" />
-                                    <span>{carpool.carType || "Vehicle not specified"}</span>
+                                    <span>Vehicle not specified</span>
                                   </p>
                                   {carpool.emergencyContactName && carpool.emergencyContactPhone && (
                                     <div className="bg-amber-50 p-2 rounded border border-amber-100 mt-2">
