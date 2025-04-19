@@ -3,6 +3,7 @@ import { getCarpoolRequests, getCarpoolById } from "@/api/carpools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CarpoolRequest, Carpool } from "@shared/schema";
 import EmergencyContactNotification from "./emergency-contact-notification";
+import DeleteCarpoolRequestButton from "./delete-carpool-request-button";
 
 interface CarpoolRequestsListProps {
   carpoolId: number;
@@ -77,7 +78,10 @@ export default function CarpoolRequestsList({ carpoolId }: CarpoolRequestsListPr
           <div className="space-y-2">
             {pickupPassengers.map((request: CarpoolRequest) => (
               <div key={`pickup-${request.id}`} className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
-                <p className="text-sm font-medium">{request.childName} <span className="font-normal text-gray-500">(Child)</span></p>
+                <div className="flex justify-between items-start">
+                  <p className="text-sm font-medium">{request.childName} <span className="font-normal text-gray-500">(Child)</span></p>
+                  <DeleteCarpoolRequestButton request={request} variant="text" />
+                </div>
                 <div className="mt-2 bg-white p-2 rounded border border-gray-100">
                   <h4 className="text-xs font-semibold text-gray-700 mb-1">Parent Details</h4>
                   <p className="text-xs text-gray-600"><span className="font-medium">Name:</span> {request.parentName}</p>
@@ -104,7 +108,10 @@ export default function CarpoolRequestsList({ carpoolId }: CarpoolRequestsListPr
           <div className="space-y-2">
             {dropoffPassengers.map((request: CarpoolRequest) => (
               <div key={`dropoff-${request.id}`} className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
-                <p className="text-sm font-medium">{request.childName} <span className="font-normal text-gray-500">(Child)</span></p>
+                <div className="flex justify-between items-start">
+                  <p className="text-sm font-medium">{request.childName} <span className="font-normal text-gray-500">(Child)</span></p>
+                  <DeleteCarpoolRequestButton request={request} variant="text" />
+                </div>
                 <div className="mt-2 bg-white p-2 rounded border border-gray-100">
                   <h4 className="text-xs font-semibold text-gray-700 mb-1">Parent Details</h4>
                   <p className="text-xs text-gray-600"><span className="font-medium">Name:</span> {request.parentName}</p>
