@@ -539,7 +539,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             <MapPin size={14} className="text-green-600" />
                             <span>
                               <span className="font-medium">Pickup:</span> {
-                                carpool.pickupPreference === 'direct-home' 
+                                /* Default to logic based on whether it's a pickup service when pickupPreference is null */
+                                (carpool.pickupPreference === 'direct-home' || 
+                                  (carpool.pickupPreference === null && (carpool.canPickup || carpool.canBoth))) 
                                   ? 'Driver will collect each child from their home address' : 
                                 carpool.pickupPreference === 'my-home' || carpool.pickupPreference === 'my-address' 
                                   ? `Parents bring children to driver's home: ${carpool.address}, ${carpool.city}, ${carpool.postcode}` : 
@@ -555,12 +557,12 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             <span>
                               <span className="font-medium">Dropoff:</span> {
                                 carpool.outboundDropoffPreference === 'direct-home' || carpool.outboundDropoffPreference === 'venue' 
-                                  ? 'Directly at venue' : 
-                                (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') 
-                                  ? `At driver's address` : 
+                                  ? 'Directly at the venue' : 
+                                carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address' 
+                                  ? `At driver's home: ${carpool.address}, ${carpool.city}, ${carpool.postcode} (parents collect children from this address)` : 
                                 carpool.outboundDropoffPreference === 'pickup-point' || carpool.outboundDropoffPreference === 'other-location' 
-                                  ? 'At designated meeting point' :
-                                  'Directly at venue'
+                                  ? `At agreed central location: ${carpool.meetingPoint || carpool.address}` :
+                                  'Directly at the venue'
                               }
                             </span>
                           </div>
@@ -590,6 +592,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                     ? ' (driver will drop off at your home)' 
                                     : carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address' 
                                     ? ` (driver will drop off at their address)` 
+                                    : carpool.returnDropoffPreference === 'pickup-point' || carpool.returnDropoffPreference === 'other-location'
+                                    ? ' (driver will drop off at meeting point)'
+                                    : !carpool.returnDropoffPreference || carpool.returnDropoffPreference === ''
+                                    ? ' (driver will drop off at your home)' /* Default when empty */
                                     : ' (driver will drop off at meeting point)'}
                                 </span>
                               </span>
@@ -625,6 +631,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                   ? `At driver's home: ${carpool.address}, ${carpool.city}, ${carpool.postcode} (parents collect children from driver's address)` : 
                                 carpool.returnDropoffPreference === 'pickup-point' || carpool.returnDropoffPreference === 'other-location' 
                                   ? `At agreed central location: ${carpool.meetingPoint || carpool.address} (parents collect children from meeting point)` :
+                                !carpool.returnDropoffPreference || carpool.returnDropoffPreference === '' 
+                                  ? 'Driver will drop off each child at their home address (default)' :
                                   'Driver will drop off each child at their home address'
                               }
                             </span>
