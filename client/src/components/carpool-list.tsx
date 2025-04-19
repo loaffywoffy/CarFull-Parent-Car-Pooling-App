@@ -414,6 +414,31 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                           : "Distance unknown"}
                     </Badge>
                   )}
+                  
+                  {/* Summary of booked kids */}
+                  {carpoolRequests && carpoolRequests.length > 0 && (
+                    <div className="w-full mt-1.5 text-xs flex flex-wrap items-center text-gray-600">
+                      <span className="font-medium mr-1">Booked:</span>
+                      {carpoolRequests.map((request: CarpoolRequest, index: number) => (
+                        <span key={request.id} className="flex items-center">
+                          {index > 0 && <span className="mx-1">•</span>}
+                          <span className="font-medium mr-0.5">{request.childName}</span>
+                          <span className="flex items-center">
+                            {request.needsPickup && request.needsDropoff ? (
+                              <span className="flex items-center">
+                                <ArrowRight size={10} className="text-green-500" />
+                                <ArrowLeft size={10} className="text-red-500" />
+                              </span>
+                            ) : request.needsPickup ? (
+                              <ArrowRight size={10} className="text-green-500" />
+                            ) : (
+                              <ArrowLeft size={10} className="text-red-500" />
+                            )}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -537,11 +562,24 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                               <Users size={12} className="text-gray-400 mr-1" />
                               <span className="font-medium">{request.childName}</span>
                               <span className="text-gray-400 mx-1">•</span>
-                              <span>
-                                {request.needsPickup && request.needsDropoff ? "Both ways" :
-                                 request.needsPickup ? "To event" : 
-                                 request.needsDropoff ? "From event" : ""}
-                              </span>
+                              
+                              {request.needsPickup && request.needsDropoff ? (
+                                <span className="flex items-center">
+                                  <ArrowRight size={12} className="text-green-500 mr-1" />
+                                  <ArrowLeft size={12} className="text-red-500 mr-1" />
+                                  <span>Both ways</span>
+                                </span>
+                              ) : request.needsPickup ? (
+                                <span className="flex items-center">
+                                  <ArrowRight size={12} className="text-green-500 mr-1" />
+                                  <span>To event</span>
+                                </span>
+                              ) : request.needsDropoff ? (
+                                <span className="flex items-center">
+                                  <ArrowLeft size={12} className="text-red-500 mr-1" />
+                                  <span>From event</span>
+                                </span>
+                              ) : null}
                               {request.specialRequirements && (
                                 <TooltipProvider>
                                   <Tooltip>
