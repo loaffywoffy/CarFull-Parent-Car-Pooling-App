@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups";
+import { getCarpoolsByPartyGroupId } from "@/api/partyGroups";
 import { getCarpoolRequests } from "@/api/carpools";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Clock, Phone, Search, ArrowRight, ArrowLeft } from "lucide-react";
+import { MapPin, Clock, Phone, ArrowRight, ArrowLeft } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Carpool, CarpoolRequest } from "@shared/schema";
 import LocationMapWrapper from "@/components/location-map-wrapper";
+import CarpoolRequestItem from "@/components/carpool-request-item";
+import DeleteCarpoolButton from "@/components/delete-carpool-button";
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
@@ -25,13 +27,6 @@ export default function CarpoolSummaryNew({ partyGroupId, onRequestSpot, onBackT
   const { data: carpools, isLoading: isLoadingCarpools } = useQuery({
     queryKey: ["/api/carpools", partyGroupId],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
-  });
-  
-  // Fetch party group details
-  const { data: partyGroup } = useQuery({
-    queryKey: ["/api/party-groups", partyGroupId],
-    queryFn: () => partyGroupId ? getPartyGroupById(partyGroupId) : null,
-    enabled: !!partyGroupId,
   });
   
   // Function to fetch latest requests for all carpools
@@ -166,124 +161,122 @@ export default function CarpoolSummaryNew({ partyGroupId, onRequestSpot, onBackT
                             <p className="font-medium text-gray-700">Kids in this carpool:</p>
                             <ul className="mt-1 text-gray-600">
                               {carpoolRequests[carpool.id].map(request => (
-                                <li key={request.id} className="flex items-center gap-1">
-                                  • {request.childName}
-                                </li>
+                                <CarpoolRequestItem 
+                                  key={request.id}
+                                  request={request}
+                                  compact={true}
+                                  partyGroupId={partyGroupId}
+                                />
                               ))}
                             </ul>
                           </div>
                         )}
                       </div>
                       
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button size="sm" variant="outline">View Details</Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
-                          <DialogHeader>
-                            <DialogTitle>Carpool Details - {carpool.parentName}'s Car</DialogTitle>
-                            <DialogDescription>
-                              View detailed information and book a ride
-                            </DialogDescription>
-                          </DialogHeader>
-                          
-                          <div className="grid gap-6 py-4">
-                            {/* Driver Info */}
-                            <div>
-                              <h4 className="font-medium mb-2">Driver Information</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Name:</span>
-                                  <span>{carpool.parentName}</span>
+                      <div className="flex flex-col gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">View Details</Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader>
+                              <DialogTitle>Carpool Details - {carpool.parentName}'s Car</DialogTitle>
+                              <DialogDescription>
+                                View detailed information and book a ride
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            <div className="grid gap-6 py-4">
+                              {/* Kids already in this carpool - Moved up */}
+                              {carpoolRequests[carpool.id]?.length > 0 && (
+                                <div>
+                                  <h4 className="font-medium mb-2">Kids Already Booked</h4>
+                                  <div className="bg-gray-50 rounded-md p-3 mb-3">
+                                    <ul className="space-y-2">
+                                      {carpoolRequests[carpool.id].map(request => (
+                                        <CarpoolRequestItem 
+                                          key={request.id}
+                                          request={request}
+                                          partyGroupId={partyGroupId}
+                                        />
+                                      ))}
+                                    </ul>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Phone:</span>
-                                  <span>{carpool.phoneNumber}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Address:</span>
-                                  <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Car:</span>
-                                  <span>Family Car</span>
+                              )}
+                              
+                              {/* Driver Info */}
+                              <div>
+                                <h4 className="font-medium mb-2">Driver Information</h4>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium w-20">Name:</span>
+                                    <span>{carpool.parentName}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium w-20">Phone:</span>
+                                    <span>{carpool.phoneNumber}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium w-20">Address:</span>
+                                    <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            
-                            <Separator />
-                            
-                            {/* Pickup Details */}
-                            <div>
-                              <h4 className="font-medium mb-2">Pickup Details</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Time:</span>
-                                  <span>{carpool.pickupTime || "Not specified"}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Spaces:</span>
-                                  <span>{carpoolRequests[carpool.id] 
-                                    ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.spacesAvailable} available`
-                                    : `${carpool.spacesAvailable} available`}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Location:</span>
-                                  <span>{carpool.address ? `Drop off at ${carpool.parentName}'s house (${carpool.address})` : 'Location not specified'}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Notes:</span>
-                                  <span>{carpool.additionalNotes || "No additional notes"}</span>
-                                </div>
+                              
+                              <Separator />
+                              
+                              {/* Map Section */}
+                              <div>
+                                <h4 className="font-medium mb-2">Pick-up Location</h4>
+                                <LocationMapWrapper 
+                                  id={carpool.id}
+                                  parentName={carpool.parentName}
+                                  address={carpool.address}
+                                  city={carpool.city}
+                                  postcode={carpool.postcode}
+                                  height="250px"
+                                  type="pickup"
+                                />
+                              </div>
+                              
+                              <Separator />
+                              
+                              {/* Delete Carpool Button */}
+                              <div className="flex justify-end">
+                                <DeleteCarpoolButton 
+                                  carpool={carpool}
+                                  variant="destructive"
+                                  partyGroupId={partyGroupId}
+                                />
                               </div>
                             </div>
-                            
-                            <Separator />
-                            
-                            {/* Map */}
-                            <div>
-                              <h4 className="font-medium mb-2">Location</h4>
-                              <LocationMapWrapper
-                                id={carpool.id}
-                                parentName={carpool.parentName}
-                                address={carpool.address}
-                                city={carpool.city}
-                                postcode={carpool.postcode}
-                                height="200px"
-                                type="pickup"
-                              />
-                            </div>
-                            
-                            <Separator />
-                            
-                            {/* Book a spot button */}
-                            <Button 
-                              className="w-full"
-                              onClick={() => onRequestSpot && onRequestSpot(carpool.id)}
-                            >
-                              <Search className="h-4 w-4 mr-2" /> Book This Ride
-                            </Button>
-                            
-                            {/* Kids already in this carpool */}
-                            {carpoolRequests[carpool.id]?.length > 0 && (
-                              <div className="mt-2">
-                                <h4 className="font-medium mb-2">Kids Already Booked</h4>
-                                <ul className="space-y-1">
-                                  {carpoolRequests[carpool.id].map(request => (
-                                    <li key={request.id} className="text-sm flex gap-2">
-                                      <span className="font-medium">{request.childName}</span>
-                                      <span className="text-gray-500">
-                                        - {request.address.substring(0, 20)}...
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        {onRequestSpot && carpoolRequests[carpool.id] && 
+                         (carpool.spacesAvailable - carpoolRequests[carpool.id].length > 0) && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => onRequestSpot(carpool.id)}
+                            className="mt-1"
+                          >
+                            Request Spot
+                          </Button>
+                        )}
+                        
+                        {onRequestSpot && carpoolRequests[carpool.id] && 
+                         (carpool.spacesAvailable - carpoolRequests[carpool.id].length <= 0) && (
+                          <Button 
+                            size="sm" 
+                            disabled
+                            variant="outline"
+                            className="mt-1"
+                          >
+                            No Spots Available
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -298,7 +291,7 @@ export default function CarpoolSummaryNew({ partyGroupId, onRequestSpot, onBackT
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-muted-foreground py-4">No carpools available yet for the ride to the party.</p>
+                <p className="text-center p-4 text-muted-foreground">No carpools available for the inbound journey.</p>
               </CardContent>
             </Card>
           )}
@@ -310,7 +303,7 @@ export default function CarpoolSummaryNew({ partyGroupId, onRequestSpot, onBackT
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center text-lg">
-                  <ArrowRight className="h-5 w-5 mr-2 rotate-180 text-blue-500" /> 
+                  <ArrowLeft className="h-5 w-5 mr-2 text-red-500" /> 
                   From Party Carpools
                 </CardTitle>
               </CardHeader>
@@ -331,11 +324,11 @@ export default function CarpoolSummaryNew({ partyGroupId, onRequestSpot, onBackT
                         <div className="mt-3 text-sm text-gray-600 space-y-1">
                           <div className="flex items-center gap-2">
                             <Clock className="h-3 w-3 text-gray-400" />
-                            <span>Departure time: {carpool.returnTime || "Not specified"}</span>
+                            <span>Dropoff time: {carpool.dropoffTime || "Not specified"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <MapPin className="h-3 w-3 text-gray-400" />
-                            <span>Destination: {carpool.city}, {carpool.postcode}</span>
+                            <span>Location: {carpool.city}, {carpool.postcode}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Phone className="h-3 w-3 text-gray-400" />
@@ -349,110 +342,122 @@ export default function CarpoolSummaryNew({ partyGroupId, onRequestSpot, onBackT
                             <p className="font-medium text-gray-700">Kids in this carpool:</p>
                             <ul className="mt-1 text-gray-600">
                               {carpoolRequests[carpool.id].map(request => (
-                                <li key={request.id} className="flex items-center gap-1">
-                                  • {request.childName}
-                                </li>
+                                <CarpoolRequestItem 
+                                  key={request.id}
+                                  request={request}
+                                  compact={true}
+                                  partyGroupId={partyGroupId}
+                                />
                               ))}
                             </ul>
                           </div>
                         )}
                       </div>
                       
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button size="sm" variant="outline">View Details</Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
-                          <DialogHeader>
-                            <DialogTitle>Carpool Details - {carpool.parentName}'s Car</DialogTitle>
-                            <DialogDescription>
-                              View detailed information and book a ride
-                            </DialogDescription>
-                          </DialogHeader>
-                          
-                          <div className="grid gap-6 py-4">
-                            {/* Driver Info */}
-                            <div>
-                              <h4 className="font-medium mb-2">Driver Information</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Name:</span>
-                                  <span>{carpool.parentName}</span>
+                      <div className="flex flex-col gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">View Details</Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader>
+                              <DialogTitle>Carpool Details - {carpool.parentName}'s Car</DialogTitle>
+                              <DialogDescription>
+                                View detailed information and book a ride
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            <div className="grid gap-6 py-4">
+                              {/* Kids already in this carpool - Moved up */}
+                              {carpoolRequests[carpool.id]?.length > 0 && (
+                                <div>
+                                  <h4 className="font-medium mb-2">Kids Already Booked</h4>
+                                  <div className="bg-gray-50 rounded-md p-3 mb-3">
+                                    <ul className="space-y-2">
+                                      {carpoolRequests[carpool.id].map(request => (
+                                        <CarpoolRequestItem 
+                                          key={request.id}
+                                          request={request}
+                                          partyGroupId={partyGroupId}
+                                        />
+                                      ))}
+                                    </ul>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Phone:</span>
-                                  <span>{carpool.phoneNumber}</span>
+                              )}
+                              
+                              {/* Driver Info */}
+                              <div>
+                                <h4 className="font-medium mb-2">Driver Information</h4>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium w-20">Name:</span>
+                                    <span>{carpool.parentName}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium w-20">Phone:</span>
+                                    <span>{carpool.phoneNumber}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium w-20">Address:</span>
+                                    <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Address:</span>
-                                  <span>{carpool.address}, {carpool.city}, {carpool.postcode}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Car:</span>
-                                  <span>Family Car</span>
-                                </div>
+                              </div>
+                              
+                              <Separator />
+                              
+                              {/* Map Section */}
+                              <div>
+                                <h4 className="font-medium mb-2">Drop-off Location</h4>
+                                <LocationMapWrapper 
+                                  id={carpool.id}
+                                  parentName={carpool.parentName}
+                                  address={carpool.address}
+                                  city={carpool.city}
+                                  postcode={carpool.postcode}
+                                  height="250px"
+                                  type="dropoff"
+                                />
+                              </div>
+                              
+                              <Separator />
+                              
+                              {/* Delete Carpool Button */}
+                              <div className="flex justify-end">
+                                <DeleteCarpoolButton 
+                                  carpool={carpool}
+                                  variant="destructive"
+                                  partyGroupId={partyGroupId}
+                                />
                               </div>
                             </div>
-                            
-                            <Separator />
-                            
-                            {/* Dropoff Details */}
-                            <div>
-                              <h4 className="font-medium mb-2">Return Journey Details</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Time:</span>
-                                  <span>{carpool.returnTime || "Not specified"}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Spaces:</span>
-                                  <span>{carpoolRequests[carpool.id] 
-                                    ? `${Math.max(0, carpool.returnSpacesAvailable - carpoolRequests[carpool.id].length)} of ${carpool.returnSpacesAvailable} available`
-                                    : `${carpool.returnSpacesAvailable} available`}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Location:</span>
-                                  <span>Destination: {carpool.address}, {carpool.city}, {carpool.postcode}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium w-20">Notes:</span>
-                                  <span>{carpool.additionalNotes || "No additional notes"}</span>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <Separator />
-                            
-                            
-                            
-                            {/* Book a spot button */}
-                            <Button 
-                              className="w-full"
-                              onClick={() => onRequestSpot && onRequestSpot(carpool.id)}
-                            >
-                              <Search className="h-4 w-4 mr-2" /> Book This Ride
-                            </Button>
-                            
-                            {/* Kids already in this carpool */}
-                            {carpoolRequests[carpool.id]?.length > 0 && (
-                              <div className="mt-2">
-                                <h4 className="font-medium mb-2">Kids Already Booked</h4>
-                                <ul className="space-y-1">
-                                  {carpoolRequests[carpool.id].map(request => (
-                                    <li key={request.id} className="text-sm flex gap-2">
-                                      <span className="font-medium">{request.childName}</span>
-                                      <span className="text-gray-500">
-                                        - {request.address.substring(0, 20)}...
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        {onRequestSpot && carpoolRequests[carpool.id] && 
+                         (carpool.returnSpacesAvailable - carpoolRequests[carpool.id].length > 0) && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => onRequestSpot(carpool.id)}
+                            className="mt-1"
+                          >
+                            Request Spot
+                          </Button>
+                        )}
+                        
+                        {onRequestSpot && carpoolRequests[carpool.id] && 
+                         (carpool.returnSpacesAvailable - carpoolRequests[carpool.id].length <= 0) && (
+                          <Button 
+                            size="sm" 
+                            disabled
+                            variant="outline"
+                            className="mt-1"
+                          >
+                            No Spots Available
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -462,12 +467,12 @@ export default function CarpoolSummaryNew({ partyGroupId, onRequestSpot, onBackT
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center text-lg">
-                  <ArrowRight className="h-5 w-5 mr-2 rotate-180 text-blue-500" /> 
+                  <ArrowLeft className="h-5 w-5 mr-2 text-red-500" /> 
                   From Party Carpools
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-muted-foreground py-4">No carpools available yet for the return journey.</p>
+                <p className="text-center p-4 text-muted-foreground">No carpools available for the return journey.</p>
               </CardContent>
             </Card>
           )}
