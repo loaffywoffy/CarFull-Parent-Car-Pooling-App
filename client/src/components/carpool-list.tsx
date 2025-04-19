@@ -441,9 +441,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
               >
                 {carpoolRequests?.length && 
                  ((carpool.canPickup || carpool.canBoth) && 
-                 carpool.spacesAvailable <= carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length ||
+                 carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length ||
                  (carpool.canDropoff || carpool.canBoth) && 
-                 (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter(r => r.needsDropoff || r.needsBoth).length)
+                 (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)
                  ? "No Spots Available" : "Request Spot"}
               </Button>
             </div>
@@ -512,7 +512,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         {carpool.canPickup || carpool.canBoth ? (
                           <span>
                             {carpoolRequests?.length 
-                              ? `To event: ${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter(r => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
+                              ? `To event: ${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
                               : `To event: ${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`}
                           </span>
                         ) : null}
@@ -521,7 +521,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                       {(carpool.canDropoff || carpool.canBoth) && (
                         <div className="flex items-center gap-2 ml-6">
                           {carpoolRequests?.length 
-                            ? `From event: ${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter(r => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                            ? `From event: ${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
                             : `From event: ${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`}
                         </div>
                       )}
