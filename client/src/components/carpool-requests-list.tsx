@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CarpoolRequest, Carpool } from "@shared/schema";
 import EmergencyContactNotification from "./emergency-contact-notification";
 import DeleteCarpoolRequestButton from "./delete-carpool-request-button";
+import { User, MapPin, Phone, Clock, AlertCircle, Info } from "lucide-react";
 
 interface CarpoolRequestsListProps {
   carpoolId: number;
@@ -62,6 +63,31 @@ export default function CarpoolRequestsList({ carpoolId }: CarpoolRequestsListPr
   const dropoffPassengers = carpool.canDropoff ? 
     filteredRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth) : [];
 
+  // Helper function to render ride time info
+  const renderRideTimeInfo = (isOutbound: boolean) => {
+    if (isOutbound) {
+      return (
+        <div className="flex items-start gap-2 bg-green-50 p-2.5 rounded border border-green-100 mb-3">
+          <Clock className="h-4 w-4 text-green-600 mt-0.5" />
+          <div>
+            <span className="font-semibold text-sm block text-green-700">Target departure time:</span>
+            <span className="text-sm font-medium">{carpool.outboundDepartureTime || "Not specified"}</span>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-start gap-2 bg-blue-50 p-2.5 rounded border border-blue-100 mb-3">
+          <Clock className="h-4 w-4 text-blue-600 mt-0.5" />
+          <div>
+            <span className="font-semibold text-sm block text-blue-700">Collection time:</span>
+            <span className="text-sm font-medium">{carpool.returnCollectionTime || "Not specified"}</span>
+          </div>
+        </div>
+      );
+    }
+  };
+
   return (
     <div className="mt-3">
       {/* Emergency Contact Notification */}
@@ -73,27 +99,60 @@ export default function CarpoolRequestsList({ carpoolId }: CarpoolRequestsListPr
       
       {/* Pickup Passengers */}
       {pickupPassengers.length > 0 && (
-        <div className="mb-3">
-          <p className="text-xs font-medium text-gray-600 mb-1">Going to Party:</p>
-          <div className="space-y-2">
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-sm font-semibold text-green-700">Going to Party</h3>
+          </div>
+          
+          {/* Show outbound departure time prominently */}
+          {renderRideTimeInfo(true)}
+          
+          <div className="space-y-3">
             {pickupPassengers.map((request: CarpoolRequest) => (
-              <div key={`pickup-${request.id}`} className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
+              <div key={`pickup-${request.id}`} className="px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex justify-between items-start">
-                  <p className="text-sm font-medium">{request.childName} <span className="font-normal text-gray-500">(Child)</span></p>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-green-600" />
+                    <p className="text-sm font-medium">{request.childName}</p>
+                  </div>
                   <DeleteCarpoolRequestButton request={request} variant="text" />
                 </div>
-                <div className="mt-2 bg-white p-2 rounded border border-gray-100">
-                  <h4 className="text-xs font-semibold text-gray-700 mb-1">Parent Details</h4>
-                  <p className="text-xs text-gray-600"><span className="font-medium">Name:</span> {request.parentName}</p>
-                  <p className="text-xs text-gray-600"><span className="font-medium">Phone:</span> {request.phoneNumber}</p>
-                  <p className="text-xs text-gray-600">
-                    <span className="font-medium">Address:</span> {request.address}{request.city ? `, ${request.city}` : ''}{request.postcode ? ` ${request.postcode}` : ''}
-                  </p>
+                
+                <div className="mt-3 bg-blue-50 p-3 rounded-md border border-blue-100">
+                  <h4 className="text-sm font-semibold text-blue-700 mb-2 flex items-center gap-1.5">
+                    <Info className="h-4 w-4" />
+                    Parent Details
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center gap-1.5">
+                      <User className="h-3.5 w-3.5 text-gray-500" />
+                      <span className="font-medium">{request.parentName}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5 text-gray-500" />
+                      <span>{request.phoneNumber}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-1.5 mt-2">
+                    <MapPin className="h-3.5 w-3.5 text-gray-500 mt-0.5" />
+                    <span>
+                      {request.address}
+                      {request.city ? `, ${request.city}` : ''}
+                      {request.postcode ? ` ${request.postcode}` : ''}
+                    </span>
+                  </div>
                 </div>
+                
                 {request.specialRequirements && (
-                  <p className="text-xs text-gray-600 mt-2">
-                    <span className="font-medium">Special Requirements:</span> {request.specialRequirements}
-                  </p>
+                  <div className="mt-2 flex items-start gap-1.5 px-2 py-1.5 bg-yellow-50 rounded border border-yellow-100">
+                    <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5" />
+                    <span className="text-sm">
+                      <span className="font-medium">Special Requirements:</span> {request.specialRequirements}
+                    </span>
+                  </div>
                 )}
               </div>
             ))}
@@ -104,26 +163,59 @@ export default function CarpoolRequestsList({ carpoolId }: CarpoolRequestsListPr
       {/* Dropoff Passengers */}
       {dropoffPassengers.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-gray-600 mb-1">Return from Party:</p>
-          <div className="space-y-2">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-sm font-semibold text-blue-700">Return from Party</h3>
+          </div>
+          
+          {/* Show return collection time prominently */}
+          {renderRideTimeInfo(false)}
+          
+          <div className="space-y-3">
             {dropoffPassengers.map((request: CarpoolRequest) => (
-              <div key={`dropoff-${request.id}`} className="px-3 py-2 bg-gray-50 rounded border border-gray-200">
+              <div key={`dropoff-${request.id}`} className="px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex justify-between items-start">
-                  <p className="text-sm font-medium">{request.childName} <span className="font-normal text-gray-500">(Child)</span></p>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-blue-600" />
+                    <p className="text-sm font-medium">{request.childName}</p>
+                  </div>
                   <DeleteCarpoolRequestButton request={request} variant="text" />
                 </div>
-                <div className="mt-2 bg-white p-2 rounded border border-gray-100">
-                  <h4 className="text-xs font-semibold text-gray-700 mb-1">Parent Details</h4>
-                  <p className="text-xs text-gray-600"><span className="font-medium">Name:</span> {request.parentName}</p>
-                  <p className="text-xs text-gray-600"><span className="font-medium">Phone:</span> {request.phoneNumber}</p>
-                  <p className="text-xs text-gray-600">
-                    <span className="font-medium">Address:</span> {request.address}{request.city ? `, ${request.city}` : ''}{request.postcode ? ` ${request.postcode}` : ''}
-                  </p>
+                
+                <div className="mt-3 bg-blue-50 p-3 rounded-md border border-blue-100">
+                  <h4 className="text-sm font-semibold text-blue-700 mb-2 flex items-center gap-1.5">
+                    <Info className="h-4 w-4" />
+                    Parent Details
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center gap-1.5">
+                      <User className="h-3.5 w-3.5 text-gray-500" />
+                      <span className="font-medium">{request.parentName}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5 text-gray-500" />
+                      <span>{request.phoneNumber}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-1.5 mt-2">
+                    <MapPin className="h-3.5 w-3.5 text-gray-500 mt-0.5" />
+                    <span>
+                      {request.address}
+                      {request.city ? `, ${request.city}` : ''}
+                      {request.postcode ? ` ${request.postcode}` : ''}
+                    </span>
+                  </div>
                 </div>
+                
                 {request.specialRequirements && (
-                  <p className="text-xs text-gray-600 mt-2">
-                    <span className="font-medium">Special Requirements:</span> {request.specialRequirements}
-                  </p>
+                  <div className="mt-2 flex items-start gap-1.5 px-2 py-1.5 bg-yellow-50 rounded border border-yellow-100">
+                    <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5" />
+                    <span className="text-sm">
+                      <span className="font-medium">Special Requirements:</span> {request.specialRequirements}
+                    </span>
+                  </div>
                 )}
               </div>
             ))}
