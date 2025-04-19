@@ -36,9 +36,10 @@ export default function DeleteCarpoolRequestButton({
   const deleteMutation = useMutation({
     mutationFn: () => deleteCarpoolRequest(request.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/carpools/${request.carpoolId}/requests`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/party-groups`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/carpools`] });
+      // Match the query key format in carpool-requests-list.tsx
+      queryClient.invalidateQueries({ queryKey: ["/api/carpools", request.carpoolId, "requests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/party-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/carpools"] });
       
       toast({
         title: "Removed from carpool",
