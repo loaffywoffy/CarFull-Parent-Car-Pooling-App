@@ -85,6 +85,35 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
   const toPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canPickup || c.canBoth);
   const fromPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canDropoff || c.canBoth);
   
+  // Helper function to render dropoff location details based on preference
+  const renderDropoffLocation = (carpool: Carpool, isOutbound: boolean = true) => {
+    const preference = isOutbound ? carpool.outboundDropoffPreference : carpool.returnDropoffPreference;
+    
+    if (preference === 'venue' || preference === 'direct-home' || !preference) {
+      return (
+        <p>The event venue (drops off directly at venue)</p>
+      );
+    } else if (preference === 'my-address') {
+      return (
+        <p>Parent's home: {carpool.address}, {carpool.city}, {carpool.postcode}</p>
+      );
+    } else if (preference === 'pickup-point' || preference === 'other-location') {
+      const location = isOutbound ? carpool.outboundPickupLocation : carpool.returnPickupLocation;
+      const city = isOutbound ? carpool.outboundPickupLocationCity : carpool.returnPickupLocationCity;
+      const postcode = isOutbound ? carpool.outboundPickupLocationPostcode : carpool.returnPickupLocationPostcode;
+      
+      return (
+        <>
+          <p>Pickup point: {location || "Specified location"}</p>
+          {(city || postcode) && <p>{city || ''}{city && postcode ? ', ' : ''}{postcode || ''}</p>}
+        </>
+      );
+    }
+    
+    // Default fallback
+    return <p>The event venue</p>;
+  };
+  
   return (
     <div>
       {onBackToEvents && (
@@ -255,10 +284,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                           <span className="font-medium">Drop-off at:</span>
                                         </div>
                                         <div className="ml-6 text-xs">
-                                          <p>The event location: {carpool.outboundPickupLocation || "Event venue"}</p>
-                                          {carpool.outboundPickupLocation && (
-                                            <p>{carpool.outboundPickupLocationCity || ''}, {carpool.outboundPickupLocationPostcode || ''}</p>
-                                          )}
+                                          {renderDropoffLocation(carpool, true)}
                                         </div>
                                       </div>
                                     </div>
@@ -287,7 +313,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                           <span className="font-medium">Pick-up from:</span>
                                         </div>
                                         <div className="ml-6 text-xs">
-                                          <p>The event location: {carpool.returnPickupLocation || "Event venue"}</p>
+                                          <p>The event venue</p>
                                           {carpool.returnPickupLocation && (
                                             <p>{carpool.returnPickupLocationCity || ''}, {carpool.returnPickupLocationPostcode || ''}</p>
                                           )}
@@ -298,7 +324,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                           <span className="font-medium">Drop-off at:</span>
                                         </div>
                                         <div className="ml-6 text-xs">
-                                          <p>{carpool.parentName}'s home: {carpool.address}, {carpool.city}, {carpool.postcode}</p>
+                                          {renderDropoffLocation(carpool, false)}
                                         </div>
                                       </div>
                                     </div>
@@ -545,10 +571,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                           <span className="font-medium">Drop-off at:</span>
                                         </div>
                                         <div className="ml-6 text-xs">
-                                          <p>The event location: {carpool.outboundPickupLocation || "Event venue"}</p>
-                                          {carpool.outboundPickupLocation && (
-                                            <p>{carpool.outboundPickupLocationCity || ''}, {carpool.outboundPickupLocationPostcode || ''}</p>
-                                          )}
+                                          {renderDropoffLocation(carpool, true)}
                                         </div>
                                       </div>
                                     </div>
@@ -577,7 +600,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                           <span className="font-medium">Pick-up from:</span>
                                         </div>
                                         <div className="ml-6 text-xs">
-                                          <p>The event location: {carpool.returnPickupLocation || "Event venue"}</p>
+                                          <p>The event venue</p>
                                           {carpool.returnPickupLocation && (
                                             <p>{carpool.returnPickupLocationCity || ''}, {carpool.returnPickupLocationPostcode || ''}</p>
                                           )}
@@ -588,7 +611,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                           <span className="font-medium">Drop-off at:</span>
                                         </div>
                                         <div className="ml-6 text-xs">
-                                          <p>{carpool.parentName}'s home: {carpool.address}, {carpool.city}, {carpool.postcode}</p>
+                                          {renderDropoffLocation(carpool, false)}
                                         </div>
                                       </div>
                                     </div>
