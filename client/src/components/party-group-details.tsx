@@ -119,7 +119,7 @@ export default function PartyGroupDetails({
       })
     : null;
 
-  const baseUrl = window.location.origin;
+  const baseUrl = "https://carpool.replit.app";
   const shareableLink = `${baseUrl}?partyId=${partyGroup.id}`;
 
   const copyShareableLink = () => {
