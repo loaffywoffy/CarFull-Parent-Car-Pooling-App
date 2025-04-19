@@ -538,7 +538,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                           <div className="flex items-center gap-2 text-sm text-gray-700">
                             <MapPin size={14} className="text-green-600" />
                             <span>
-                              <span className="font-medium">Pickup:</span> {
+                              <span className="font-medium">PickUp/Drop Off:</span> {
                                 /* For ID 31 we know the parent name has "Collect From Childs Home" so this is direct-home */
                                 carpool.id === 31
                                   ? 'Driver will collect each child from their home address' :
@@ -558,25 +558,6 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                 carpool.pickupPreference === 'pickup-point' || carpool.pickupPreference === 'other-location' 
                                   ? `Meet at agreed central location: ${carpool.meetingPoint || carpool.address}` :
                                   'Driver will collect each child from their home address'
-                              }
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 text-sm text-gray-700 mt-1">
-                            <MapPin size={14} className="text-green-600" />
-                            <span>
-                              <span className="font-medium">Dropoff:</span> {
-                                carpool.id === 31
-                                  ? `At driver's home: ${carpool.address}, ${carpool.city}, ${carpool.postcode} (parents collect children from this address)` :
-                                carpool.id === 32
-                                  ? 'Directly at the venue' :
-                                carpool.outboundDropoffPreference === 'direct-home' || carpool.outboundDropoffPreference === 'venue' 
-                                  ? 'Directly at the venue' : 
-                                carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address' 
-                                  ? `At driver's home: ${carpool.address}, ${carpool.city}, ${carpool.postcode} (parents collect children from this address)` : 
-                                carpool.outboundDropoffPreference === 'pickup-point' || carpool.outboundDropoffPreference === 'other-location' 
-                                  ? `At agreed central location: ${carpool.meetingPoint || carpool.address}` :
-                                  'Directly at the venue'
                               }
                             </span>
                           </div>
