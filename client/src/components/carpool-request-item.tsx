@@ -108,16 +108,30 @@ export default function CarpoolRequestItem({ request, compact = false, onDelete,
 
   // Detailed version for the main view
   return (
-    <li className="text-sm flex items-center justify-between gap-2">
-      <div className="flex items-center gap-2">
-        <div className="bg-primary/10 text-primary rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium">
+    <li className="text-sm flex items-start justify-between gap-2 p-1">
+      <div className="flex gap-2">
+        <div className="bg-primary/10 text-primary rounded-full h-6 w-6 flex items-center justify-center text-xs font-medium shrink-0 mt-0.5">
           {request.childName.substring(0, 1).toUpperCase()}
         </div>
         <div>
-          <span className="font-medium">{request.childName}</span>
-          <p className="text-xs text-gray-500">
-            {request.address ? `${request.address.substring(0, 20)}${request.address.length > 20 ? "..." : ""}` : "No address"}
-          </p>
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{request.childName}</span>
+            {request.needsPickup && <span className="text-xs px-1.5 py-0.5 bg-green-100 text-green-800 rounded">To party</span>}
+            {request.needsDropoff && <span className="text-xs px-1.5 py-0.5 bg-red-100 text-red-800 rounded">From party</span>}
+            {request.needsBoth && <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded">Both ways</span>}
+          </div>
+          
+          <div className="text-xs text-gray-600 mt-1">
+            <p><span className="font-medium">Parent:</span> {request.parentName}</p>
+            <p><span className="font-medium">Phone:</span> {request.phoneNumber}</p>
+            <p><span className="font-medium">Address:</span> {request.address}, {request.city}, {request.postcode}</p>
+            {request.emergencyContactName && (
+              <p><span className="font-medium">Emergency:</span> {request.emergencyContactName} {request.emergencyContactPhone ? `(${request.emergencyContactPhone})` : ''}</p>
+            )}
+            {request.specialRequirements && (
+              <p className="mt-1"><span className="font-medium">Notes:</span> {request.specialRequirements}</p>
+            )}
+          </div>
         </div>
       </div>
       

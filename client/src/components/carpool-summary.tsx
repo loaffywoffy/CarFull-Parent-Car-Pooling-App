@@ -91,8 +91,8 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
   const getDirectionalRequests = (requestsArray: CarpoolRequest[], isPickup: boolean): CarpoolRequest[] => {
     if (!requestsArray) return [];
     return requestsArray.filter(req => 
-      (isPickup && (req.pickupCarpool || req.bothWays)) || 
-      (!isPickup && (req.dropoffCarpool || req.bothWays))
+      (isPickup && (req.needsPickup || req.needsBoth)) || 
+      (!isPickup && (req.needsDropoff || req.needsBoth))
     );
   };
   
@@ -222,7 +222,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   <div className="bg-gray-50 rounded-md p-3 mb-3">
                                     <ul className="space-y-2">
                                       {carpoolRequests[carpool.id]
-                                        .filter(req => req.pickupCarpool || req.bothWays)
+                                        .filter(req => req.needsPickup || req.needsBoth)
                                         .map(request => (
                                         <CarpoolRequestItem 
                                           key={request.id}
@@ -502,7 +502,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   <div className="bg-gray-50 rounded-md p-3 mb-3">
                                     <ul className="space-y-2">
                                       {carpoolRequests[carpool.id]
-                                        .filter(req => req.dropoffCarpool || req.bothWays)
+                                        .filter(req => req.needsDropoff || req.needsBoth)
                                         .map(request => (
                                         <CarpoolRequestItem 
                                           key={request.id}
