@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home, AlertCircle, Timer } from "lucide-react";
+import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home, AlertCircle, Timer, Phone } from "lucide-react";
 import { geocodeAddress, calculateDistance } from "@/lib/geocoding";
 import { compareTimeStrings } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -686,46 +686,85 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         <h5 className="text-xs font-medium text-gray-600 mb-1">Booked Children:</h5>
                         <ul className="space-y-1">
                           {carpoolRequests.map((request: any) => (
-                            <li key={request.id} className="text-xs text-gray-600 flex items-center">
-                              <Users size={12} className="text-gray-400 mr-1" />
-                              <span className="font-medium">{request.childName}</span>
-                              <span className="text-gray-400 mx-1">•</span>
+                            <li key={request.id} className="text-xs text-gray-600 pb-2 mb-2 border-b border-gray-100 last:border-b-0 last:mb-0 last:pb-0">
+                              <div className="flex items-center">
+                                <Users size={12} className="text-gray-400 mr-1" />
+                                <span className="font-medium">{request.childName}</span>
+                                <span className="text-gray-400 mx-1">•</span>
+                                
+                                {request.needsPickup && request.needsDropoff ? (
+                                  <span className="flex items-center">
+                                    <ArrowRight size={12} className="text-green-500 mr-1" />
+                                    <ArrowLeft size={12} className="text-red-500 mr-1" />
+                                    <span>Both ways</span>
+                                  </span>
+                                ) : request.needsPickup ? (
+                                  <span className="flex items-center">
+                                    <ArrowRight size={12} className="text-green-500 mr-1" />
+                                    <span>To event</span>
+                                  </span>
+                                ) : request.needsDropoff ? (
+                                  <span className="flex items-center">
+                                    <ArrowLeft size={12} className="text-red-500 mr-1" />
+                                    <span>From event</span>
+                                  </span>
+                                ) : null}
+                                {request.specialRequirements && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="ml-1 inline-flex items-center text-amber-500">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                          </svg>
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="max-w-xs text-xs">{request.specialRequirements}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                              </div>
                               
-                              {request.needsPickup && request.needsDropoff ? (
-                                <span className="flex items-center">
-                                  <ArrowRight size={12} className="text-green-500 mr-1" />
-                                  <ArrowLeft size={12} className="text-red-500 mr-1" />
-                                  <span>Both ways</span>
-                                </span>
-                              ) : request.needsPickup ? (
-                                <span className="flex items-center">
-                                  <ArrowRight size={12} className="text-green-500 mr-1" />
-                                  <span>To event</span>
-                                </span>
-                              ) : request.needsDropoff ? (
-                                <span className="flex items-center">
-                                  <ArrowLeft size={12} className="text-red-500 mr-1" />
-                                  <span>From event</span>
-                                </span>
-                              ) : null}
-                              {request.specialRequirements && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="ml-1 inline-flex items-center text-amber-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <circle cx="12" cy="12" r="10"></circle>
-                                          <line x1="12" y1="8" x2="12" y2="12"></line>
-                                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                        </svg>
+                              {/* Parent information and address */}
+                              <div className="mt-1 ml-4 text-gray-500">
+                                <div className="flex items-center">
+                                  <User size={10} className="text-gray-400 mr-1" />
+                                  <span>Parent: {request.parentName}</span>
+                                </div>
+                                <div className="flex items-center mt-0.5">
+                                  <MapPin size={10} className="text-gray-400 mr-1" />
+                                  <span>Address: {request.address}, {request.city}, {request.postcode}</span>
+                                </div>
+                                <div className="flex items-center mt-0.5">
+                                  <Phone size={10} className="text-gray-400 mr-1" />
+                                  <span>Phone: {request.phoneNumber}</span>
+                                </div>
+                                
+                                {/* Travel directions with specific details */}
+                                <div className="mt-1.5 bg-gray-50 p-1.5 rounded-sm">
+                                  {request.needsPickup || request.needsBoth ? (
+                                    <div className="flex items-start">
+                                      <ArrowRight size={10} className="text-green-500 mt-0.5 mr-1 shrink-0" />
+                                      <span>
+                                        <span className="font-medium">To event:</span> Pickup from {request.address}, {request.postcode}
                                       </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="max-w-xs text-xs">{request.specialRequirements}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
+                                    </div>
+                                  ) : null}
+                                  
+                                  {request.needsDropoff || request.needsBoth ? (
+                                    <div className="flex items-start mt-0.5">
+                                      <ArrowLeft size={10} className="text-red-500 mt-0.5 mr-1 shrink-0" />
+                                      <span>
+                                        <span className="font-medium">From event:</span> Return to {request.address}, {request.postcode}
+                                      </span>
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </div>
                             </li>
                           ))}
                         </ul>
