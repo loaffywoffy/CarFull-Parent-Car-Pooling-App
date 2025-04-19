@@ -752,12 +752,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                       <span>
                                         <span className="font-medium">To event:</span>{' '}
                                         {(carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address')
-                                          ? `Pickup from ${carpool.address}, ${carpool.city}, ${carpool.postcode} (driver's home address)`
+                                          ? `Drop-off at ${carpool.address}, ${carpool.city}, ${carpool.postcode} (driver's home address)`
                                           : (carpool.outboundDropoffPreference === 'pickup-point')
-                                            ? `Pickup from meeting point: ${carpool.outboundPickupLocation ? `${carpool.outboundPickupLocation}, ${carpool.outboundPickupLocationCity}, ${carpool.outboundPickupLocationPostcode}` : (carpool.meetingPoint || carpool.address)}`
+                                            ? `Pick-up from meeting point: ${carpool.outboundPickupLocation ? `${carpool.outboundPickupLocation}, ${carpool.outboundPickupLocationCity}, ${carpool.outboundPickupLocationPostcode}` : (carpool.meetingPoint || carpool.address)}`
                                           : (carpool.outboundDropoffPreference === 'other-location')
-                                            ? `Pickup from meeting point: ${carpool.meetingPoint || carpool.address}`
-                                            : `Pickup from ${request.address}, ${request.city}, ${request.postcode} (child's home address)`
+                                            ? `Pick-up from meeting point: ${carpool.meetingPoint || carpool.address}`
+                                          : (carpool.outboundDropoffPreference === 'direct-home')
+                                            ? `Pick-up from ${request.address}, ${request.city}, ${request.postcode} (child's home address)`
+                                            : `Pick-up from ${request.address}, ${request.city}, ${request.postcode} (child's home address)`
                                         }
                                       </span>
                                     </div>
@@ -769,12 +771,12 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                       <span>
                                         <span className="font-medium">From event:</span>{' '}
                                         {carpool.returnDropoffPreference === 'direct-home' 
-                                          ? `Return to ${request.address}, ${request.city}, ${request.postcode} (child's home address)` 
+                                          ? `Drop-off at ${request.address}, ${request.city}, ${request.postcode} (child's home address)` 
                                           : carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address'
-                                            ? `Return to ${carpool.address}, ${carpool.city}, ${carpool.postcode} (driver's home address)`
+                                            ? `Drop-off at ${carpool.address}, ${carpool.city}, ${carpool.postcode} (driver's home address)`
                                             : carpool.returnDropoffPreference === 'pickup-point' || carpool.returnDropoffPreference === 'other-location'
-                                              ? `Return to meeting point: ${carpool.meetingPoint || carpool.address}`
-                                              : `Return to ${request.address}, ${request.postcode}`
+                                              ? `Drop-off at meeting point: ${carpool.meetingPoint || carpool.address}`
+                                              : `Drop-off at ${request.address}, ${request.city}, ${request.postcode}`
                                         }
                                       </span>
                                     </div>
