@@ -1,15 +1,27 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCarpoolsByPartyGroupId } from "@/api/partyGroups";
-import { getCarpoolRequests } from "@/api/carpools";
+import { getCarpoolRequests, deleteCarpoolRequest, deleteCarpool } from "@/api/carpools";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Clock, Phone, Search, ArrowRight, ArrowLeft } from "lucide-react";
+import { MapPin, Clock, Phone, Search, ArrowRight, ArrowLeft, X, Trash2, AlertTriangle } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
 import { Carpool, CarpoolRequest } from "@shared/schema";
 import LocationMapWrapper from "@/components/location-map-wrapper";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
@@ -20,11 +32,70 @@ interface CarpoolSummaryProps {
 export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEvents }: CarpoolSummaryProps) {
   const [carpoolRequests, setCarpoolRequests] = useState<Record<number, CarpoolRequest[]>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [removingRequestId, setRemovingRequestId] = useState<number | null>(null);
+  const [removingCarpoolId, setRemovingCarpoolId] = useState<number | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Fetch carpools for this party group
   const { data: carpools, isLoading: isLoadingCarpools } = useQuery({
     queryKey: ["/api/carpools", partyGroupId],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
+  });
+  
+  // Mutation for deleting carpool requests (removing a kid from a carpool)
+  const deleteRequestMutation = useMutation({
+    mutationFn: (requestId: number) => deleteCarpoolRequest(requestId),
+    onSuccess: () => {
+      toast({
+        title: "Child removed from carpool",
+        description: "The child has been successfully removed from the carpool.",
+        variant: "default",
+      });
+      
+      // Refetch the data to update the UI
+      queryClient.invalidateQueries({ queryKey: ["/api/carpools", partyGroupId] });
+      fetchAllRequests();
+      
+      // Reset the removing state
+      setRemovingRequestId(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to remove child",
+        description: "There was a problem removing the child from the carpool. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error removing child from carpool:", error);
+      setRemovingRequestId(null);
+    }
+  });
+  
+  // Mutation for deleting entire carpools
+  const deleteCarpoolMutation = useMutation({
+    mutationFn: (carpoolId: number) => deleteCarpool(carpoolId),
+    onSuccess: () => {
+      toast({
+        title: "Carpool removed",
+        description: "The carpool has been successfully removed.",
+        variant: "default",
+      });
+      
+      // Refetch the data to update the UI
+      queryClient.invalidateQueries({ queryKey: ["/api/carpools", partyGroupId] });
+      
+      // Reset the removing state
+      setRemovingCarpoolId(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to remove carpool",
+        description: "There was a problem removing the carpool. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error removing carpool:", error);
+      setRemovingCarpoolId(null);
+    }
   });
   
   // Function to fetch latest requests for all carpools
