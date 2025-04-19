@@ -547,7 +547,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                 /* Check outboundDropoffPreference first as it's more specific */
                                 (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address')
                                   ? `Parents bring children to driver's home: ${carpool.address}, ${carpool.city}, ${carpool.postcode}` :
-                                (carpool.outboundDropoffPreference === 'pickup-point' || carpool.outboundDropoffPreference === 'other-location')
+                                carpool.outboundDropoffPreference === 'pickup-point'
+                                  ? `Meet at agreed central location: ${carpool.outboundPickupLocation ? `${carpool.outboundPickupLocation}, ${carpool.outboundPickupLocationCity}, ${carpool.outboundPickupLocationPostcode}` : (carpool.meetingPoint || carpool.address)}` :
+                                carpool.outboundDropoffPreference === 'other-location'
                                   ? `Meet at agreed central location: ${carpool.meetingPoint || carpool.address}` :
                                 /* Fall back to older fields if outboundDropoffPreference not set */
                                 carpool.parentName.toLowerCase().includes("collect") || 
