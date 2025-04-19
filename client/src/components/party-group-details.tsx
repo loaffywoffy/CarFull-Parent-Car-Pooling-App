@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,11 +32,11 @@ import {
 interface PartyGroupDetailsProps {
   partyGroup: PartyGroup;
   onOfferCarpool: (partyGroupId: number) => void;
-  onRequestSpot?: () => void; // New prop for requesting a spot
-  onEdit?: (partyGroupId: number) => void; // New prop for editing the event
-  onDeleted?: () => void; // New prop for after successful deletion
-  onBack?: () => void; // New prop for going back to the list view
-  isCreator?: boolean; // Flag to determine if the current user created this group
+  onRequestSpot?: () => void;
+  onEdit?: (partyGroupId: number) => void;
+  onDeleted?: () => void;
+  onBack?: () => void;
+  isCreator?: boolean;
 }
 
 export default function PartyGroupDetails({ 
@@ -55,22 +56,12 @@ export default function PartyGroupDetails({
 
   const queryClient = useQueryClient();
 
-  // Mutation for deleting the event
   const deleteMutation = useMutation({
     mutationFn: () => deletePartyGroup(partyGroup.id),
     onSuccess: () => {
-      // Invalidate all related caches to ensure consistency across the application
-
-      // Invalidate the specific party group
       queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}`] });
-
-      // Invalidate carpools for this party group
       queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}/carpools`] });
-
-      // Invalidate all party groups list
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
-
-      // Also invalidate any nested queries related to this party group
       queryClient.invalidateQueries({ queryKey: [`/api/carpools`] });
 
       toast({
@@ -90,7 +81,6 @@ export default function PartyGroupDetails({
     }
   });
 
-  // Get coordinates for the party location when the component mounts
   useEffect(() => {
     const loadPartyLocation = async () => {
       if (partyGroup.partyAddress && partyGroup.partyPostcode) {
@@ -113,7 +103,6 @@ export default function PartyGroupDetails({
     loadPartyLocation();
   }, [partyGroup]);
 
-  // Format date to readable string
   const formattedDate = new Date(partyGroup.partyDate).toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
@@ -121,7 +110,6 @@ export default function PartyGroupDetails({
     day: 'numeric'
   });
 
-  // Get end date if available
   const formattedEndDate = partyGroup.partyEndDate 
     ? new Date(partyGroup.partyEndDate).toLocaleDateString(undefined, {
         weekday: 'long',
@@ -131,11 +119,8 @@ export default function PartyGroupDetails({
       })
     : null;
 
-  // Generate shareable link
   const baseUrl = window.location.origin;
   const shareableLink = `${baseUrl}?partyId=${partyGroup.id}`;
-
-  // Access code copying function removed for MVP
 
   const copyShareableLink = () => {
     navigator.clipboard.writeText(shareableLink)
@@ -196,7 +181,6 @@ export default function PartyGroupDetails({
         </div>
       </CardHeader>
 
-      {/* Main content tabs */}
       {onBack && (
         <div className="bg-white px-6 pt-4 border-b border-gray-100">
           <Button
@@ -233,7 +217,6 @@ export default function PartyGroupDetails({
         <TabsContent value="details" className="pt-2 pb-0 px-0 m-0">
           <CardContent className="pt-4">
             <div className="space-y-4">
-              {/* Share with Parents - moved to top of details section */}
               {isCreator && (
                 <div className="mb-4 pb-4 border-b border-gray-200">
                   <div className="flex items-center justify-between mb-2">
@@ -334,7 +317,6 @@ export default function PartyGroupDetails({
                 </div>
               )}
 
-              {/* Display end date and time if available */}
               {(partyGroup.partyEndDate || partyGroup.endTime) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   {partyGroup.partyEndDate && (
@@ -359,7 +341,6 @@ export default function PartyGroupDetails({
                 </div>
               )}
 
-              {/* Travel Options - Moved to top for more prominence */}
               <div className="mt-6 space-y-4">
                 <h3 className="font-medium text-lg text-neutral-800">Travel Options</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -391,56 +372,52 @@ export default function PartyGroupDetails({
                   </div>
                 </div>
               </div>
-              
-              {/* Share section moved to top */}
             </div>
           </CardContent>
         </TabsContent>
 
-        
-              </p>
-
-              {isMapLoading && (
-                <div className="rounded-md border border-gray-200 overflow-hidden">
-                  <div className="h-[350px] bg-gray-50 flex items-center justify-center">
-                    <Skeleton className="h-[350px] w-full" />
-                  </div>
+        <TabsContent value="map" className="pt-2 pb-0 px-6 m-0">
+          <div className="space-y-4 py-4">
+            {isMapLoading && (
+              <div className="rounded-md border border-gray-200 overflow-hidden">
+                <div className="h-[350px] bg-gray-50 flex items-center justify-center">
+                  <Skeleton className="h-[350px] w-full" />
                 </div>
-              )}
-
-              {!isMapLoading && partyLocation && (
-                <div className="rounded-md border border-gray-200 overflow-hidden">
-                  <LocationMap 
-                    locations={[
-                      {
-                        label: partyGroup.name,
-                        position: partyLocation,
-                        type: 'party'
-                      }
-                    ]}
-                    height="350px"
-                    initialZoom={14}
-                  />
-                </div>
-              )}
-
-              {!isMapLoading && !partyLocation && (
-                <div className="h-[350px] flex items-center justify-center bg-gray-50 rounded-md border border-gray-200">
-                  <div className="text-center">
-                    <p className="text-gray-500 mb-2">
-                      Couldn't load the map. Please check the address.
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      {partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-4 text-xs text-gray-500 bg-gray-50 p-3 rounded-md">
-                <p className="font-medium mb-1">Address:</p>
-                <p>{partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}</p>
               </div>
+            )}
+
+            {!isMapLoading && partyLocation && (
+              <div className="rounded-md border border-gray-200 overflow-hidden">
+                <LocationMap 
+                  locations={[
+                    {
+                      label: partyGroup.name,
+                      position: partyLocation,
+                      type: 'party'
+                    }
+                  ]}
+                  height="350px"
+                  initialZoom={14}
+                />
+              </div>
+            )}
+
+            {!isMapLoading && !partyLocation && (
+              <div className="h-[350px] flex items-center justify-center bg-gray-50 rounded-md border border-gray-200">
+                <div className="text-center">
+                  <p className="text-gray-500 mb-2">
+                    Couldn't load the map. Please check the address.
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    {partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4 text-xs text-gray-500 bg-gray-50 p-3 rounded-md">
+              <p className="font-medium mb-1">Address:</p>
+              <p>{partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}</p>
             </div>
           </div>
         </TabsContent>
@@ -453,10 +430,8 @@ export default function PartyGroupDetails({
       </Tabs>
 
       <CardFooter className="bg-gray-50 py-4 flex justify-end space-x-3">
-        {/*Removed this section as per the request */}
       </CardFooter>
 
-      {/* Delete confirmation dialog */}
       <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
