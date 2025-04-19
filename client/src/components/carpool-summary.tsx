@@ -82,8 +82,30 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
   }
   
   const carpoolsArray = Array.isArray(carpools) ? carpools : [];
+  
+  // Separate carpools that are both ways (we'll need to treat them specially)
   const toPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canPickup || c.canBoth);
   const fromPartyCarpools = carpoolsArray.filter((c: Carpool) => c.canDropoff || c.canBoth);
+  
+  // Helper function to filter requests based on pickup/dropoff direction
+  const getDirectionalRequests = (requestsArray: CarpoolRequest[], isPickup: boolean): CarpoolRequest[] => {
+    if (!requestsArray) return [];
+    return requestsArray.filter(req => 
+      (isPickup && (req.pickupCarpool || req.bothWays)) || 
+      (!isPickup && (req.dropoffCarpool || req.bothWays))
+    );
+  };
+  
+  // Helper function to calculate available spaces
+  const calculateAvailableSpaces = (carpool: Carpool, isOutbound: boolean): number => {
+    if (!carpoolRequests[carpool.id]) {
+      return isOutbound ? (carpool.spacesAvailable || 0) : (carpool.returnSpacesAvailable || 0);
+    }
+    
+    const directionalRequests = getDirectionalRequests(carpoolRequests[carpool.id], isOutbound);
+    const totalSpaces = isOutbound ? (carpool.spacesAvailable || 0) : (carpool.returnSpacesAvailable || 0);
+    return Math.max(0, totalSpaces - directionalRequests.length);
+  };
   
   // Helper function to render dropoff location details based on preference
   const renderDropoffLocation = (carpool: Carpool, isOutbound: boolean = true) => {
@@ -142,10 +164,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       <div>
                         <h4 className="font-medium">{carpool.parentName}</h4>
                         <p className="text-sm text-gray-600">
-                          {carpoolRequests[carpool.id] 
-                            ? `${Math.max(0, carpool.spacesAvailable ? carpool.spacesAvailable - carpoolRequests[carpool.id].length : 0)} of ${carpool.spacesAvailable || 0} spaces available`
-                            : `${carpool.spacesAvailable || 0} spaces available`
-                          }
+                          {`${calculateAvailableSpaces(carpool, true)} of ${carpool.spacesAvailable || 0} spaces available`}
                         </p>
                         
                         {/* Summary of key details */}
@@ -169,7 +188,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                           <div className="mt-3 text-sm">
                             <p className="font-medium text-gray-700">Kids in this carpool:</p>
                             <ul className="mt-1 text-gray-600">
-                              {carpoolRequests[carpool.id].map(request => (
+                              {getDirectionalRequests(carpoolRequests[carpool.id], true).map(request => (
                                 <CarpoolRequestItem 
                                   key={request.id}
                                   request={request}
@@ -202,7 +221,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   <h4 className="font-medium mb-2">Kids Already Booked</h4>
                                   <div className="bg-gray-50 rounded-md p-3 mb-3">
                                     <ul className="space-y-2">
-                                      {carpoolRequests[carpool.id].map(request => (
+                                      {carpoolRequests[carpool.id]
+                                        .filter(req => req.pickupCarpool || req.bothWays)
+                                        .map(request => (
                                         <CarpoolRequestItem 
                                           key={request.id}
                                           request={request}
@@ -266,9 +287,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                         </div>
                                         <div className="flex items-center gap-1">
                                           <User className="h-3 w-3 text-gray-400" />
-                                          <span>Spaces: {carpoolRequests[carpool.id] 
-                                            ? Math.max(0, (carpool.spacesAvailable || 0) - carpoolRequests[carpool.id].length) 
-                                            : (carpool.spacesAvailable || 0)} of {carpool.spacesAvailable || 0} available</span>
+                                          <span>Spaces: {calculateAvailableSpaces(carpool, true)} of {carpool.spacesAvailable || 0} available</span>
                                         </div>
                                         
                                         <div className="flex items-center gap-1 mt-2">
@@ -303,9 +322,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                         </div>
                                         <div className="flex items-center gap-1">
                                           <User className="h-3 w-3 text-gray-400" />
-                                          <span>Spaces: {carpoolRequests[carpool.id] 
-                                            ? Math.max(0, (carpool.returnSpacesAvailable || 0) - carpoolRequests[carpool.id].length) 
-                                            : (carpool.returnSpacesAvailable || 0)} of {carpool.returnSpacesAvailable || 0} available</span>
+                                          <span>Spaces: {calculateAvailableSpaces(carpool, false)} of {carpool.returnSpacesAvailable || 0} available</span>
                                         </div>
                                         
                                         <div className="flex items-center gap-1 mt-2">
@@ -369,8 +386,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                           </DialogContent>
                         </Dialog>
                         
-                        {onRequestSpot && carpoolRequests[carpool.id] && 
-                         (carpool.spacesAvailable && carpool.spacesAvailable - carpoolRequests[carpool.id].length > 0) && (
+                        {onRequestSpot && calculateAvailableSpaces(carpool, true) > 0 && (
                           <Button 
                             size="sm" 
                             onClick={() => onRequestSpot(carpool.id)}
@@ -380,8 +396,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                           </Button>
                         )}
                         
-                        {onRequestSpot && carpoolRequests[carpool.id] && 
-                         (!carpool.spacesAvailable || carpool.spacesAvailable - carpoolRequests[carpool.id].length <= 0) && (
+                        {onRequestSpot && calculateAvailableSpaces(carpool, true) <= 0 && (
                           <Button 
                             size="sm" 
                             disabled
@@ -429,10 +444,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                       <div>
                         <h4 className="font-medium">{carpool.parentName}</h4>
                         <p className="text-sm text-gray-600">
-                          {carpoolRequests[carpool.id] 
-                            ? `${Math.max(0, carpool.returnSpacesAvailable ? carpool.returnSpacesAvailable - carpoolRequests[carpool.id].length : 0)} of ${carpool.returnSpacesAvailable || 0} spaces available`
-                            : `${carpool.returnSpacesAvailable || 0} spaces available`
-                          }
+                          {`${calculateAvailableSpaces(carpool, false)} of ${carpool.returnSpacesAvailable || 0} spaces available`}
                         </p>
                         
                         {/* Summary of key details */}
@@ -456,7 +468,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                           <div className="mt-3 text-sm">
                             <p className="font-medium text-gray-700">Kids in this carpool:</p>
                             <ul className="mt-1 text-gray-600">
-                              {carpoolRequests[carpool.id].map(request => (
+                              {getDirectionalRequests(carpoolRequests[carpool.id], false).map(request => (
                                 <CarpoolRequestItem 
                                   key={request.id}
                                   request={request}
@@ -489,7 +501,9 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                   <h4 className="font-medium mb-2">Kids Already Booked</h4>
                                   <div className="bg-gray-50 rounded-md p-3 mb-3">
                                     <ul className="space-y-2">
-                                      {carpoolRequests[carpool.id].map(request => (
+                                      {carpoolRequests[carpool.id]
+                                        .filter(req => req.dropoffCarpool || req.bothWays)
+                                        .map(request => (
                                         <CarpoolRequestItem 
                                           key={request.id}
                                           request={request}
@@ -553,9 +567,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                         </div>
                                         <div className="flex items-center gap-1">
                                           <User className="h-3 w-3 text-gray-400" />
-                                          <span>Spaces: {carpoolRequests[carpool.id] 
-                                            ? Math.max(0, (carpool.spacesAvailable || 0) - carpoolRequests[carpool.id].length) 
-                                            : (carpool.spacesAvailable || 0)} of {carpool.spacesAvailable || 0} available</span>
+                                          <span>Spaces: {calculateAvailableSpaces(carpool, true)} of {carpool.spacesAvailable || 0} available</span>
                                         </div>
                                         
                                         <div className="flex items-center gap-1 mt-2">
@@ -590,9 +602,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                                         </div>
                                         <div className="flex items-center gap-1">
                                           <User className="h-3 w-3 text-gray-400" />
-                                          <span>Spaces: {carpoolRequests[carpool.id] 
-                                            ? Math.max(0, (carpool.returnSpacesAvailable || 0) - carpoolRequests[carpool.id].length) 
-                                            : (carpool.returnSpacesAvailable || 0)} of {carpool.returnSpacesAvailable || 0} available</span>
+                                          <span>Spaces: {calculateAvailableSpaces(carpool, false)} of {carpool.returnSpacesAvailable || 0} available</span>
                                         </div>
                                         
                                         <div className="flex items-center gap-1 mt-2">
@@ -656,8 +666,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                           </DialogContent>
                         </Dialog>
                         
-                        {onRequestSpot && carpoolRequests[carpool.id] && 
-                         (carpool.returnSpacesAvailable && carpool.returnSpacesAvailable - carpoolRequests[carpool.id].length > 0) && (
+                        {onRequestSpot && calculateAvailableSpaces(carpool, false) > 0 && (
                           <Button 
                             size="sm" 
                             onClick={() => onRequestSpot(carpool.id)}
@@ -667,8 +676,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                           </Button>
                         )}
                         
-                        {onRequestSpot && carpoolRequests[carpool.id] && 
-                         (!carpool.returnSpacesAvailable || carpool.returnSpacesAvailable - carpoolRequests[carpool.id].length <= 0) && (
+                        {onRequestSpot && calculateAvailableSpaces(carpool, false) <= 0 && (
                           <Button 
                             size="sm" 
                             disabled
