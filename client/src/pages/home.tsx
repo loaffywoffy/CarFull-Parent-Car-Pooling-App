@@ -12,8 +12,7 @@ import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
 import CarpoolSummary from "@/components/carpool-summary";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusIcon, ChevronLeft, Search, Car } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroups } from "@/api/partyGroups";
@@ -365,46 +364,13 @@ export default function Home() {
               </Button>
             </div>
 
-            <Tabs value={innerTabValue} onValueChange={setInnerTabValue}>
-              <div className="bg-gray-100 rounded-lg p-1.5 border shadow-sm mb-6">
-                <TabsList className="grid grid-cols-2 w-full h-full">
-                  <TabsTrigger 
-                    value="find" 
-                    className="text-center py-3.5 h-full data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
-                  >
-                    <div className="flex items-center justify-center gap-2 font-medium text-base w-full">
-                      <Search className="h-4 w-4"/>
-                      Find a Ride
-                    </div>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="summary" 
-                    className="text-center py-3.5 h-full data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-md transition-all duration-200"
-                  >
-                    <div className="flex items-center justify-center gap-2 font-medium text-base w-full">
-                      <Car className="h-4 w-4"/>
-                      Carpool Summary
-                    </div>
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent value="find" className="mt-0">
-                <CarpoolList 
-                  partyGroupId={selectedPartyGroup.id}
-                  onRequestSpot={handleRequestSpot}
-                  selectedCarpoolId={selectedCarpoolId}
-                />
-              </TabsContent>
-
-              <TabsContent value="summary" className="mt-0">
-                <CarpoolSummary 
-                  partyGroupId={selectedPartyGroup.id}
-                  onRequestSpot={handleRequestSpot}
-                  onBackToEvents={() => handleTabChange("partyGroups")}
-                />
-              </TabsContent>
-            </Tabs>
+            <div className="mt-0">
+              <CarpoolList 
+                partyGroupId={selectedPartyGroup.id}
+                onRequestSpot={handleRequestSpot}
+                selectedCarpoolId={selectedCarpoolId}
+              />
+            </div>
           </div>
         )}
 
