@@ -395,16 +395,41 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                       From Event
                     </Badge>
                   )}
-                  <Badge className="bg-purple-100 text-purple-800">
-                    <Users className="h-3 w-3 mr-1" />
-                    {carpool.canPickup || carpool.canBoth 
-                      ? (carpoolRequests?.length 
-                          ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
-                          : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`) 
-                      : (carpoolRequests?.length
-                          ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
-                          : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`)}
-                  </Badge>
+                  {carpool.canBoth ? (
+                    // For carpools that offer both directions, show TO and FROM spaces separately
+                    <div className="flex gap-1 flex-wrap">
+                      <Badge className="bg-green-100 text-green-800">
+                        <Users className="h-3 w-3 mr-1" />
+                        <ArrowRight className="h-3 w-3 mr-1" />
+                        <span className="whitespace-nowrap">
+                          To: {carpoolRequests?.length 
+                            ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable}`
+                            : `${carpool.spacesAvailable} of ${carpool.spacesAvailable}`}
+                        </span>
+                      </Badge>
+                      <Badge className="bg-red-100 text-red-800">
+                        <Users className="h-3 w-3 mr-1" />
+                        <ArrowLeft className="h-3 w-3 mr-1" />
+                        <span className="whitespace-nowrap">
+                          From: {carpoolRequests?.length
+                            ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable}`
+                            : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable}`}
+                        </span>
+                      </Badge>
+                    </div>
+                  ) : (
+                    // For carpools that offer only one direction
+                    <Badge className="bg-purple-100 text-purple-800">
+                      <Users className="h-3 w-3 mr-1" />
+                      {carpool.canPickup 
+                        ? (carpoolRequests?.length 
+                            ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
+                            : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`) 
+                        : (carpoolRequests?.length
+                            ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                            : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`)}
+                    </Badge>
+                  )}
                   {sortBy === "distance" && (
                     <Badge className="bg-gray-100 text-gray-800">
                       <MapPin className="h-3 w-3 mr-1" />
