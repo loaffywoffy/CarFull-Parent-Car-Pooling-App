@@ -588,43 +588,54 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         </div>
                         
                         <div className="pl-6 space-y-1 text-xs">
-                          {/* When the driver is departing from the venue */}
-                          {(carpool.returnDepartureTime || carpool.returnCollectionTime) && (
-                            <div className="flex items-center gap-2 text-sm text-gray-700">
-                              <Clock size={14} className="text-red-600" />
+                          {/* Collection Time section - use returnCollectionTime if available, otherwise fallback to event endTime */}
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <Clock size={14} className="text-red-600" />
+                            <span>
+                              <span className="font-medium">Collection Time:</span> {
+                                carpool.returnCollectionTime 
+                                  ? carpool.returnCollectionTime 
+                                  : partyGroup && partyGroup.endTime 
+                                    ? partyGroup.endTime 
+                                    : "Not specified"
+                              }
+                              <span className="italic text-xs ml-1">
+                                {carpool.returnDropoffPreference === 'direct-home' 
+                                  ? ' (driver will drop off at your home)' 
+                                  : carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address' 
+                                  ? ` (driver will drop off at their address)` 
+                                  : carpool.returnDropoffPreference === 'pickup-point' || carpool.returnDropoffPreference === 'other-location'
+                                  ? ' (driver will drop off at meeting point)'
+                                  : !carpool.returnDropoffPreference || carpool.returnDropoffPreference === ''
+                                  ? ' (driver will drop off at your home)' /* Default when empty */
+                                  : ' (driver will drop off at meeting point)'}
+                              </span>
+                            </span>
+                          </div>
+                          
+                          {/* Alert when collection time differs from event end time */}
+                          {partyGroup && partyGroup.endTime && carpool.returnCollectionTime && 
+                           compareTimeStrings(carpool.returnCollectionTime, partyGroup.endTime) !== 0 && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700 bg-amber-50 p-1.5 rounded border border-amber-100 mt-1">
+                              <AlertCircle size={14} className="text-amber-600" />
                               <span>
-                                <span className="font-medium">
-                                  Collection time:
-                                </span> {carpool.returnCollectionTime || carpool.returnDepartureTime} 
-                                <span className="italic text-xs">
-                                  {carpool.returnDropoffPreference === 'direct-home' 
-                                    ? ' (driver will drop off at your home)' 
-                                    : carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address' 
-                                    ? ` (driver will drop off at their address)` 
-                                    : carpool.returnDropoffPreference === 'pickup-point' || carpool.returnDropoffPreference === 'other-location'
-                                    ? ' (driver will drop off at meeting point)'
-                                    : !carpool.returnDropoffPreference || carpool.returnDropoffPreference === ''
-                                    ? ' (driver will drop off at your home)' /* Default when empty */
-                                    : ' (driver will drop off at meeting point)'}
-                                </span>
+                                <span className="font-medium">Note:</span> The driver has specified a collection time 
+                                <span className="font-medium"> {
+                                  compareTimeStrings(carpool.returnCollectionTime, partyGroup.endTime) < 0 
+                                    ? " before" 
+                                    : " after"
+                                } </span> 
+                                the official event end time ({partyGroup.endTime}).
                               </span>
                             </div>
                           )}
                           
-                          {/* When parents need to pick up their kids */}
-                          {partyGroup && partyGroup.endTime && (
-                            <div className="flex items-center gap-2 text-sm text-gray-700 bg-amber-50 p-1.5 rounded border border-amber-100 mt-1">
-                              <AlertCircle size={14} className="text-amber-600" />
+                          {/* Show event end time note when no specific collection time is provided */}
+                          {partyGroup && partyGroup.endTime && !carpool.returnCollectionTime && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 p-1.5 rounded border border-gray-100 mt-1">
+                              <AlertCircle size={14} className="text-gray-500" />
                               <span>
-                                <span className="font-medium">Note:</span> Event ends at <span className="font-medium">{partyGroup.endTime}</span>
-                                {carpool.returnDepartureTime 
-                                  ? `. Driver leaves ${compareTimeStrings(carpool.returnDepartureTime, partyGroup.endTime) < 0 
-                                      ? 'before' 
-                                      : compareTimeStrings(carpool.returnDepartureTime, partyGroup.endTime) > 0 
-                                      ? 'after' 
-                                      : 'at'} official end time.`
-                                  : ` but no specific departure time was provided by the driver.`
-                                }
+                                <span className="font-medium">Note:</span> Using event end time as collection time since no specific time was provided by the driver.
                               </span>
                             </div>
                           )}
