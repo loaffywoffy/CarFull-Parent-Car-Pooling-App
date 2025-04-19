@@ -85,9 +85,11 @@ export default function CarpoolRequestItem({ request, compact = false, onDelete,
           </Button>
         </div>
         
-        <div className="text-xs text-gray-600 pl-1">
-          <p>Parent: {request.parentName} ({request.phoneNumber})</p>
-          <p className="truncate max-w-[200px]">{request.address}, {request.postcode}</p>
+        <div className="text-xs pl-1 mt-1 bg-gray-50 p-1.5 rounded border border-gray-100">
+          <h4 className="font-medium text-gray-700 mb-0.5">Parent Details</h4>
+          <p><span className="font-medium text-gray-600">Name:</span> {request.parentName}</p>
+          <p><span className="font-medium text-gray-600">Phone:</span> {request.phoneNumber}</p>
+          <p><span className="font-medium text-gray-600">Address:</span> {request.address}, {request.city}, {request.postcode}</p>
         </div>
         
         <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
@@ -133,15 +135,22 @@ export default function CarpoolRequestItem({ request, compact = false, onDelete,
             {request.needsBoth && <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded">Both ways</span>}
           </div>
           
-          <div className="text-xs text-gray-600 mt-1">
-            <p><span className="font-medium">Parent:</span> {request.parentName}</p>
-            <p><span className="font-medium">Phone:</span> {request.phoneNumber}</p>
-            <p><span className="font-medium">Address:</span> {request.address}, {request.city}, {request.postcode}</p>
+          <div className="text-xs mt-1">
+            <div className="bg-gray-50 p-2 rounded border border-gray-100 mb-1">
+              <h4 className="font-medium text-gray-700 mb-1 text-sm">Parent Details</h4>
+              <p><span className="font-medium text-gray-600">Name:</span> {request.parentName}</p>
+              <p><span className="font-medium text-gray-600">Phone:</span> {request.phoneNumber}</p>
+              <p><span className="font-medium text-gray-600">Address:</span> {request.address}, {request.city}, {request.postcode}</p>
+            </div>
             {request.emergencyContactName && (
-              <p><span className="font-medium">Emergency:</span> {request.emergencyContactName} {request.emergencyContactPhone ? `(${request.emergencyContactPhone})` : ''}</p>
+              <div className="mt-1">
+                <p><span className="font-medium text-gray-600">Emergency:</span> {request.emergencyContactName} {request.emergencyContactPhone ? `(${request.emergencyContactPhone})` : ''}</p>
+              </div>
             )}
             {request.specialRequirements && (
-              <p className="mt-1"><span className="font-medium">Notes:</span> {request.specialRequirements}</p>
+              <div className="mt-1">
+                <p><span className="font-medium text-gray-600">Notes:</span> {request.specialRequirements}</p>
+              </div>
             )}
           </div>
         </div>
