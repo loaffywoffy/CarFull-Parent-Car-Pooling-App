@@ -187,7 +187,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                         {carpoolRequests[carpool.id]?.length > 0 && (
                           <div className="mt-3 text-sm">
                             <p className="font-medium text-gray-700">Kids in this carpool:</p>
-                            <ul className="mt-1 text-gray-600">
+                            <ul className="mt-1 text-gray-600 space-y-1">
                               {getDirectionalRequests(carpoolRequests[carpool.id], true).map(request => (
                                 <CarpoolRequestItem 
                                   key={request.id}
@@ -467,7 +467,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                         {carpoolRequests[carpool.id]?.length > 0 && (
                           <div className="mt-3 text-sm">
                             <p className="font-medium text-gray-700">Kids in this carpool:</p>
-                            <ul className="mt-1 text-gray-600">
+                            <ul className="mt-1 text-gray-600 space-y-1">
                               {getDirectionalRequests(carpoolRequests[carpool.id], false).map(request => (
                                 <CarpoolRequestItem 
                                   key={request.id}

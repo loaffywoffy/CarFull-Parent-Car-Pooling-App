@@ -573,31 +573,36 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                   <h4 className="font-medium text-primary mb-3">Request a Spot</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                      <Input 
-                        placeholder="Parent's name" 
-                        className="mb-3"
-                        value={formData.parentName}
-                        onChange={(e) => setFormData({...formData, parentName: e.target.value})}
-                      />
-
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
-                      <Input 
-                        placeholder="Child's name" 
-                        className="mb-3"
-                        value={formData.childName}
-                        onChange={(e) => setFormData({...formData, childName: e.target.value})}
-                      />
+                      <h5 className="font-medium text-sm mb-2">Your Details</h5>
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                          <Input 
+                            placeholder="Parent's name" 
+                            value={formData.parentName}
+                            onChange={(e) => setFormData({...formData, parentName: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Child's Name</label>
+                          <Input 
+                            placeholder="Child's name" 
+                            value={formData.childName}
+                            onChange={(e) => setFormData({...formData, childName: e.target.value})}
+                          />
+                        </div>
+                      </div>
 
                       <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                       <Input 
                         placeholder="Phone number" 
-                        className="mb-3"
+                        className="mb-4"
                         value={formData.phoneNumber}
                         onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
                       />
 
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                      <h5 className="font-medium text-sm mb-2">Your Address</h5>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
                       <Input 
                         placeholder="Your address" 
                         className="mb-3"
@@ -607,73 +612,81 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                      <Input 
-                        placeholder="Your city" 
-                        className="mb-3"
-                        value={formData.city}
-                        onChange={(e) => setFormData({...formData, city: e.target.value})}
-                      />
+                      <div className="grid grid-cols-2 gap-3 mt-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                          <Input 
+                            placeholder="Your city" 
+                            value={formData.city}
+                            onChange={(e) => setFormData({...formData, city: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
+                          <Input 
+                            placeholder="Your postcode" 
+                            value={formData.postcode}
+                            onChange={(e) => setFormData({...formData, postcode: e.target.value})}
+                          />
+                        </div>
+                      </div>
 
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
-                      <Input 
-                        placeholder="Your postcode" 
-                        className="mb-3"
-                        value={formData.postcode}
-                        onChange={(e) => setFormData({...formData, postcode: e.target.value})}
-                      />
-
+                      <h5 className="font-medium text-sm mb-2 mt-4">Additional Information</h5>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Special Requirements</label>
                       <textarea 
                         placeholder="Any special requirements or notes"
-                        className="w-full rounded-md border border-gray-300 p-2 mb-3"
+                        className="w-full rounded-md border border-gray-300 p-2 mb-4"
                         rows={3}
                         value={formData.specialRequirements}
                         onChange={(e) => setFormData({...formData, specialRequirements: e.target.value})}
                       ></textarea>
 
                       {/* Direction Selection */}
-                      <div className="space-y-3 border-t pt-3 mt-3">
-                        <div className="font-medium text-sm text-gray-700">
+                      <div className="bg-gray-50 rounded-md p-4 border border-gray-100">
+                        <h5 className="font-medium text-sm text-gray-700 mb-2">
                           Direction(s) Needed
+                        </h5>
+                        <p className="text-xs text-gray-500 mb-3">Select which direction(s) you need:</p>
+                        
+                        <div className="space-y-2">
+                          {(carpool.canPickup || carpool.canBoth) && (
+                            <div className="flex items-center space-x-2 py-1 px-2 rounded hover:bg-gray-100">
+                              <Checkbox 
+                                id={`pickup-${carpool.id}`} 
+                                checked={formData.needsPickup} 
+                                onCheckedChange={(checked: boolean) => 
+                                  setFormData({...formData, needsPickup: checked})
+                                }
+                              />
+                              <label 
+                                htmlFor={`pickup-${carpool.id}`} 
+                                className="text-sm font-medium cursor-pointer flex items-center gap-2"
+                              >
+                                <ArrowRight size={14} className="text-green-500" />
+                                To party (pickup)
+                              </label>
+                            </div>
+                          )}
+                          
+                          {(carpool.canDropoff || carpool.canBoth) && (
+                            <div className="flex items-center space-x-2 py-1 px-2 rounded hover:bg-gray-100">
+                              <Checkbox 
+                                id={`dropoff-${carpool.id}`} 
+                                checked={formData.needsDropoff}
+                                onCheckedChange={(checked: boolean) => 
+                                  setFormData({...formData, needsDropoff: checked})
+                                }
+                              />
+                              <label 
+                                htmlFor={`dropoff-${carpool.id}`} 
+                                className="text-sm font-medium cursor-pointer flex items-center gap-2"
+                              >
+                                <ArrowLeft size={14} className="text-red-500" />
+                                From party (dropoff)
+                              </label>
+                            </div>
+                          )}
                         </div>
-                        <p className="text-xs text-gray-500">Select which direction(s) you need:</p>
-                        
-                        {(carpool.canPickup || carpool.canBoth) && (
-                          <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id={`pickup-${carpool.id}`} 
-                              checked={formData.needsPickup} 
-                              onCheckedChange={(checked: boolean) => 
-                                setFormData({...formData, needsPickup: checked})
-                              }
-                            />
-                            <label 
-                              htmlFor={`pickup-${carpool.id}`} 
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              To party (pickup)
-                            </label>
-                          </div>
-                        )}
-                        
-                        {(carpool.canDropoff || carpool.canBoth) && (
-                          <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id={`dropoff-${carpool.id}`} 
-                              checked={formData.needsDropoff}
-                              onCheckedChange={(checked: boolean) => 
-                                setFormData({...formData, needsDropoff: checked})
-                              }
-                            />
-                            <label 
-                              htmlFor={`dropoff-${carpool.id}`} 
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              From party (dropoff)
-                            </label>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -810,7 +823,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
           </div>
           {userPostcode && !userCoordinates && userPostcode.length > 4 && (
             <p className="text-xs text-amber-600 mt-2 flex items-center">
-              <Spinner size="xs" color="accent" className="mr-1" />
+              <div className="mr-1 h-3 w-3 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
               Looking up your location...
             </p>
           )}

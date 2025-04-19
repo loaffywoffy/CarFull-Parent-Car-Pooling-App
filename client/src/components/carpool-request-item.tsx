@@ -67,16 +67,28 @@ export default function CarpoolRequestItem({ request, compact = false, onDelete,
   if (compact) {
     // Compact version for the sidebar list
     return (
-      <li className="flex items-center justify-between gap-1">
-        <span>• {request.childName}</span>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-5 w-5 rounded-full text-gray-400 hover:text-red-500"
-          onClick={() => setIsDeleting(true)}
-        >
-          <X className="h-3 w-3" />
-        </Button>
+      <li className="mb-2">
+        <div className="flex items-center justify-between gap-1 mb-1">
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{request.childName}</span>
+            {request.needsPickup && <span className="text-xs px-1 py-0.5 bg-green-100 text-green-800 rounded">To</span>}
+            {request.needsDropoff && <span className="text-xs px-1 py-0.5 bg-red-100 text-red-800 rounded">From</span>}
+            {request.needsBoth && <span className="text-xs px-1 py-0.5 bg-blue-100 text-blue-800 rounded">Both</span>}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-5 w-5 rounded-full text-gray-400 hover:text-red-500"
+            onClick={() => setIsDeleting(true)}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+        
+        <div className="text-xs text-gray-600 pl-1">
+          <p>Parent: {request.parentName} ({request.phoneNumber})</p>
+          <p className="truncate max-w-[200px]">{request.address}, {request.postcode}</p>
+        </div>
         
         <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
           <AlertDialogContent>
