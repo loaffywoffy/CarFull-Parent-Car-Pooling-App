@@ -519,11 +519,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                               <Clock size={14} className="text-green-600" />
                               <span>
                                 <span className="font-medium">Target departure:</span> {carpool.outboundDepartureTime} 
-                                {carpool.outboundDropoffPreference === 'direct-home' || carpool.outboundDropoffPreference === 'venue' 
-                                  ? ' (direct to venue)' 
-                                  : carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address' 
+                                {carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address' 
                                   ? ` (from driver's address)` 
-                                  : ' (from meeting point)'}
+                                  : carpool.outboundDropoffPreference === 'pickup-point' || carpool.outboundDropoffPreference === 'other-location'
+                                  ? ' (from meeting point)'
+                                  : ''}
                               </span>
                             </div>
                           )}
