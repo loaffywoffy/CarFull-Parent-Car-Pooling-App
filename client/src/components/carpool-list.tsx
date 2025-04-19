@@ -589,13 +589,13 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         
                         <div className="pl-6 space-y-1 text-xs">
                           {/* When the driver is departing from the venue */}
-                          {carpool.returnDepartureTime && (
+                          {(carpool.returnDepartureTime || carpool.returnCollectionTime) && (
                             <div className="flex items-center gap-2 text-sm text-gray-700">
                               <Clock size={14} className="text-red-600" />
                               <span>
                                 <span className="font-medium">
-                                  {partyGroup && partyGroup.endTime ? 'Departure from venue:' : 'Collection time:'}
-                                </span> {carpool.returnDepartureTime} 
+                                  Collection time:
+                                </span> {carpool.returnCollectionTime || carpool.returnDepartureTime} 
                                 <span className="italic text-xs">
                                   {carpool.returnDropoffPreference === 'direct-home' 
                                     ? ' (driver will drop off at your home)' 
