@@ -12,7 +12,7 @@ import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
 import CarpoolSummary from "@/components/carpool-summary";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Car, Users, MapPin, Calendar } from "lucide-react";
 
 import { type PartyGroup } from "@shared/schema";
 import { getPartyGroupById, getPartyGroups } from "@/api/partyGroups";

@@ -119,8 +119,8 @@ export default function PartyGroupDetails({
       })
     : null;
 
-  // URL updated to match deployed application
-  const shareableUrl = `https://parentpooling.replit.app?partyId=${partyGroup.id}`;
+  // URL updated to match deployed application with proper query parameter format
+  const shareableUrl = `https://parentpooling.replit.app/?partyId=${partyGroup.id}`;
 
   const copyShareableLink = () => {
     navigator.clipboard.writeText(shareableUrl)
@@ -224,13 +224,13 @@ export default function PartyGroupDetails({
                     <div className="flex items-center gap-2 mb-3">
                       <Input 
                         readOnly 
-                        value={`https://parentpooling.replit.app?partyId=${partyGroup.id}`} 
+                        value={shareableUrl} 
                         className="font-mono text-xs bg-gray-50" 
                       />
                       <Button 
                         variant="outline" 
                         onClick={() => {
-                          navigator.clipboard.writeText(`https://parentpooling.replit.app?partyId=${partyGroup.id}`);
+                          navigator.clipboard.writeText(shareableUrl);
                           setCopySuccess({ ...copySuccess, link: true });
                           setTimeout(() => setCopySuccess(prev => ({ ...prev, link: false })), 2000);
                         }}
