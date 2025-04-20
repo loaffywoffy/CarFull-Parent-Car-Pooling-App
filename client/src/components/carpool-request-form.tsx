@@ -101,7 +101,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
 
       toast({
         title: "Success!",
-        description: `Your ${needsBoth ? "round trip" : (values.needsPickup ? "to party" : "from party")} ride request has been submitted.`
+        description: `Your ${needsBoth ? "to & from party" : (values.needsPickup ? "to party" : "from party")} ride request has been submitted.`
       });
 
       // Reset the form
@@ -246,7 +246,8 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                         disabled={carpoolDetails && !carpoolDetails.canPickup && !carpoolDetails.canBoth}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal cursor-pointer">
+                    <FormLabel className="font-normal cursor-pointer flex items-center gap-1">
+                      <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
                       To party (pickup)
                     </FormLabel>
                   </FormItem>
@@ -267,7 +268,8 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                         disabled={carpoolDetails && !carpoolDetails.canDropoff && !carpoolDetails.canBoth}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal cursor-pointer">
+                    <FormLabel className="font-normal cursor-pointer flex items-center gap-1">
+                      <span className="inline-block h-2 w-2 rounded-full bg-blue-500"></span>
                       From party (dropoff)
                     </FormLabel>
                   </FormItem>

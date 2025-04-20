@@ -68,7 +68,7 @@ export default function DeleteCarpoolRequestButton({
       <Button 
         variant="ghost" 
         size="icon"
-        className={`h-8 w-8 rounded-full hover:bg-red-100 text-red-500 hover:text-red-600 ${className}`}
+        className={`h-8 w-8 rounded-full hover:bg-blue-100 text-blue-500 hover:text-blue-600 ${className}`}
         onClick={() => setConfirmOpen(true)}
         title="Remove from carpool"
       >
@@ -79,7 +79,7 @@ export default function DeleteCarpoolRequestButton({
     buttonContent = (
       <Button 
         variant="ghost" 
-        className={`text-red-500 hover:text-red-600 hover:bg-red-50 p-2 h-auto text-xs ${className}`}
+        className={`text-blue-500 hover:text-blue-600 hover:bg-blue-50 p-2 h-auto text-xs ${className}`}
         onClick={() => setConfirmOpen(true)}
         size="sm"
       >
@@ -109,7 +109,7 @@ export default function DeleteCarpoolRequestButton({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-500" />
+              <AlertCircle className="h-5 w-5 text-blue-500" />
               Remove from carpool?
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -120,7 +120,7 @@ export default function DeleteCarpoolRequestButton({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-blue-500 hover:bg-blue-600"
               onClick={() => {
                 deleteMutation.mutate();
               }}
