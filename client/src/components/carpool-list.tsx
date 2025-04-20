@@ -419,35 +419,39 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         </Badge>
                       </div>
                     </div>
-                  ) : carpool.canPickup || carpool.canDropoff ? (
-                    // For carpools with only one direction (to or from), show the appropriate badges
+                  ) : (
+                    // For carpools with only one direction, show the appropriate badges
                     <>
                       {carpool.canPickup && (
-                        <Badge className="bg-green-100 text-green-800">
-                          <ArrowRight className="h-3 w-3 mr-1" />
-                          To Event
-                        </Badge>
+                        <>
+                          <Badge className="bg-green-100 text-green-800">
+                            <ArrowRight className="h-3 w-3 mr-1" />
+                            To Event
+                          </Badge>
+                          <Badge className="bg-green-100 text-green-800">
+                            <Users className="h-3 w-3 mr-1" />
+                            {carpoolRequests?.length 
+                              ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
+                              : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`}
+                          </Badge>
+                        </>
                       )}
                       {carpool.canDropoff && (
-                        <Badge className="bg-blue-100 text-blue-800">
-                          <ArrowLeft className="h-3 w-3 mr-1" />
-                          From Event
-                        </Badge>
-                      )}
-                      
-                      {/* Spaces available badge */}
-                      <Badge className="bg-gray-100 text-gray-800">
-                        <Users className="h-3 w-3 mr-1" />
-                        {carpool.canPickup 
-                          ? (carpoolRequests?.length 
-                              ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
-                              : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`) 
-                          : (carpoolRequests?.length
+                        <>
+                          <Badge className="bg-blue-100 text-blue-800">
+                            <ArrowLeft className="h-3 w-3 mr-1" />
+                            From Event
+                          </Badge>
+                          <Badge className="bg-blue-100 text-blue-800">
+                            <Users className="h-3 w-3 mr-1" />
+                            {carpoolRequests?.length
                               ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
-                              : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`)}
-                      </Badge>
+                              : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`}
+                          </Badge>
+                        </>
+                      )}
                     </>
-                  ) : null}
+                  )}
                   {sortBy === "distance" && (
                     <Badge className="bg-gray-100 text-gray-800">
                       <MapPin className="h-3 w-3 mr-1" />
@@ -471,12 +475,12 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             {request.needsPickup && request.needsDropoff ? (
                               <span className="flex items-center">
                                 <ArrowRight size={10} className="text-green-500" />
-                                <ArrowLeft size={10} className="text-red-500" />
+                                <ArrowLeft size={10} className="text-blue-500" />
                               </span>
                             ) : request.needsPickup ? (
                               <ArrowRight size={10} className="text-green-500" />
                             ) : (
-                              <ArrowLeft size={10} className="text-red-500" />
+                              <ArrowLeft size={10} className="text-blue-500" />
                             )}
                           </span>
                         </span>
