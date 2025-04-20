@@ -265,8 +265,16 @@ export default function Home() {
     <div className="bg-neutral-100 min-h-screen">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-neutral-800 mb-2">KidPool</h1>
-          <p className="text-neutral-600">Organize carpools for your child's events easily</p>
+          <h1 className="text-3xl font-bold text-neutral-800 mb-2 flex items-center justify-center gap-2">
+            <Car className="h-8 w-8 text-primary animate-bounce" />
+            KidPool
+            <Users className="h-8 w-8 text-primary animate-bounce" />
+          </h1>
+          <p className="text-neutral-600 flex items-center justify-center gap-2">
+            <MapPin className="h-4 w-4 text-primary" />
+            Making school runs fun and easy
+            <Calendar className="h-4 w-4 text-primary" />
+          </p>
         </header>
 
         {/* Empty section - removed */}
