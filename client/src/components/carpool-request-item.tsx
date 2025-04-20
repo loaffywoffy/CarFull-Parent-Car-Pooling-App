@@ -73,7 +73,7 @@ export default function CarpoolRequestItem({ request, compact = false, onDelete,
             <span className="font-medium">{request.childName}</span>
             {request.needsPickup && <span className="text-xs px-1 py-0.5 bg-green-100 text-green-800 rounded">To</span>}
             {request.needsDropoff && <span className="text-xs px-1 py-0.5 bg-blue-100 text-blue-800 rounded">From</span>}
-            {request.needsBoth && <span className="text-xs px-1 py-0.5 bg-purple-100 text-purple-800 rounded">Both</span>}
+            {request.needsBoth && <span className="text-xs px-1 py-0.5 bg-indigo-100 text-indigo-800 rounded">Both</span>}
           </div>
           <Button 
             variant="ghost" 
@@ -132,7 +132,7 @@ export default function CarpoolRequestItem({ request, compact = false, onDelete,
             <span className="font-medium">{request.childName}</span>
             {request.needsPickup && <span className="text-xs px-1.5 py-0.5 bg-green-100 text-green-800 rounded">To party</span>}
             {request.needsDropoff && <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded">From party</span>}
-            {request.needsBoth && <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-800 rounded">Both ways</span>}
+            {request.needsBoth && <span className="text-xs px-1.5 py-0.5 bg-indigo-100 text-indigo-800 rounded">Both ways</span>}
           </div>
           
           <div className="text-xs mt-1">
