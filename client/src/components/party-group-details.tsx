@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   CalendarIcon, MapPinIcon, ClockIcon, UserIcon, CopyIcon, 
   CheckIcon, LinkIcon, Share2Icon, CarIcon, Map as MapIcon,
-  Pencil, Trash2, AlertCircle, ChevronLeft
+  Pencil, ChevronLeft
 } from "lucide-react";
 import { type PartyGroup } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -16,18 +16,7 @@ import CarpoolSummary from "./carpool-summary";
 import { Skeleton } from "@/components/ui/skeleton";
 import LocationMap from "./location-map";
 import { geocodeAddress } from "@/lib/geocoding";
-import { deletePartyGroup } from "@/api/partyGroups";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PartyGroupDetailsProps {
   partyGroup: PartyGroup;
@@ -52,34 +41,8 @@ export default function PartyGroupDetails({
   const [copySuccess, setCopySuccess] = useState<{code: boolean, link: boolean}>({code: false, link: false});
   const [partyLocation, setPartyLocation] = useState<[number, number] | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(true);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const queryClient = useQueryClient();
-
-  const deleteMutation = useMutation({
-    mutationFn: () => deletePartyGroup(partyGroup.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/party-groups/${partyGroup.id}/carpools`] });
-      queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
-      queryClient.invalidateQueries({ queryKey: [`/api/carpools`] });
-
-      toast({
-        title: "Event deleted",
-        description: `'${partyGroup.name}' has been successfully deleted.`,
-      });
-
-      if (onDeleted) onDeleted();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to delete the event. Please try again.",
-        variant: "destructive",
-      });
-      console.error("Error deleting event:", error);
-    }
-  });
 
   useEffect(() => {
     const loadPartyLocation = async () => {
