@@ -409,7 +409,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             : `${carpool.spacesAvailable} of ${carpool.spacesAvailable}`}
                         </span>
                       </Badge>
-                      <Badge className="bg-red-100 text-red-800">
+                      <Badge className="bg-blue-100 text-blue-800">
                         <Users className="h-3 w-3 mr-1" />
                         <ArrowLeft className="h-3 w-3 mr-1" />
                         <span className="whitespace-nowrap">
@@ -611,9 +611,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                     
                     {/* From Event Information (Return Journey) */}
                     {(carpool.canDropoff || carpool.canBoth) && (
-                      <div className="bg-red-50 p-2 rounded-md border border-red-100">
-                        <div className="flex items-center gap-2 text-sm text-red-800 font-medium mb-1">
-                          <ArrowLeft size={16} className="text-red-600" />
+                      <div className="bg-blue-50 p-2 rounded-md border border-blue-100">
+                        <div className="flex items-center gap-2 text-sm text-blue-800 font-medium mb-1">
+                          <ArrowLeft size={16} className="text-blue-600" />
                           <span>From Event (Return Journey)</span>
                         </div>
                         
@@ -621,7 +621,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                           {/* When the driver is departing from the venue */}
                           {(carpool.returnDepartureTime || carpool.returnCollectionTime || (partyGroup && partyGroup.endTime && carpool.canDropoff)) && (
                             <div className="flex items-center gap-2 text-sm text-gray-700">
-                              <Clock size={14} className="text-red-600" />
+                              <Clock size={14} className="text-blue-600" />
                               <span>
                                 <span className="font-medium">
                                   Collection time:
@@ -660,7 +660,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                           
                           {/* Dropoff location details */}
                           <div className="flex items-center gap-2 text-sm text-gray-700 mt-1">
-                            <MapPin size={14} className="text-red-600" />
+                            <MapPin size={14} className="text-blue-600" />
                             <span>
                               <span className="font-medium">Final dropoff:</span> {
                                 carpool.returnDropoffPreference === 'direct-home' 
@@ -711,9 +711,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         {/* From Event spaces */}
                         {(carpool.canDropoff || carpool.canBoth) && (
                           <div className="flex items-center gap-2">
-                            <ArrowLeft size={14} className="text-red-600" />
+                            <ArrowLeft size={14} className="text-blue-600" />
                             <span>
-                              <span className="font-medium text-red-800">From event:</span> <span className="text-red-700">{carpoolRequests?.length 
+                              <span className="font-medium text-blue-800">From event:</span> <span className="text-blue-700">{carpoolRequests?.length 
                                 ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
                                 : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`}</span>
                             </span>
@@ -738,7 +738,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                   {request.needsPickup && request.needsDropoff ? (
                                     <span className="flex items-center">
                                       <ArrowRight size={12} className="text-green-500 mr-1" />
-                                      <ArrowLeft size={12} className="text-red-500 mr-1" />
+                                      <ArrowLeft size={12} className="text-blue-500 mr-1" />
                                       <span>Both ways</span>
                                     </span>
                                   ) : request.needsPickup ? (
@@ -748,7 +748,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                     </span>
                                   ) : request.needsDropoff ? (
                                     <span className="flex items-center">
-                                      <ArrowLeft size={12} className="text-red-500 mr-1" />
+                                      <ArrowLeft size={12} className="text-blue-500 mr-1" />
                                       <span>From event</span>
                                     </span>
                                   ) : null}
@@ -827,7 +827,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                   
                                   {request.needsDropoff || request.needsBoth ? (
                                     <div className="flex items-start mt-0.5">
-                                      <ArrowLeft size={10} className="text-red-500 mt-0.5 mr-1 shrink-0" />
+                                      <ArrowLeft size={10} className="text-blue-500 mt-0.5 mr-1 shrink-0" />
                                       <span>
                                         <span className="font-medium">From event:</span>{' '}
                                         {carpool.returnDropoffPreference === 'direct-home' 
@@ -972,7 +972,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                 htmlFor={`dropoff-${carpool.id}`} 
                                 className="text-sm font-medium cursor-pointer flex items-center gap-2"
                               >
-                                <ArrowLeft size={14} className="text-red-500" />
+                                <ArrowLeft size={14} className="text-blue-500" />
                                 From party (dropoff)
                               </label>
                             </div>
@@ -1135,10 +1135,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
             <span className="text-green-800">To Party <span className="text-slate-600">({carpools?.filter((c: any) => c.canPickup || c.canBoth).length || 0})</span></span>
           </TabsTrigger>
           <TabsTrigger value="from-party" className="flex items-center gap-1.5">
-            <div className="bg-red-100 rounded-full w-4 h-4 flex items-center justify-center">
-              <ArrowLeft size={10} className="text-red-800" />
+            <div className="bg-blue-100 rounded-full w-4 h-4 flex items-center justify-center">
+              <ArrowLeft size={10} className="text-blue-800" />
             </div>
-            <span className="text-red-800">From Party <span className="text-slate-600">({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})</span></span>
+            <span className="text-blue-800">From Party <span className="text-slate-600">({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})</span></span>
           </TabsTrigger>
           <TabsTrigger value="round-trip" className="flex items-center gap-1.5">
             <div className="bg-purple-100 rounded-full w-4 h-4 flex items-center justify-center">
