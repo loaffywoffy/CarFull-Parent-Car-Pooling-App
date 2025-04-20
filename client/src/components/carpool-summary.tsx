@@ -117,13 +117,13 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
               ) : null}
 
               {carpool.canDropoff || carpool.canBoth ? (
-                <div className="p-3 bg-red-50">
-                  <div className="flex items-center gap-2 text-red-800">
+                <div className="p-3 bg-blue-50">
+                  <div className="flex items-center gap-2 text-blue-800">
                     <ArrowLeft className="h-4 w-4" />
                     <h4 className="font-medium">From Party</h4>
                   </div>
                   <div className="ml-6 mt-1">
-                    <div className="flex items-center gap-2 text-red-700">
+                    <div className="flex items-center gap-2 text-blue-700">
                       <Clock className="h-4 w-4" />
                       <span className="font-medium">
                         Collection time: {carpool.returnCollectionTime || "Not specified"}
