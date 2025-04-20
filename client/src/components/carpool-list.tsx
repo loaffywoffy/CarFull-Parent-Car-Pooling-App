@@ -1129,28 +1129,28 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="w-full">
           <TabsTrigger value="to-party" className="flex items-center gap-1.5">
-            <div className="bg-green-500 rounded-full w-4 h-4 flex items-center justify-center">
-              <ArrowRight size={10} className="text-white" />
+            <div className="bg-green-100 rounded-full w-4 h-4 flex items-center justify-center">
+              <ArrowRight size={10} className="text-green-800" />
             </div>
             <span>To Party ({carpools?.filter((c: any) => c.canPickup || c.canBoth).length || 0})</span>
           </TabsTrigger>
           <TabsTrigger value="from-party" className="flex items-center gap-1.5">
-            <div className="bg-red-500 rounded-full w-4 h-4 flex items-center justify-center">
-              <ArrowLeft size={10} className="text-white" />
+            <div className="bg-red-100 rounded-full w-4 h-4 flex items-center justify-center">
+              <ArrowLeft size={10} className="text-red-800" />
             </div>
             <span>From Party ({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})</span>
           </TabsTrigger>
           <TabsTrigger value="round-trip" className="flex items-center gap-1.5">
-            <div className="bg-purple-500 rounded-full w-4 h-4 flex items-center justify-center">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
+            <div className="bg-purple-100 rounded-full w-4 h-4 flex items-center justify-center">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-purple-800">
                 <path d="M7 16L3 12M3 12L7 8M3 12H16M13 8L17 12M17 12L13 16M17 12H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <span>To & From ({carpools?.filter((c: any) => c.canBoth).length || 0})</span>
           </TabsTrigger>
           <TabsTrigger value="both" className="flex items-center gap-1.5">
-            <div className="bg-slate-500 rounded-full w-4 h-4 flex items-center justify-center">
-              <Car size={10} className="text-white" />
+            <div className="bg-gray-100 rounded-full w-4 h-4 flex items-center justify-center">
+              <Car size={10} className="text-gray-800" />
             </div>
             <span>All ({carpools?.length || 0})</span>
           </TabsTrigger>
