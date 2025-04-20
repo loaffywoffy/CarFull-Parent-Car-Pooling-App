@@ -119,11 +119,11 @@ export default function PartyGroupDetails({
       })
     : null;
 
-  const baseUrl = "https://carpool.replit.app";
-  const shareableLink = `${baseUrl}?partyId=${partyGroup.id}`;
+  // URL updated to match deployed application
+  const shareableUrl = `https://parentpooling.replit.app?partyId=${partyGroup.id}`;
 
   const copyShareableLink = () => {
-    navigator.clipboard.writeText(shareableLink)
+    navigator.clipboard.writeText(shareableUrl)
       .then(() => {
         setCopySuccess({...copySuccess, link: true});
         toast({
@@ -224,13 +224,13 @@ export default function PartyGroupDetails({
                     <div className="flex items-center gap-2 mb-3">
                       <Input 
                         readOnly 
-                        value={`https://carpool.replit.app?partyId=${partyGroup.id}`} 
+                        value={`https://parentpooling.replit.app?partyId=${partyGroup.id}`} 
                         className="font-mono text-xs bg-gray-50" 
                       />
                       <Button 
                         variant="outline" 
                         onClick={() => {
-                          navigator.clipboard.writeText(`https://carpool.replit.app?partyId=${partyGroup.id}`);
+                          navigator.clipboard.writeText(`https://parentpooling.replit.app?partyId=${partyGroup.id}`);
                           setCopySuccess({ ...copySuccess, link: true });
                           setTimeout(() => setCopySuccess(prev => ({ ...prev, link: false })), 2000);
                         }}
@@ -260,7 +260,7 @@ export default function PartyGroupDetails({
                           `📅 Date: ${formattedDate}\n` +
                           `⏰ Time: ${partyGroup.targetArrivalTime}\n` +
                           `📍 Location: ${partyGroup.partyAddress}, ${partyGroup.partyCity}\n\n` +
-                          `Link: ${shareableLink}`;
+                          `Link: ${shareableUrl}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
                       }}
                     >
