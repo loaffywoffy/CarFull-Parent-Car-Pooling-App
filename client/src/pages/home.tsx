@@ -272,7 +272,7 @@ export default function Home() {
           </h1>
           <p className="text-neutral-600 flex items-center justify-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />
-            Making school runs fun and easy
+            Making party travel fun and easy
             <Calendar className="h-4 w-4 text-primary" />
           </p>
         </header>
