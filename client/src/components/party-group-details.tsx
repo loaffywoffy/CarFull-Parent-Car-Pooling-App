@@ -129,15 +129,6 @@ export default function PartyGroupDetails({
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="h-8 w-8 rounded-full bg-white hover:bg-red-100 text-red-500 hover:text-red-600"
-                  onClick={() => setConfirmDeleteOpen(true)}
-                  title="Delete event"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
               </>
             )}
             <Badge variant="outline" className="bg-white ml-1">Active</Badge>
@@ -385,32 +376,6 @@ export default function PartyGroupDetails({
 
       <CardFooter className="bg-gray-50 py-4 flex justify-end space-x-3">
       </CardFooter>
-
-      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-500" />
-              Delete this event?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the event "{partyGroup.name}" and all associated carpools and requests.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-500 hover:bg-red-600"
-              onClick={() => {
-                deleteMutation.mutate();
-              }}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? "Deleting..." : "Delete Event"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Card>
   );
 }
