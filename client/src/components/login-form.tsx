@@ -33,8 +33,20 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     }
   });
   
+  const verifyCodeMutation = useMutation({
+    mutationFn: async (code: string) => {
+      const response = await apiRequest("POST", "/api/auth/verify", { code });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Verification failed");
+      }
+      return response.json();
+    }
+  });
+
   const loginMutation = useMutation({
     mutationFn: async (values: LoginFormValues) => {
+      // First login attempt sends verification code
       const response = await apiRequest("POST", "/api/auth/login", values);
       if (!response.ok) {
         const errorData = await response.json();
