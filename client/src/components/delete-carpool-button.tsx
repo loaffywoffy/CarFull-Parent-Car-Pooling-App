@@ -75,7 +75,7 @@ export default function DeleteCarpoolButton({
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-8 w-8 rounded-full text-gray-400 hover:text-red-500"
+          className="h-8 w-8 rounded-full text-gray-400 hover:text-blue-500"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -89,7 +89,7 @@ export default function DeleteCarpoolButton({
       );
     } else {
       return (
-        <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">
+        <Button variant="outline" size="sm" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
           <Trash2 className="h-4 w-4 mr-2" />
           Delete Carpool
         </Button>
@@ -104,7 +104,7 @@ export default function DeleteCarpoolButton({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-red-500">
+          <AlertDialogTitle className="flex items-center gap-2 text-blue-500">
             <AlertTriangle className="h-5 w-5" />
             Delete Carpool
           </AlertDialogTitle>
@@ -117,7 +117,7 @@ export default function DeleteCarpoolButton({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleDelete}
-            className="bg-red-500 hover:bg-red-600"
+            className="bg-blue-500 hover:bg-blue-600"
           >
             {deleteCarpoolMutation.isPending ? (
               <Spinner size="sm" text="Deleting..." />
