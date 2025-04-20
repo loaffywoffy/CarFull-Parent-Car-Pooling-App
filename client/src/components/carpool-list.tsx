@@ -709,6 +709,19 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                       </div>
                     )}
 
+                    {/* Additional Notes section */}
+                    {carpool.additionalNotes && (
+                      <div className="bg-amber-50 p-2 rounded-md border border-amber-100 mt-3">
+                        <div className="flex items-center gap-2 text-sm text-amber-800 font-medium mb-1">
+                          <AlertCircle size={16} className="text-amber-500" />
+                          <span>Additional Notes</span>
+                        </div>
+                        <div className="pl-6 text-sm text-gray-700">
+                          {carpool.additionalNotes}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="bg-gray-50 p-2 rounded-md border border-gray-100 mt-3">
                       <div className="flex items-center gap-2 text-sm text-gray-800 font-medium mb-1">
                         <Car size={16} className="text-gray-500" />
