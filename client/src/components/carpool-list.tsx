@@ -385,53 +385,69 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                 </h3>
 
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {(carpool.canPickup || carpool.canBoth) && (
-                    <Badge className="bg-green-100 text-green-800">
-                      <ArrowRight className="h-3 w-3 mr-1" />
-                      To Event
-                    </Badge>
-                  )}
-                  {(carpool.canDropoff || carpool.canBoth) && (
-                    <Badge className="bg-blue-100 text-blue-800">
-                      <ArrowLeft className="h-3 w-3 mr-1" />
-                      From Event
-                    </Badge>
-                  )}
                   {carpool.canBoth ? (
-                    // For carpools that offer both directions, show TO and FROM spaces separately
-                    <div className="flex gap-1 flex-wrap">
-                      <Badge className="bg-green-100 text-green-800">
-                        <Users className="h-3 w-3 mr-1" />
-                        <ArrowRight className="h-3 w-3 mr-1" />
-                        <span className="whitespace-nowrap">
-                          To: {carpoolRequests?.length 
-                            ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable}`
-                            : `${carpool.spacesAvailable} of ${carpool.spacesAvailable}`}
-                        </span>
-                      </Badge>
-                      <Badge className="bg-blue-100 text-blue-800">
-                        <Users className="h-3 w-3 mr-1" />
-                        <ArrowLeft className="h-3 w-3 mr-1" />
-                        <span className="whitespace-nowrap">
-                          From: {carpoolRequests?.length
-                            ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable}`
-                            : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable}`}
-                        </span>
-                      </Badge>
+                    // For carpools that offer both directions, group direction badges with their corresponding spaces badges
+                    <div className="flex gap-1 flex-wrap w-full">
+                      <div className="flex gap-1 flex-wrap">
+                        <Badge className="bg-green-100 text-green-800">
+                          <ArrowRight className="h-3 w-3 mr-1" />
+                          To Event
+                        </Badge>
+                        <Badge className="bg-green-100 text-green-800">
+                          <Users className="h-3 w-3 mr-1" />
+                          <ArrowRight className="h-3 w-3 mr-1" />
+                          <span className="whitespace-nowrap">
+                            To: {carpoolRequests?.length 
+                              ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable}`
+                              : `${carpool.spacesAvailable} of ${carpool.spacesAvailable}`}
+                          </span>
+                        </Badge>
+                      </div>
+                      <div className="flex gap-1 flex-wrap">
+                        <Badge className="bg-blue-100 text-blue-800">
+                          <ArrowLeft className="h-3 w-3 mr-1" />
+                          From Event
+                        </Badge>
+                        <Badge className="bg-blue-100 text-blue-800">
+                          <Users className="h-3 w-3 mr-1" />
+                          <ArrowLeft className="h-3 w-3 mr-1" />
+                          <span className="whitespace-nowrap">
+                            From: {carpoolRequests?.length
+                              ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable}`
+                              : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable}`}
+                          </span>
+                        </Badge>
+                      </div>
                     </div>
-                  ) : (
-                    // For carpools that offer only one direction
-                    <Badge className="bg-purple-100 text-purple-800">
-                      <Users className="h-3 w-3 mr-1" />
-                      {carpool.canPickup 
-                        ? (carpoolRequests?.length 
-                            ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
-                            : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`) 
-                        : (carpoolRequests?.length
-                            ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
-                            : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`)}
-                    </Badge>
-                  )}
+                  ) : carpool.canPickup || carpool.canDropoff ? (
+                    // For carpools with only one direction (to or from), show the appropriate badges
+                    <>
+                      {carpool.canPickup && (
+                        <Badge className="bg-green-100 text-green-800">
+                          <ArrowRight className="h-3 w-3 mr-1" />
+                          To Event
+                        </Badge>
+                      )}
+                      {carpool.canDropoff && (
+                        <Badge className="bg-blue-100 text-blue-800">
+                          <ArrowLeft className="h-3 w-3 mr-1" />
+                          From Event
+                        </Badge>
+                      )}
+                      
+                      {/* Spaces available badge */}
+                      <Badge className="bg-gray-100 text-gray-800">
+                        <Users className="h-3 w-3 mr-1" />
+                        {carpool.canPickup 
+                          ? (carpoolRequests?.length 
+                              ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
+                              : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`) 
+                          : (carpoolRequests?.length
+                              ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                              : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`)}
+                      </Badge>
+                    </>
+                  ) : null}
                   {sortBy === "distance" && (
                     <Badge className="bg-gray-100 text-gray-800">
                       <MapPin className="h-3 w-3 mr-1" />
@@ -1141,12 +1157,12 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
             <span className="text-blue-800">From Party <span className="text-slate-600">({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})</span></span>
           </TabsTrigger>
           <TabsTrigger value="round-trip" className="flex items-center gap-1.5">
-            <div className="bg-purple-100 rounded-full w-4 h-4 flex items-center justify-center">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-purple-800">
+            <div className="bg-indigo-100 rounded-full w-4 h-4 flex items-center justify-center">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-indigo-800">
                 <path d="M7 16L3 12M3 12L7 8M3 12H16M13 8L17 12M17 12L13 16M17 12H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="text-purple-800">To & From <span className="text-slate-600">({carpools?.filter((c: any) => c.canBoth).length || 0})</span></span>
+            <span className="text-indigo-800">To & From <span className="text-slate-600">({carpools?.filter((c: any) => c.canBoth).length || 0})</span></span>
           </TabsTrigger>
           <TabsTrigger value="both" className="flex items-center gap-1.5">
             <div className="bg-gray-100 rounded-full w-4 h-4 flex items-center justify-center">
