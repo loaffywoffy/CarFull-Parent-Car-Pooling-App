@@ -119,8 +119,9 @@ export default function PartyGroupDetails({
       })
     : null;
 
-  // URL updated to match deployed application with proper query parameter format
-  const shareableUrl = `https://parentpooling.replit.app/?partyId=${partyGroup.id}`;
+  // Create a dynamic shareableUrl that works in both development and production
+  const baseUrl = window.location.origin;
+  const shareableUrl = `${baseUrl}/?partyId=${partyGroup.id}`;
 
   const copyShareableLink = () => {
     navigator.clipboard.writeText(shareableUrl)
