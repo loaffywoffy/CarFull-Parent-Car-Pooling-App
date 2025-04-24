@@ -33,30 +33,30 @@ interface PartyGroupEditFormProps {
 // Create the form schema with custom validations
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
   name: z.string().min(3, "Event name must be at least 3 characters"),
-  partyAddress: z.string().min(5, "Event address is required"),
-  partyCity: z.string().min(2, "City is required"),
-  partyPostcode: z.string().min(3, "Postcode is required"),
+  eventAddress: z.string().min(5, "Event address is required"),
+  eventCity: z.string().min(2, "City is required"),
+  eventPostcode: z.string().min(3, "Postcode is required"),
   targetArrivalTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
-  partyEndDate: z.string().min(1, "End date is required")
+  eventEndDate: z.string().min(1, "End date is required")
 }).refine(
   (data) => {
     // If end date is provided, it must be >= start date
-    if (data.partyEndDate && data.partyDate) {
+    if (data.eventEndDate && data.eventDate) {
       // Compare dates
-      return new Date(data.partyEndDate) >= new Date(data.partyDate);
+      return new Date(data.eventEndDate) >= new Date(data.eventDate);
     }
     return true; // No end date provided, so validation passes
   },
   {
     message: "End date cannot be earlier than start date",
-    path: ["partyEndDate"]
+    path: ["eventEndDate"]
   }
 ).refine(
   (data) => {
     // If both dates are the same and both times are provided, end time must be after start time
-    if (data.partyEndDate && data.partyDate && data.endTime && data.targetArrivalTime) {
-      if (data.partyEndDate === data.partyDate) {
+    if (data.eventEndDate && data.eventDate && data.endTime && data.targetArrivalTime) {
+      if (data.eventEndDate === data.eventDate) {
         return data.endTime > data.targetArrivalTime;
       }
     }
@@ -94,9 +94,13 @@ export default function PartyGroupEditForm({ partyGroup, onSuccess, onCancel }: 
   });
 
   const partyGroupMutation = useMutation({
-    mutationFn: (values: PartyGroupFormValues) => 
-      updatePartyGroup(partyGroup.id, values),
+    mutationFn: (values: PartyGroupFormValues) => {
+      console.log("Submitting form values to API:", values);
+      return updatePartyGroup(partyGroup.id, values);
+    },
     onSuccess: (data) => {
+      console.log("API update successful. Response:", data);
+      
       // Comprehensive invalidation of all related caches to ensure consistency
       
       // Invalidate the specific party group detail query
@@ -112,14 +116,17 @@ export default function PartyGroupEditForm({ partyGroup, onSuccess, onCancel }: 
       queryClient.invalidateQueries({ queryKey: ['/api/carpools'] });
       
       toast({
-        title: "Success!",
-        description: "Event updated successfully.",
+        title: "Event Updated Successfully!",
+        description: `The event "${data.name}" has been updated with your changes.`,
+        variant: "default",
       });
+      
       onSuccess(data.id);
     },
     onError: (error) => {
+      console.error("Error updating event:", error);
       toast({
-        title: "Error",
+        title: "Update Failed",
         description: error.message || "Failed to update event. Please try again.",
         variant: "destructive",
       });
@@ -134,7 +141,28 @@ export default function PartyGroupEditForm({ partyGroup, onSuccess, onCancel }: 
   
   const handleConfirmEdit = () => {
     if (pendingValues) {
-      partyGroupMutation.mutate(pendingValues);
+      console.log("Confirmed edit with values:", pendingValues);
+      
+      // Create a copy of the values to ensure we're not affected by any reactivity issues
+      const valuesToSubmit = { ...pendingValues };
+      
+      // Special handling for empty strings that should be null
+      if (valuesToSubmit.partyEndDate === "") valuesToSubmit.partyEndDate = null;
+      if (valuesToSubmit.endTime === "") valuesToSubmit.endTime = null;
+      if (valuesToSubmit.description === "") valuesToSubmit.description = null;
+      if (valuesToSubmit.additionalInformation === "") valuesToSubmit.additionalInformation = null;
+      
+      // Log the final values being submitted
+      console.log("Submitting final values:", valuesToSubmit);
+      
+      // Submit the values to the mutation
+      partyGroupMutation.mutate(valuesToSubmit);
+      
+      // Show a toast to indicate submission is in progress
+      toast({
+        title: "Updating Event...",
+        description: "Your changes are being saved.",
+      });
     }
     setShowConfirmDialog(false);
   };
