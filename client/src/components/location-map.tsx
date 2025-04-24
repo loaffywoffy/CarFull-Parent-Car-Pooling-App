@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css';
 interface Location {
   label: string;
   position: [number, number];
-  type: 'party' | 'pickup' | 'dropoff' | 'both';
+  type: 'party' | 'event' | 'pickup' | 'dropoff' | 'both';
 }
 
 interface LocationMapProps {

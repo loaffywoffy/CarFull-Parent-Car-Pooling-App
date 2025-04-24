@@ -48,7 +48,7 @@ const StableLocationMap = memo(({
         {
           label: partyName,
           position: partyCoordinates,
-          type: 'party'
+          type: 'event'
         },
         {
           label: carpoolName,
@@ -1196,13 +1196,13 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="w-full">
-          <TabsTrigger value="to-party" className="flex items-center gap-1.5">
+          <TabsTrigger value="to-event" className="flex items-center gap-1.5">
             <div className="bg-green-100 rounded-full w-4 h-4 flex items-center justify-center">
               <ArrowRight size={10} className="text-green-800" />
             </div>
             <span className="text-green-800">To Event <span className="text-slate-600">({carpools?.filter((c: any) => c.canPickup || c.canBoth).length || 0})</span></span>
           </TabsTrigger>
-          <TabsTrigger value="from-party" className="flex items-center gap-1.5">
+          <TabsTrigger value="from-event" className="flex items-center gap-1.5">
             <div className="bg-blue-100 rounded-full w-4 h-4 flex items-center justify-center">
               <ArrowLeft size={10} className="text-blue-800" />
             </div>
