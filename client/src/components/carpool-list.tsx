@@ -1137,18 +1137,18 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                   <Label htmlFor="share-link" className="text-sm font-medium">
                     Carpool Link
                   </Label>
-                  <div className="flex mt-1.5">
+                  <div className="grid grid-cols-[1fr,auto] gap-2 mt-1.5">
                     <Input
                       id="share-link"
                       value={`${window.location.origin}/join-carpool?partyGroupId=${partyGroupId}&carpoolId=${carpool.id}`}
                       readOnly
-                      className="pr-12 font-mono text-xs"
+                      className="font-mono text-xs"
                     />
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="absolute right-12 h-9 flex gap-1"
+                      className="flex gap-1.5 h-9 whitespace-nowrap"
                       onClick={() => {
                         navigator.clipboard.writeText(`${window.location.origin}/join-carpool?partyGroupId=${partyGroupId}&carpoolId=${carpool.id}`);
                         setCopied(true);
