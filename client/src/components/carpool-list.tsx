@@ -75,7 +75,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
   // States for filtering and sorting
   const [sortBy, setSortBy] = useState<SortOption>("spaces");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTab, setSelectedTab] = useState("to-party");
+  const [selectedTab, setSelectedTab] = useState("to-event");
   const [showPostcodeInput, setShowPostcodeInput] = useState(false);
   const [userPostcode, setUserPostcode] = useState("");
   const [userCoordinates, setUserCoordinates] = useState<[number, number] | null>(null);
@@ -201,8 +201,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
     return carpools
       .filter((carpool: any) => {
         // Filter by tab selection
-        if (selectedTab === "to-party") return carpool.canPickup || carpool.canBoth;
-        if (selectedTab === "from-party") return carpool.canDropoff || carpool.canBoth;
+        if (selectedTab === "to-event") return carpool.canPickup || carpool.canBoth;
+        if (selectedTab === "from-event") return carpool.canDropoff || carpool.canBoth;
         if (selectedTab === "round-trip") return carpool.canBoth; // Only carpools offering both ways
         return true; // Show all carpools in the "both" tab
       })
@@ -284,7 +284,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
         // Show success message with direction info
         const needsBoth = formData.needsPickup && formData.needsDropoff;
         const directionText = needsBoth ? "round trip" : 
-                              (formData.needsPickup ? "to party" : "from party");
+                              (formData.needsPickup ? "to event" : "from event");
         
         toast({
           title: "Request Submitted",
@@ -338,7 +338,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
         ).then(coords => {
           setPartyCoordinates(coords);
         }).catch(err => {
-          console.error("Error getting party coordinates:", err);
+          console.error("Error getting event coordinates:", err);
         });
       }
 
@@ -1002,7 +1002,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         <p className="text-xs text-gray-500 mb-3">Select from the available carpool directions:</p>
                         
                         <div className="space-y-2">
-                          {/* Only show TO party option if spaces are available */}
+                          {/* Only show TO event option if spaces are available */}
                           {(carpool.canPickup || carpool.canBoth) && 
                            !(carpoolRequests?.length && 
                              carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length) && (
