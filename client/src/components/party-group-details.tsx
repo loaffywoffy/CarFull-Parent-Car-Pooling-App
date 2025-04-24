@@ -46,13 +46,13 @@ export default function PartyGroupDetails({
 
   useEffect(() => {
     const loadPartyLocation = async () => {
-      if (partyGroup.partyAddress && partyGroup.partyPostcode) {
+      if (partyGroup.eventAddress && partyGroup.eventPostcode) {
         try {
           setIsMapLoading(true);
           const coordinates = await geocodeAddress(
-            partyGroup.partyAddress,
-            partyGroup.partyCity,
-            partyGroup.partyPostcode
+            partyGroup.eventAddress,
+            partyGroup.eventCity,
+            partyGroup.eventPostcode
           );
           setPartyLocation(coordinates);
         } catch (error) {
@@ -66,15 +66,15 @@ export default function PartyGroupDetails({
     loadPartyLocation();
   }, [partyGroup]);
 
-  const formattedDate = new Date(partyGroup.partyDate).toLocaleDateString(undefined, {
+  const formattedDate = new Date(partyGroup.eventDate).toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
 
-  const formattedEndDate = partyGroup.partyEndDate 
-    ? new Date(partyGroup.partyEndDate).toLocaleDateString(undefined, {
+  const formattedEndDate = partyGroup.eventEndDate 
+    ? new Date(partyGroup.eventEndDate).toLocaleDateString(undefined, {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -214,7 +214,7 @@ export default function PartyGroupDetails({
                         const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
                           `📅 Date: ${formattedDate}\n` +
                           `⏰ Time: ${partyGroup.targetArrivalTime}\n` +
-                          `📍 Location: ${partyGroup.partyAddress}, ${partyGroup.partyCity}\n\n` +
+                          `📍 Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
                           `Link: ${shareableUrl}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
                       }}
@@ -251,7 +251,7 @@ export default function PartyGroupDetails({
                   <div>
                     <p className="font-medium text-gray-900">Location</p>
                     <p className="text-gray-600 text-sm">
-                      {partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}
+                      {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
                     </p>
                   </div>
                 </div>
@@ -266,9 +266,9 @@ export default function PartyGroupDetails({
                 </div>
               )}
 
-              {(partyGroup.partyEndDate || partyGroup.endTime) && (
+              {(partyGroup.eventEndDate || partyGroup.endTime) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  {partyGroup.partyEndDate && (
+                  {partyGroup.eventEndDate && (
                     <div className="flex items-start space-x-2">
                       <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
                       <div>
@@ -358,7 +358,7 @@ export default function PartyGroupDetails({
                     Couldn't load the map. Please check the address.
                   </p>
                   <p className="text-sm text-gray-400">
-                    {partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}
+                    {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
                   </p>
                 </div>
               </div>
@@ -366,7 +366,7 @@ export default function PartyGroupDetails({
 
             <div className="mt-4 text-xs text-gray-500 bg-gray-50 p-3 rounded-md">
               <p className="font-medium mb-1">Address:</p>
-              <p>{partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}</p>
+              <p>{partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}</p>
             </div>
           </div>
         </TabsContent>
