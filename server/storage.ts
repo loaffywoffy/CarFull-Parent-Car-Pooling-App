@@ -81,7 +81,7 @@ export class DatabaseStorage implements IStorage {
     const partyGroupData = {
       ...insertPartyGroup,
       description: insertPartyGroup.description ?? null,
-      partyEndDate: insertPartyGroup.partyEndDate ?? null,
+      eventEndDate: insertPartyGroup.eventEndDate ?? null,
       endTime: insertPartyGroup.endTime ?? null,
       additionalInformation: insertPartyGroup.additionalInformation ?? null
     };

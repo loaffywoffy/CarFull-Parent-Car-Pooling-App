@@ -147,8 +147,8 @@ export default function PartyGroupEditForm({ partyGroup, onSuccess, onCancel }: 
       const valuesToSubmit = { ...pendingValues };
       
       // Special handling for empty strings that should be null
-      if (valuesToSubmit.eventEndDate === "") valuesToSubmit.eventEndDate = null;
-      if (valuesToSubmit.endTime === "") valuesToSubmit.endTime = null;
+      if (valuesToSubmit.eventEndDate === "") valuesToSubmit.eventEndDate = null as unknown as string;
+      if (valuesToSubmit.endTime === "") valuesToSubmit.endTime = null as unknown as string;
       if (valuesToSubmit.description === "") valuesToSubmit.description = null;
       if (valuesToSubmit.additionalInformation === "") valuesToSubmit.additionalInformation = null;
       
