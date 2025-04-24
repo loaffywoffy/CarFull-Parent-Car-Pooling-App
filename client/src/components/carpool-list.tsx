@@ -786,7 +786,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                   <span className="font-medium">{request.childName}</span>
                                   <span className="text-gray-400 mx-1">•</span>
                                   
-                                  {request.needsPickup && request.needsDropoff ? (
+                                  {request.needsBoth ? (
                                     <span className="flex items-center">
                                       <ArrowRight size={12} className="text-green-500 mr-1" />
                                       <ArrowLeft size={12} className="text-blue-500 mr-1" />
@@ -803,7 +803,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                       <span>From event</span>
                                     </span>
                                   ) : null}
-                                  {request.specialRequirements && (
+                                  {request.specialRequirements && request.specialRequirements.trim() !== "" ? (
                                     <TooltipProvider>
                                       <Tooltip>
                                         <TooltipTrigger asChild>
@@ -820,7 +820,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                         </TooltipContent>
                                       </Tooltip>
                                     </TooltipProvider>
-                                  )}
+                                  ) : null}
                                 </div>
                                 
                                 {/* Delete Button */}
@@ -857,7 +857,18 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                 
                                 {/* Travel directions with specific details */}
                                 <div className="mt-1.5 bg-gray-50 p-1.5 rounded-sm">
-                                  {request.needsPickup || request.needsBoth ? (
+                                  {/* Display special requirements if any */}
+                                  {request.specialRequirements && request.specialRequirements.trim() !== "" && (
+                                    <div className="flex items-start mb-2 pb-2 border-b border-gray-200">
+                                      <AlertCircle size={10} className="text-amber-500 mt-0.5 mr-1 shrink-0" />
+                                      <div>
+                                        <span className="font-medium">Special Requirements:</span>
+                                        <p className="text-xs mt-0.5">{request.specialRequirements}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {(request.needsPickup || request.needsBoth) ? (
                                     <div className="flex items-start">
                                       <ArrowRight size={10} className="text-green-500 mt-0.5 mr-1 shrink-0" />
                                       <span>
@@ -876,7 +887,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                     </div>
                                   ) : null}
                                   
-                                  {request.needsDropoff || request.needsBoth ? (
+                                  {(request.needsDropoff || request.needsBoth) ? (
                                     <div className="flex items-start mt-0.5">
                                       <ArrowLeft size={10} className="text-blue-500 mt-0.5 mr-1 shrink-0" />
                                       <span>
