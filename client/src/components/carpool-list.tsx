@@ -1019,7 +1019,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                 className="text-sm font-medium cursor-pointer flex items-center gap-2"
                               >
                                 <ArrowRight size={14} className="text-green-500" />
-                                To party (pickup)
+                                To event (pickup)
                               </label>
                             </div>
                           )}
@@ -1041,7 +1041,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                                 className="text-sm font-medium cursor-pointer flex items-center gap-2"
                               >
                                 <ArrowLeft size={14} className="text-blue-500" />
-                                From party (dropoff)
+                                From event (dropoff)
                               </label>
                             </div>
                           )}
@@ -1064,7 +1064,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         if (!formData.needsPickup && !formData.needsDropoff) {
                           toast({
                             title: "Missing Direction",
-                            description: "Please select at least one direction (To party or From party)",
+                            description: "Please select at least one direction (To event or From event)",
                             variant: "destructive"
                           });
                           return;
@@ -1200,13 +1200,13 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
             <div className="bg-green-100 rounded-full w-4 h-4 flex items-center justify-center">
               <ArrowRight size={10} className="text-green-800" />
             </div>
-            <span className="text-green-800">To Party <span className="text-slate-600">({carpools?.filter((c: any) => c.canPickup || c.canBoth).length || 0})</span></span>
+            <span className="text-green-800">To Event <span className="text-slate-600">({carpools?.filter((c: any) => c.canPickup || c.canBoth).length || 0})</span></span>
           </TabsTrigger>
           <TabsTrigger value="from-party" className="flex items-center gap-1.5">
             <div className="bg-blue-100 rounded-full w-4 h-4 flex items-center justify-center">
               <ArrowLeft size={10} className="text-blue-800" />
             </div>
-            <span className="text-blue-800">From Party <span className="text-slate-600">({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})</span></span>
+            <span className="text-blue-800">From Event <span className="text-slate-600">({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})</span></span>
           </TabsTrigger>
           <TabsTrigger value="round-trip" className="flex items-center gap-1.5">
             <div className="bg-indigo-100 rounded-full w-4 h-4 flex items-center justify-center">

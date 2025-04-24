@@ -223,9 +223,9 @@ export default function PartyGroupDetails({
                       className="w-full bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
                       onClick={() => {
                         const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
-                          `📅 Date: ${formattedDate}\n` +
-                          `⏰ Time: ${partyGroup.targetArrivalTime}\n` +
-                          `📍 Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                          `📅 Event Date: ${formattedDate}\n` +
+                          `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                          `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
                           `Link: ${shareableUrl}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
                       }}
@@ -353,7 +353,7 @@ export default function PartyGroupDetails({
                     {
                       label: partyGroup.name,
                       position: partyLocation,
-                      type: 'party'
+                      type: 'event'
                     }
                   ]}
                   height="350px"
