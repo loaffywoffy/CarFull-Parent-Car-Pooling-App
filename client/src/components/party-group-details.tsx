@@ -118,6 +118,17 @@ export default function PartyGroupDetails({
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
+            {onBack && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1 bg-white hover:bg-gray-50 border-gray-200"
+                onClick={onBack}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span>Back</span>
+              </Button>
+            )}
             {isCreator && (
               <>
                 <Button 
@@ -374,7 +385,21 @@ export default function PartyGroupDetails({
         
       </Tabs>
 
-      <CardFooter className="bg-gray-50 py-4 flex justify-end space-x-3">
+      <CardFooter className="bg-gray-50 py-4 flex justify-between items-center">
+        {onBack && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+            onClick={onBack}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span>Back to Events</span>
+          </Button>
+        )}
+        <div className="space-x-3">
+          {/* Add any other buttons here in the future */}
+        </div>
       </CardFooter>
     </Card>
   );
