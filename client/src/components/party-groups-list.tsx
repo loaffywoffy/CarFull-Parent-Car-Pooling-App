@@ -111,7 +111,7 @@ export default function PartyGroupsList({
                 <div className="flex flex-wrap gap-4 text-sm">
                   <div className="flex items-center gap-1">
                     <CalendarIcon className="h-4 w-4 text-primary-600" />
-                    <span>{formatDate(partyGroup.partyDate)}</span>
+                    <span>{formatDate(partyGroup.eventDate)}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <ClockIcon className="h-4 w-4 text-primary-600" />
@@ -121,7 +121,7 @@ export default function PartyGroupsList({
                 <div className="flex items-center gap-1 mt-2 text-sm">
                   <MapPinIcon className="h-4 w-4 text-primary-600" />
                   <span className="text-gray-600 truncate">
-                    {partyGroup.partyAddress}, {partyGroup.partyCity}
+                    {partyGroup.eventAddress}, {partyGroup.eventCity}
                   </span>
                 </div>
                 

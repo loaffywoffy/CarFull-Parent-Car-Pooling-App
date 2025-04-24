@@ -991,7 +991,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                         <p className="text-xs text-gray-500 mb-3">Select from the available carpool directions:</p>
                         
                         <div className="space-y-2">
-                          {(carpool.canPickup || carpool.canBoth) && (
+                          {/* Only show TO party option if spaces are available */}
+                          {(carpool.canPickup || carpool.canBoth) && 
+                           !(carpoolRequests?.length && 
+                             carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length) && (
                             <div className="flex items-center space-x-2 py-1 px-2 rounded hover:bg-gray-100">
                               <Checkbox 
                                 id={`pickup-${carpool.id}`} 
@@ -1010,7 +1013,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             </div>
                           )}
                           
-                          {(carpool.canDropoff || carpool.canBoth) && (
+                          {/* Only show FROM party option if spaces are available */}
+                          {(carpool.canDropoff || carpool.canBoth) && 
+                           !(carpoolRequests?.length && 
+                             (carpool.returnSpacesAvailable || carpool.spacesAvailable) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length) && (
                             <div className="flex items-center space-x-2 py-1 px-2 rounded hover:bg-gray-100">
                               <Checkbox 
                                 id={`dropoff-${carpool.id}`} 
