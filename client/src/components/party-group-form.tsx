@@ -21,30 +21,30 @@ interface PartyGroupFormProps {
 // Create the form schema with custom validations
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
   name: z.string().min(3, "Event name must be at least 3 characters"),
-  eventAddress: z.string().min(5, "Event address is required"),
-  eventCity: z.string().min(2, "City is required"),
-  eventPostcode: z.string().min(3, "Postcode is required"),
+  partyAddress: z.string().min(5, "Event address is required"),
+  partyCity: z.string().min(2, "City is required"),
+  partyPostcode: z.string().min(3, "Postcode is required"),
   targetArrivalTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
-  eventEndDate: z.string().min(1, "End date is required")
+  partyEndDate: z.string().min(1, "End date is required")
 }).refine(
   (data) => {
     // If end date is provided, it must be >= start date
-    if (data.eventEndDate && data.eventDate) {
+    if (data.partyEndDate && data.partyDate) {
       // Compare dates
-      return new Date(data.eventEndDate) >= new Date(data.eventDate);
+      return new Date(data.partyEndDate) >= new Date(data.partyDate);
     }
     return true; // No end date provided, so validation passes
   },
   {
     message: "End date cannot be earlier than start date",
-    path: ["eventEndDate"]
+    path: ["partyEndDate"]
   }
 ).refine(
   (data) => {
     // If both dates are the same and both times are provided, end time must be after start time
-    if (data.eventEndDate && data.eventDate && data.endTime && data.targetArrivalTime) {
-      if (data.eventEndDate === data.eventDate) {
+    if (data.partyEndDate && data.partyDate && data.endTime && data.targetArrivalTime) {
+      if (data.partyEndDate === data.partyDate) {
         return data.endTime > data.targetArrivalTime;
       }
     }
@@ -66,11 +66,11 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
     defaultValues: {
       name: "",
       description: "",
-      eventAddress: "",
-      eventCity: "",
-      eventPostcode: "",
-      eventDate: "",
-      eventEndDate: "",
+      partyAddress: "",
+      partyCity: "",
+      partyPostcode: "",
+      partyDate: "",
+      partyEndDate: "",
       targetArrivalTime: "",
       endTime: "",
       createdBy: ""
@@ -82,8 +82,8 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
       createPartyGroup(values),
     onSuccess: (data) => {
       // Invalidate party groups query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['/api/event-groups'] });
-
+      queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
+      
       toast({
         title: "Success!",
         description: "Event created successfully.",
@@ -108,14 +108,14 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <h2 className="text-xl font-semibold mb-2 text-neutral-800">Create a New Event</h2>
       <p className="text-sm text-neutral-600 mb-6">Enter the event details to share with parents</p>
-
+      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
             {/* Event Information */}
             <div className="space-y-4">
               <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Event Information</h3>
-
+              
               <FormField
                 control={form.control}
                 name="name"
@@ -129,10 +129,10 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                   </FormItem>
                 )}
               />
-
+              
               <FormField
                 control={form.control}
-                name="eventAddress"
+                name="partyAddress"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Event Address</FormLabel>
@@ -143,11 +143,11 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                   </FormItem>
                 )}
               />
-
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="eventCity"
+                  name="partyCity"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>City</FormLabel>
@@ -158,10 +158,10 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                     </FormItem>
                   )}
                 />
-
+                
                 <FormField
                   control={form.control}
-                  name="eventPostcode"
+                  name="partyPostcode"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Postcode</FormLabel>
@@ -173,11 +173,11 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                   )}
                 />
               </div>
-
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="eventDate"
+                  name="partyDate"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Event Date</FormLabel>
@@ -187,11 +187,11 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                           {...field} 
                           onChange={(e) => {
                             field.onChange(e);
-
+                            
                             // If end date is before the new start date, update end date
-                            const endDate = form.getValues("eventEndDate");
+                            const endDate = form.getValues("partyEndDate");
                             if (endDate && new Date(endDate) < new Date(e.target.value)) {
-                              form.setValue("eventEndDate", e.target.value);
+                              form.setValue("partyEndDate", e.target.value);
                             }
                           }}
                           min={new Date().toISOString().split('T')[0]} // Set min to today
@@ -201,10 +201,10 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                     </FormItem>
                   )}
                 />
-
+                
                 <FormField
                   control={form.control}
-                  name="eventEndDate"
+                  name="partyEndDate"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>End Date</FormLabel>
@@ -213,7 +213,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                           type="date" 
                           {...field} 
                           value={field.value || ''} 
-                          min={form.getValues("eventDate") || new Date().toISOString().split('T')[0]} // Min is party date or today
+                          min={form.getValues("partyDate") || new Date().toISOString().split('T')[0]} // Min is party date or today
                         />
                       </FormControl>
                       <FormMessage />
@@ -221,7 +221,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                   )}
                 />
               </div>
-
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -230,7 +230,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                     // Parse the time value
                     let hour = '';
                     let minute = '';
-
+                    
                     if (field.value) {
                       const parts = field.value.split(':');
                       if (parts.length === 2) {
@@ -238,7 +238,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                         minute = parts[1];
                       }
                     }
-
+                    
                     // Set hour for start time
                     const setHour = (newHour: string) => {
                       if (newHour && minute) {
@@ -248,19 +248,19 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                       } else {
                         field.onChange('');
                       }
-
+                      
                       // If on same day, check if end time should be adjusted
-                      const eventDate = form.getValues("eventDate");
-                      const eventEndDate = form.getValues("eventEndDate");
-                      if (eventDate && eventEndDate && eventDate === eventEndDate) {
+                      const partyDate = form.getValues("partyDate");
+                      const partyEndDate = form.getValues("partyEndDate");
+                      if (partyDate && partyEndDate && partyDate === partyEndDate) {
                         const endTime = form.getValues("endTime");
                         if (endTime) {
                           const startTimeParts = `${newHour}:${minute || '00'}`.split(':');
                           const endTimeParts = endTime.split(':');
-
+                          
                           const startHour = parseInt(startTimeParts[0], 10);
                           const endHour = parseInt(endTimeParts[0], 10);
-
+                          
                           if (endHour < startHour || (endHour === startHour && parseInt(endTimeParts[1], 10) <= parseInt(startTimeParts[1], 10))) {
                             // End time is before or equal to start time, adjust it
                             form.setValue("endTime", `${(startHour + 1).toString().padStart(2, '0')}:${startTimeParts[1]}`);
@@ -268,7 +268,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                         }
                       }
                     };
-
+                    
                     // Set minute for start time
                     const setMinute = (newMinute: string) => {
                       if (hour && newMinute) {
@@ -278,21 +278,21 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                       } else {
                         field.onChange('');
                       }
-
+                      
                       // Check end time for same day events
-                      const eventDate = form.getValues("eventDate");
-                      const eventEndDate = form.getValues("eventEndDate");
-                      if (eventDate && eventEndDate && eventDate === eventEndDate) {
+                      const partyDate = form.getValues("partyDate");
+                      const partyEndDate = form.getValues("partyEndDate");
+                      if (partyDate && partyEndDate && partyDate === partyEndDate) {
                         const endTime = form.getValues("endTime");
                         if (endTime) {
                           const startTimeParts = `${hour}:${newMinute}`.split(':');
                           const endTimeParts = endTime.split(':');
-
+                          
                           const startHour = parseInt(startTimeParts[0], 10);
                           const startMinute = parseInt(startTimeParts[1], 10);
                           const endHour = parseInt(endTimeParts[0], 10);
                           const endMinute = parseInt(endTimeParts[1], 10);
-
+                          
                           if (endHour < startHour || (endHour === startHour && endMinute <= startMinute)) {
                             // End time is before or equal to start time, adjust it
                             form.setValue("endTime", `${(startHour + 1).toString().padStart(2, '0')}:${newMinute}`);
@@ -300,7 +300,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                         }
                       }
                     };
-
+                    
                     return (
                       <FormItem>
                         <FormLabel>Start Time</FormLabel>
@@ -326,7 +326,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                               </SelectContent>
                             </Select>
                           </div>
-
+                          
                           {/* Minute Select */}
                           <div className="w-1/2">
                             <Select
@@ -351,7 +351,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                     );
                   }}
                 />
-
+                
                 <FormField
                   control={form.control}
                   name="endTime"
@@ -359,7 +359,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                     // Parse the time value
                     let hour = '';
                     let minute = '';
-
+                    
                     if (field.value) {
                       const parts = field.value.split(':');
                       if (parts.length === 2) {
@@ -367,7 +367,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                         minute = parts[1];
                       }
                     }
-
+                    
                     // Set hour
                     const setHour = (newHour: string) => {
                       if (newHour && minute) {
@@ -378,7 +378,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                         field.onChange('');
                       }
                     };
-
+                    
                     // Set minute
                     const setMinute = (newMinute: string) => {
                       if (hour && newMinute) {
@@ -389,7 +389,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                         field.onChange('');
                       }
                     };
-
+                    
                     return (
                       <FormItem>
                         <FormLabel>End Time</FormLabel>
@@ -415,7 +415,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                               </SelectContent>
                             </Select>
                           </div>
-
+                          
                           {/* Minute Select */}
                           <div className="w-1/2">
                             <Select
@@ -442,11 +442,11 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                 />
               </div>
             </div>
-
+            
             {/* Admin Information */}
             <div className="space-y-4">
               <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Admin Information</h3>
-
+              
               <FormField
                 control={form.control}
                 name="createdBy"
@@ -460,7 +460,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                   </FormItem>
                 )}
               />
-
+              
             </div>
           </div>
 
