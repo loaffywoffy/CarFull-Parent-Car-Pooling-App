@@ -375,7 +375,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
             <div className="bg-white p-3 rounded-md border border-primary-200 mb-2">
               <div className="flex justify-between items-center">
                 <p className="text-gray-700">
-                  <strong>Location:</strong> {partyGroup.partyAddress}, {partyGroup.partyCity}, {partyGroup.partyPostcode}
+                  <strong>Location:</strong> {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
                 </p>
                 <Button
                   type="button"

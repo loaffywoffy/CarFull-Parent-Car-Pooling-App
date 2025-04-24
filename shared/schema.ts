@@ -10,16 +10,16 @@ export const users = pgTable("users", {
   email: text("email"),
 });
 
-// Party Group schema for events created by an admin
+// Event Group schema for events created by an admin
 export const partyGroups = pgTable("party_groups", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  partyAddress: text("party_address").notNull(),
-  partyCity: text("party_city").notNull(),
-  partyPostcode: text("party_postcode").notNull(),
-  partyDate: text("party_date").notNull(), // Date string
-  partyEndDate: text("party_end_date"), // Optional end date for multi-day events
+  eventAddress: text("party_address").notNull(),
+  eventCity: text("party_city").notNull(),
+  eventPostcode: text("party_postcode").notNull(),
+  eventDate: text("party_date").notNull(), // Date string
+  eventEndDate: text("party_end_date"), // Optional end date for multi-day events
   targetArrivalTime: text("target_arrival_time").notNull(), // Start time
   endTime: text("end_time"), // Optional end time
   createdBy: text("created_by").notNull(), // Admin name or email
