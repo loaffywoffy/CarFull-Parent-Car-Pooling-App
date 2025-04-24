@@ -113,9 +113,9 @@ export default function JoinCarpoolPage() {
             <Badge variant="outline" className="flex items-center gap-1 px-2 py-1">
               <CalendarClock className="h-3.5 w-3.5 text-muted-foreground" />
               <span>{formatEventDate(partyGroup.eventDate)}</span>
-              {partyGroup.startTime && partyGroup.endTime && (
+              {partyGroup.targetArrivalTime && partyGroup.endTime && (
                 <span className="text-muted-foreground ml-1">
-                  {partyGroup.startTime} - {partyGroup.endTime}
+                  {partyGroup.targetArrivalTime} - {partyGroup.endTime}
                 </span>
               )}
             </Badge>
