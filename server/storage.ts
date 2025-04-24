@@ -114,16 +114,16 @@ export class DatabaseStorage implements IStorage {
     
     // Non-nullable fields
     if ('name' in partyGroupUpdate) processedUpdate.name = partyGroupUpdate.name;
-    if ('partyAddress' in partyGroupUpdate) processedUpdate.partyAddress = partyGroupUpdate.partyAddress;
-    if ('partyCity' in partyGroupUpdate) processedUpdate.partyCity = partyGroupUpdate.partyCity;
-    if ('partyPostcode' in partyGroupUpdate) processedUpdate.partyPostcode = partyGroupUpdate.partyPostcode;
-    if ('partyDate' in partyGroupUpdate) processedUpdate.partyDate = partyGroupUpdate.partyDate;
+    if ('eventAddress' in partyGroupUpdate) processedUpdate.eventAddress = partyGroupUpdate.eventAddress;
+    if ('eventCity' in partyGroupUpdate) processedUpdate.eventCity = partyGroupUpdate.eventCity;
+    if ('eventPostcode' in partyGroupUpdate) processedUpdate.eventPostcode = partyGroupUpdate.eventPostcode;
+    if ('eventDate' in partyGroupUpdate) processedUpdate.eventDate = partyGroupUpdate.eventDate;
     if ('targetArrivalTime' in partyGroupUpdate) processedUpdate.targetArrivalTime = partyGroupUpdate.targetArrivalTime;
     if ('createdBy' in partyGroupUpdate) processedUpdate.createdBy = partyGroupUpdate.createdBy;
     
     // Nullable fields
     if ('description' in partyGroupUpdate) processedUpdate.description = partyGroupUpdate.description ?? null;
-    if ('partyEndDate' in partyGroupUpdate) processedUpdate.partyEndDate = partyGroupUpdate.partyEndDate ?? null;
+    if ('eventEndDate' in partyGroupUpdate) processedUpdate.eventEndDate = partyGroupUpdate.eventEndDate ?? null;
     if ('endTime' in partyGroupUpdate) processedUpdate.endTime = partyGroupUpdate.endTime ?? null;
     if ('accessCode' in partyGroupUpdate) processedUpdate.accessCode = partyGroupUpdate.accessCode ?? null;
     if ('additionalInformation' in partyGroupUpdate) processedUpdate.additionalInformation = partyGroupUpdate.additionalInformation ?? null;
