@@ -298,35 +298,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pickupRequests = existingRequests.filter(req => req.needsPickup || req.needsBoth).length;
       const dropoffRequests = existingRequests.filter(req => req.needsDropoff || req.needsBoth).length;
       
-      // Check if there are spaces available based on the requested direction
-      let hasSpaceAvailable = true;
-      
-      if ((needsPickup || needsBoth) && (!carpool.canPickup && !carpool.canBoth)) {
-        // Request is for pickup, but carpool doesn't offer pickup
-        hasSpaceAvailable = false;
-      }
-      
-      if ((needsDropoff || needsBoth) && (!carpool.canDropoff && !carpool.canBoth)) {
-        // Request is for dropoff, but carpool doesn't offer dropoff
-        hasSpaceAvailable = false;
-      }
-      
       // For outbound (to party), use spacesAvailable field
       const outboundSpaces = carpool.spacesAvailable;
       // For return (from party), use returnSpacesAvailable if present, otherwise spacesAvailable
       const returnSpaces = carpool.returnSpacesAvailable || carpool.spacesAvailable;
       
-      // Check for available spaces in each requested direction
+      // Check direction capabilities and availability separately
+      let canBookPickup = true;
+      let canBookDropoff = true;
+      
+      // Check if the carpool offers the requested directions
+      if ((needsPickup || needsBoth) && (!carpool.canPickup && !carpool.canBoth)) {
+        // Request is for pickup, but carpool doesn't offer pickup
+        canBookPickup = false;
+      }
+      
+      if ((needsDropoff || needsBoth) && (!carpool.canDropoff && !carpool.canBoth)) {
+        // Request is for dropoff, but carpool doesn't offer dropoff
+        canBookDropoff = false;
+      }
+      
+      // Check space availability for each direction
       if ((needsPickup || needsBoth) && (pickupRequests >= outboundSpaces)) {
-        hasSpaceAvailable = false;
+        canBookPickup = false;
       }
       
       if ((needsDropoff || needsBoth) && (dropoffRequests >= returnSpaces)) {
-        hasSpaceAvailable = false;
+        canBookDropoff = false;
       }
       
-      if (!hasSpaceAvailable) {
-        return res.status(400).json({ message: "No spaces available for the requested direction(s)" });
+      // If "both ways" was requested but only one direction is available,
+      // we need to split the request and only book the available direction
+      if (needsBoth) {
+        if (!canBookPickup && !canBookDropoff) {
+          return res.status(400).json({ message: "No spaces available in either direction" });
+        } else if (!canBookPickup) {
+          // Only dropoff is available
+          validationResult.data.needsBoth = false;
+          validationResult.data.needsPickup = false;
+          validationResult.data.needsDropoff = true;
+          console.log("[INFO] Modified request: Changed from 'Both ways' to 'From party only' due to availability");
+        } else if (!canBookDropoff) {
+          // Only pickup is available
+          validationResult.data.needsBoth = false;
+          validationResult.data.needsPickup = true;
+          validationResult.data.needsDropoff = false;
+          console.log("[INFO] Modified request: Changed from 'Both ways' to 'To party only' due to availability");
+        }
+        // If both directions are available, keep needsBoth=true
+      } else {
+        // Single direction request
+        if ((needsPickup && !canBookPickup) || (needsDropoff && !canBookDropoff)) {
+          const direction = needsPickup ? "To party" : "From party";
+          return res.status(400).json({ message: `No spaces available for ${direction}` });
+        }
       }
       
       const newRequest = await storage.createCarpoolRequest(validationResult.data);
