@@ -144,11 +144,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
 
               // Calculate distance from event (if event location is available)
               let distance = null;
-              if (partyGroup?.partyAddress && partyGroup?.partyPostcode) {
+              if (partyGroup?.eventAddress && partyGroup?.eventPostcode) {
                 const partyCoordinates = await geocodeAddress(
-                  partyGroup.partyAddress,
-                  partyGroup.partyCity || '',
-                  partyGroup.partyPostcode
+                  partyGroup.eventAddress,
+                  partyGroup.eventCity || '',
+                  partyGroup.eventPostcode
                 );
 
                 distance = calculateDistance(
@@ -330,11 +330,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
       if (!partyGroup) return;
 
       // Get party coordinates
-      if (partyGroup.partyAddress && partyGroup.partyPostcode) {
+      if (partyGroup.eventAddress && partyGroup.eventPostcode) {
         geocodeAddress(
-          partyGroup.partyAddress,
-          partyGroup.partyCity,
-          partyGroup.partyPostcode
+          partyGroup.eventAddress,
+          partyGroup.eventCity,
+          partyGroup.eventPostcode
         ).then(coords => {
           setPartyCoordinates(coords);
         }).catch(err => {
@@ -505,19 +505,37 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                 size="sm"
                 disabled={
                   carpoolRequests?.length && (
-                    (carpool.canPickup || carpool.canBoth) &&
-                    carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length ||
-                    (carpool.canDropoff || carpool.canBoth) &&
-                    (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length
+                    // If both canPickup and canDropoff are true, both directions must be full to disable
+                    ((carpool.canPickup || carpool.canBoth) && 
+                     (carpool.canDropoff || carpool.canBoth)) ?
+                      // Check if BOTH directions are full
+                      (carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length &&
+                       (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)
+                    :
+                      // Only one direction, check just that one
+                      ((carpool.canPickup || carpool.canBoth) &&
+                       carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length) ||
+                      ((carpool.canDropoff || carpool.canBoth) &&
+                       (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)
                   )
                 }
               >
+                {/* Determine button text based on availability */}
                 {carpoolRequests?.length && 
-                 ((carpool.canPickup || carpool.canBoth) && 
-                 carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length ||
-                 (carpool.canDropoff || carpool.canBoth) && 
-                 (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)
-                 ? "No Spots Available" : "Request Spot"}
+                  // Check if all available directions are full
+                  (((carpool.canPickup || carpool.canBoth) && 
+                    (carpool.canDropoff || carpool.canBoth)) ? 
+                    // Bidirectional carpool - both directions must be full to show "No Spots Available"
+                    (carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length &&
+                     (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)
+                    : 
+                    // Single-direction carpool - just check the one direction
+                    ((carpool.canPickup || carpool.canBoth) && 
+                     carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length) ||
+                    ((carpool.canDropoff || carpool.canBoth) && 
+                     (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)) 
+                  ? "No Spots Available" 
+                  : "Request Spot"}
               </Button>
               
               {/* Delete Carpool Button */}
