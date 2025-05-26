@@ -302,6 +302,20 @@ export default function PartyGroupDetails({
                 </div>
               )}
 
+              {/* Calendar Integration Section */}
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="font-medium text-blue-900">Add to Your Calendar</h4>
+                    <p className="text-sm text-blue-700">Never miss this event - add it to your personal calendar</p>
+                  </div>
+                </div>
+                <CalendarIntegration 
+                  eventData={partyGroup}
+                  buttonVariant="default"
+                />
+              </div>
+
               <div className="mt-6 space-y-4">
                 <h3 className="font-medium text-lg text-neutral-800">Travel Options</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
