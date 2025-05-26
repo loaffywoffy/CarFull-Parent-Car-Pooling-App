@@ -26,9 +26,7 @@ class RateLimitService {
   
   // Development/testing exemptions
   private readonly EXEMPTED_NUMBERS = new Set([
-    '+447961318588',
-    '07961318588',
-    '447961318588'
+    '+447961318588'  // This is the normalized format that will be checked
   ]);
 
   constructor() {
