@@ -23,6 +23,13 @@ class RateLimitService {
   private readonly BRUTE_FORCE_THRESHOLD = 5;
   private readonly BRUTE_FORCE_BLOCK_DURATION = 15 * 60 * 1000; // 15 minutes
   private readonly CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+  
+  // Development/testing exemptions
+  private readonly EXEMPTED_NUMBERS = new Set([
+    '+447961318588',
+    '07961318588',
+    '447961318588'
+  ]);
 
   constructor() {
     // Clean up old entries periodically
@@ -30,6 +37,12 @@ class RateLimitService {
   }
 
   checkPhoneNumberLimit(phoneNumber: string): { allowed: boolean; timeUntilReset?: number } {
+    // Check if this phone number is exempted for testing
+    if (this.EXEMPTED_NUMBERS.has(phoneNumber)) {
+      console.log(`[DEBUG] Phone number ${phoneNumber} is exempted from rate limiting`);
+      return { allowed: true };
+    }
+    
     const now = Date.now();
     const hourAgo = now - (60 * 60 * 1000);
     
