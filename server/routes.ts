@@ -392,6 +392,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete carpool - removed provider check for MVP
   app.delete("/api/carpools/:id", async (req, res) => {
     try {
+      // Check if this action requires phone verification
+      const { phoneNumber, verificationCode } = req.body;
+      if (phoneNumber && verificationCode) {
+        const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+        const isVerified = await verificationService.verifyCode(normalizedPhone, verificationCode, 'delete_carpool');
+        
+        if (!isVerified) {
+          return res.status(400).json({ 
+            message: "Phone verification required. Please verify your phone number to delete this carpool.",
+            requiresVerification: true,
+            action: 'delete_carpool'
+          });
+        }
+      }
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid carpool ID" });
@@ -743,6 +758,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete a party group - removed creator check for MVP
   app.delete("/api/party-groups/:id", async (req, res) => {
     try {
+      // Check if this action requires phone verification
+      const { phoneNumber, verificationCode } = req.body;
+      if (phoneNumber && verificationCode) {
+        const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+        const isVerified = await verificationService.verifyCode(normalizedPhone, verificationCode, 'delete_event');
+        
+        if (!isVerified) {
+          return res.status(400).json({ 
+            message: "Phone verification required. Please verify your phone number to delete this event.",
+            requiresVerification: true,
+            action: 'delete_event'
+          });
+        }
+      }
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid party group ID" });
@@ -769,6 +799,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update a party group - removed creator check for MVP
   app.put("/api/party-groups/:id", async (req, res) => {
     try {
+      // Check if this action requires phone verification
+      const { phoneNumber, verificationCode } = req.body;
+      if (phoneNumber && verificationCode) {
+        const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+        const isVerified = await verificationService.verifyCode(normalizedPhone, verificationCode, 'edit_event');
+        
+        if (!isVerified) {
+          return res.status(400).json({ 
+            message: "Phone verification required. Please verify your phone number to edit this event.",
+            requiresVerification: true,
+            action: 'edit_event'
+          });
+        }
+      }
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid party group ID" });
