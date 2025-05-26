@@ -90,6 +90,7 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   targetArrivalTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
   eventEndDate: z.string().min(1, "End date is required"),
+  createdBy: z.string().min(2, "Your name is required").max(100, "Name is too long"),
   phoneNumber: z.string()
     .min(7, "Phone number must be at least 7 digits")
     .max(20, "Phone number is too long")
