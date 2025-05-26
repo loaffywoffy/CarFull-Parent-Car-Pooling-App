@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { type PartyGroup } from "@shared/schema";
+import { getEventColorScheme, getEventTypeDisplayName, getEventTypeIcon } from "@/lib/event-colors";
 
 interface PartyGroupsListProps {
   onSelectPartyGroup: (partyGroup: PartyGroup) => void;
@@ -95,8 +96,13 @@ export default function PartyGroupsList({
   }
 
   // Component to render an event card
-  const EventCard = ({ partyGroup, isPast = false }: { partyGroup: PartyGroup, isPast?: boolean }) => (
-    <Card key={partyGroup.id} className={`hover:shadow-md transition-shadow ${isPast ? 'opacity-75' : ''}`}>
+  const EventCard = ({ partyGroup, isPast = false }: { partyGroup: PartyGroup, isPast?: boolean }) => {
+    const colors = getEventColorScheme(partyGroup.eventType || 'birthday');
+    const eventIcon = getEventTypeIcon(partyGroup.eventType || 'birthday');
+    const eventTypeName = getEventTypeDisplayName(partyGroup.eventType || 'birthday');
+    
+    return (
+    <Card key={partyGroup.id} className={`hover:shadow-md transition-shadow ${isPast ? 'opacity-75' : ''} border-l-4 ${colors.primary.replace('bg-', 'border-l-')}`}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{partyGroup.name}</CardTitle>
@@ -170,7 +176,8 @@ export default function PartyGroupsList({
         </div>
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   const hasNoEvents = !partyGroups || partyGroups.length === 0;
   const hasNoFutureEvents = futureEvents.length === 0;
