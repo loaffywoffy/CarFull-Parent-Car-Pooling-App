@@ -74,6 +74,9 @@ export const carpools = pgTable("carpools", {
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),
   emergencyContactRelationship: text("emergency_contact_relationship"),
+  // Privacy controls
+  isPrivate: boolean("is_private").default(true),
+  allowedParents: text("allowed_parents"), // Comma-separated list of phone numbers or emails
 });
 
 // CarpoolRequest schema for requests to join carpool
