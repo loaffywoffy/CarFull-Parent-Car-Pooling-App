@@ -419,6 +419,8 @@ export class DatabaseStorage implements IStorage {
 
   async storeVerificationCode(phoneNumber: string, code: string, action: string): Promise<void> {
     const key = `${phoneNumber}:${action}`;
+    console.log(`[DEBUG] Storing verification code for key: ${key}`);
+    console.log(`[DEBUG] Code being stored: "${code}"`);
     this.verificationCodes.set(key, {
       code,
       action,
@@ -438,23 +440,32 @@ export class DatabaseStorage implements IStorage {
     const key = `${phoneNumber}:${action}`;
     const stored = this.verificationCodes.get(key);
     
+    console.log(`[DEBUG] Verifying code for key: ${key}`);
+    console.log(`[DEBUG] Provided code: "${code}"`);
+    console.log(`[DEBUG] Stored data:`, stored);
+    
     if (!stored) {
+      console.log(`[DEBUG] No stored code found for key: ${key}`);
       return false;
     }
     
     // Check if code is expired (10 minutes)
     const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
     if (stored.timestamp < tenMinutesAgo) {
+      console.log(`[DEBUG] Code expired for key: ${key}`);
       this.verificationCodes.delete(key);
       return false;
     }
     
     // Verify code matches
+    console.log(`[DEBUG] Comparing codes: "${stored.code}" === "${code}"`);
     if (stored.code === code) {
+      console.log(`[DEBUG] Code verification successful for key: ${key}`);
       this.verificationCodes.delete(key); // Remove used code
       return true;
     }
     
+    console.log(`[DEBUG] Code verification failed for key: ${key}`);
     return false;
   }
 }
