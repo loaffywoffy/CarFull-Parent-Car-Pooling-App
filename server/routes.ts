@@ -99,7 +99,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Phone number and code are required" });
       }
       
-      const isValid = await verificationService.verifyCode(phoneNumber, code, action);
+      // Normalize phone number to match the format used when storing the code
+      const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+      const isValid = await verificationService.verifyCode(normalizedPhone, code, action);
       
       if (isValid) {
         res.json({ verified: true, message: "Code verified successfully" });
