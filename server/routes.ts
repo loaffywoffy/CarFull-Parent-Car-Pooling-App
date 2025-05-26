@@ -10,10 +10,53 @@ import {
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { setupAuth, isAuthenticated, isPartyGroupCreator, isCarpoolProvider } from "./auth";
+import { messagingService } from "./services/sms";
+import { verificationService } from "./services/verification";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth system is disabled for MVP
   // setupAuth(app);
+  
+  // SMS Verification endpoints
+  app.post("/api/verification/send", async (req, res) => {
+    try {
+      const { phoneNumber, action } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      const code = verificationService.generateCode();
+      await verificationService.storeVerificationCode(phoneNumber, code, action);
+      await messagingService.sendVerificationCode(phoneNumber, code, action);
+      
+      res.json({ message: "Verification code sent successfully" });
+    } catch (error) {
+      console.error("Error sending verification code:", error);
+      res.status(500).json({ message: "Failed to send verification code" });
+    }
+  });
+  
+  app.post("/api/verification/verify", async (req, res) => {
+    try {
+      const { phoneNumber, code, action } = req.body;
+      
+      if (!phoneNumber || !code) {
+        return res.status(400).json({ message: "Phone number and code are required" });
+      }
+      
+      const isValid = await verificationService.verifyCode(phoneNumber, code, action);
+      
+      if (isValid) {
+        res.json({ verified: true, message: "Code verified successfully" });
+      } else {
+        res.status(400).json({ verified: false, message: "Invalid or expired code" });
+      }
+    } catch (error) {
+      console.error("Error verifying code:", error);
+      res.status(500).json({ message: "Failed to verify code" });
+    }
+  });
   
   // Middleware to check if the current user is the creator of a party group
   const isCreatorMiddleware = async (req: any, res: any, next: any) => {

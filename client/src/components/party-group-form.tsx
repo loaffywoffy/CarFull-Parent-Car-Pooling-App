@@ -1,16 +1,31 @@
 import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { insertPartyGroupSchema } from "@shared/schema";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { insertPartyGroupSchema, type InsertPartyGroup } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
-import { createPartyGroup } from "@/api/partyGroups";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { Calendar, MapPin } from "lucide-react";
+import { SMSVerificationDialog } from "./sms-verification-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createPartyGroup } from "@/api/partyGroups";
 import { queryClient } from "@/lib/queryClient";
 
 interface PartyGroupFormProps {
@@ -59,6 +74,9 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
 type PartyGroupFormValues = z.infer<typeof partyGroupFormSchema>;
 
 export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<PartyGroupFormValues | null>(null);
   const { toast } = useToast();
 
   const form = useForm<PartyGroupFormValues>({
@@ -101,7 +119,15 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
   });
 
   const onSubmit = (values: PartyGroupFormValues) => {
-    partyGroupMutation.mutate(values);
+    setPendingFormData(values);
+    setShowVerification(true);
+  };
+
+  const handleVerificationSuccess = () => {
+    if (pendingFormData) {
+      setIsLoading(true);
+      partyGroupMutation.mutate(pendingFormData);
+    }
   };
 
   return (
@@ -485,6 +511,15 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
           </div>
         </form>
       </Form>
+       <SMSVerificationDialog
+        isOpen={showVerification}
+        onClose={() => setShowVerification(false)}
+        onVerified={handleVerificationSuccess}
+        phoneNumber={form.watch("createdBy") || ""}
+        action="create_event"
+        title="Verify Phone Number"
+        description="Please verify your phone number to create this event."
+      />
     </div>
   );
 }

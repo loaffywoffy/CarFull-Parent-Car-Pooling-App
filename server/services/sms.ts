@@ -8,13 +8,24 @@ const client = twilio(
 );
 
 export const messagingService = {
-  async sendVerificationCode(phoneNumber: string, code: string, channel: 'sms' | 'whatsapp' = 'sms') {
+  async sendVerificationCode(phoneNumber: string, code: string, action: string = 'verification', channel: 'sms' | 'whatsapp' = 'sms') {
     const from = channel === 'whatsapp' 
       ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
       : process.env.TWILIO_PHONE_NUMBER;
     
+    const actionMessages = {
+      'verification': 'Your KidPool verification code is',
+      'create_event': 'To create an event, enter this verification code',
+      'edit_event': 'To edit this event, enter this verification code',
+      'book_carpool': 'To book this carpool, enter this verification code',
+      'delete_event': 'To delete this event, enter this verification code',
+      'delete_carpool': 'To delete this carpool, enter this verification code'
+    };
+    
+    const message = `${actionMessages[action] || actionMessages['verification']}: ${code}`;
+    
     return client.messages.create({
-      body: `Your KidPool verification code is: ${code}`,
+      body: message,
       to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
       from
     });
