@@ -10,7 +10,7 @@ import PartyGroupEditForm from "@/components/party-group-edit-form";
 import PartyGroupsList from "@/components/party-groups-list";
 import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
-import { SMSTest } from "@/components/sms-test";
+
 import CarpoolSummary from "@/components/carpool-summary";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Car, Users, MapPin, Calendar } from "lucide-react";
@@ -410,11 +410,7 @@ export default function Home() {
           onClose={closeSuccessDialog}
         />
 
-        {/* SMS Test Section - Remove this after testing */}
-        <div className="mt-8 p-4 border-2 border-dashed border-yellow-300 rounded-lg bg-yellow-50">
-          <h3 className="text-lg font-semibold mb-4 text-yellow-800">SMS Testing (Development Only)</h3>
-          <SMSTest />
-        </div>
+        
       </div>
     </div>
   );

@@ -22,6 +22,7 @@ import { CalendarIcon, MapPinIcon, ClockIcon, CalculatorIcon } from "lucide-reac
 import { Skeleton } from "@/components/ui/skeleton";
 import LocationMap from "@/components/location-map";
 import { geocodeAddress } from "@/lib/geocoding";
+import { SMSVerificationDialog } from "@/components/sms-verification-dialog";
 
 interface CarpoolOfferFormProps {
   onSuccess: () => void;
@@ -44,7 +45,7 @@ const carpoolFormSchema = z.object({
   // Make spacesAvailable optional so it can be conditionally required based on selected options
   spacesAvailable: z.coerce.number().min(1).optional(),
   returnSpacesAvailable: z.coerce.number().optional(),
-  
+
   // Outbound dropoff preferences (when taking TO the party)
   outboundDropoffPreference: z.string().optional(),
   outboundMaxDistance: z.coerce.number().optional(),
@@ -52,7 +53,7 @@ const carpoolFormSchema = z.object({
   outboundPickupLocationCity: z.string().optional(),
   outboundPickupLocationPostcode: z.string().optional(),
   outboundDepartureTime: z.string().optional(),
-  
+
   // Return dropoff preferences (when picking up FROM the party)
   returnDropoffPreference: z.string().optional(),
   returnMaxDistance: z.coerce.number().optional(),
@@ -60,14 +61,14 @@ const carpoolFormSchema = z.object({
   returnPickupLocationCity: z.string().optional(),
   returnPickupLocationPostcode: z.string().optional(),
   returnCollectionTime: z.string().optional(),
-  
+
   // Legacy fields (for backward compatibility)
   dropoffPreference: z.string(),
   maxDistance: z.coerce.number().optional(),
   pickupLocation: z.string().optional(),
   pickupLocationCity: z.string().optional(),
   pickupLocationPostcode: z.string().optional(),
-  
+
   additionalNotes: z.string().optional(),
   estimatedDepartureTime: z.string().optional(),
 }).refine((data) => {
@@ -85,7 +86,9 @@ type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 
 export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: CarpoolOfferFormProps) {
   const { toast } = useToast();
-  
+  const [showVerification, setShowVerification] = useState(false);
+  const [pendingOfferData, setPendingOfferData] = useState<any>(null);
+
   // Fetch party group details
   const { data: partyGroup, isLoading: isLoadingPartyGroup } = useQuery({
     queryKey: ['/api/party-groups', partyGroupId],
@@ -93,24 +96,24 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
     enabled: !!partyGroupId,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
-  
+
   // Show preferences based on selected options
   const [showOutboundPreferences, setShowOutboundPreferences] = useState(false);
   const [showReturnPreferences, setShowReturnPreferences] = useState(false);
-  
+
   // Outbound (TO party) specific states
   const [outboundDropoffPreference, setOutboundDropoffPreference] = useState("direct-home");
   const [showOutboundPickupLocation, setShowOutboundPickupLocation] = useState(false);
   const [showOutboundMyAddressDisplay, setShowOutboundMyAddressDisplay] = useState(false);
   const [outboundDepartureTime, setOutboundDepartureTime] = useState("");
-  
+
   // Return (FROM party) specific states
   const [returnDropoffPreference, setReturnDropoffPreference] = useState("direct-home");
   const [showReturnPickupLocation, setShowReturnPickupLocation] = useState(false);
   const [showReturnMyAddressDisplay, setShowReturnMyAddressDisplay] = useState(false);
   const [returnCollectionTime, setReturnCollectionTime] = useState("");
   const [showCustomReturnTime, setShowCustomReturnTime] = useState(false);
-  
+
   // Legacy state for backward compatibility
   const [showPickupLocation, setShowPickupLocation] = useState(false);
   const [showHomeRadiusSelector, setShowHomeRadiusSelector] = useState(false);
@@ -138,21 +141,21 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
       canBoth: false,
       spacesAvailable: 1,
       returnSpacesAvailable: 1, // Default same as spaces available for going to party
-      
+
       // Outbound dropoff preferences (when taking TO the party)
       outboundDropoffPreference: "direct-home",
       outboundMaxDistance: 2,
       outboundPickupLocation: "",
       outboundPickupLocationCity: "",
       outboundPickupLocationPostcode: "",
-      
+
       // Return dropoff preferences (when picking up FROM the party)
       returnDropoffPreference: "direct-home",
       returnMaxDistance: 2,
       returnPickupLocation: "",
       returnPickupLocationCity: "",
       returnPickupLocationPostcode: "",
-      
+
       // Legacy fields (for backward compatibility)
       dropoffPreference: "direct-home",
       maxDistance: 2,
@@ -170,15 +173,15 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
     onSuccess: () => {
       // Invalidate the carpools query to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups', partyGroupId, 'carpools'] });
-      
+
       // Also invalidate the parent query in case counts need to be updated
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
-      
+
       toast({
         title: "Success!",
         description: "Your carpool offer has been submitted successfully.",
       });
-      
+
       form.reset();
       onSuccess();
     },
@@ -194,12 +197,12 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   const onSubmit = (values: CarpoolFormValues) => {
     // Set a fixed max distance for all locations - no radius picker
     const DEFAULT_MAX_DISTANCE = 5;
-    
+
     // Handle outbound preferences (TO party)
     if (values.canPickup || values.canBoth) {
       // Set outbound dropoff preferences
       values.outboundMaxDistance = DEFAULT_MAX_DISTANCE;
-      
+
       if (values.outboundDropoffPreference !== "pickup-point") {
         // Clear outbound pickup location if not needed
         values.outboundPickupLocation = "";
@@ -214,12 +217,12 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
       values.outboundPickupLocationCity = "";
       values.outboundPickupLocationPostcode = "";
     }
-    
+
     // Handle return preferences (FROM party)
     if (values.canDropoff || values.canBoth) {
       // Set return dropoff preferences with fixed distance
       values.returnMaxDistance = DEFAULT_MAX_DISTANCE;
-      
+
       if (values.returnDropoffPreference !== "pickup-point") {
         // Clear return pickup location if not needed
         values.returnPickupLocation = "";
@@ -233,20 +236,20 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
       values.returnPickupLocation = "";
       values.returnPickupLocationCity = "";
       values.returnPickupLocationPostcode = "";
-      
+
       // If only offering pickup (TO party), set returnSpacesAvailable to 0
       values.returnSpacesAvailable = 0;
     }
-    
+
     // If only offering dropoff (FROM party), set spacesAvailable to 0
     if (values.canDropoff && !values.canPickup && !values.canBoth) {
       values.spacesAvailable = 0;
     }
-    
+
     // Legacy compatibility - copy outbound preference to legacy field
     values.dropoffPreference = values.outboundDropoffPreference || "direct-home";
     values.maxDistance = DEFAULT_MAX_DISTANCE;
-    
+
     if (values.dropoffPreference === "pickup-point") {
       values.pickupLocation = values.outboundPickupLocation || "";
       values.pickupLocationCity = values.outboundPickupLocationCity || "";
@@ -256,9 +259,57 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
       values.pickupLocationCity = "";
       values.pickupLocationPostcode = "";
     }
-    
-    carpoolMutation.mutate(values);
+
+    // Store offer data and show verification dialog
+    if (!values.phoneNumber) {
+      toast({
+        title: "Error",
+        description: "Please enter your phone number for verification",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setPendingOfferData(values);
+    setShowVerification(true);
   };
+
+  const handleVerificationSuccess = async () => {
+    setShowVerification(false);
+
+    try {
+      const response = await fetch("/api/carpools", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pendingOfferData)
+      });
+
+      if (response.ok) {
+        const newCarpool = await response.json();
+        toast({
+          title: "Success",
+          description: "Carpool offer created successfully!"
+        });
+        form.reset();
+        onSuccess();
+        setPendingOfferData(null);
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create carpool offer",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create carpool offer",
+        variant: "destructive"
+      });
+    }
+  };
+
 
   // Handle outbound dropoff preference changes (TO party)
   const handleOutboundDropoffPreferenceChange = (value: string) => {
@@ -267,11 +318,11 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
     setShowOutboundMyAddressDisplay(value === "my-address");
     // No longer using radius selector
     form.setValue("outboundDropoffPreference", value);
-    
+
     // For legacy compatibility
     form.setValue("dropoffPreference", value);
   };
-  
+
   // Handle return dropoff preference changes (FROM party)
   const handleReturnDropoffPreferenceChange = (value: string) => {
     setReturnDropoffPreference(value);
@@ -280,7 +331,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
     // No longer using radius selector
     form.setValue("returnDropoffPreference", value);
   };
-  
+
   // Legacy handler for backward compatibility
   const handleDropoffPreferenceChange = (value: string) => {
     // Handle different dropoff preference options
@@ -289,30 +340,30 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
     setShowHomeRadiusSelector(value === "direct-home");
     form.setValue("dropoffPreference", value);
   };
-  
+
   // Update showOutboundPreferences whenever canPickup or canBoth changes
   useEffect(() => {
     const canPickup = form.getValues("canPickup");
     const canBoth = form.getValues("canBoth");
     setShowOutboundPreferences(canPickup || canBoth);
   }, [form.watch("canPickup"), form.watch("canBoth")]);
-  
+
   // Update showReturnPreferences whenever canDropoff or canBoth changes
   useEffect(() => {
     const canDropoff = form.getValues("canDropoff");
     const canBoth = form.getValues("canBoth");
     setShowReturnPreferences(canDropoff || canBoth);
   }, [form.watch("canDropoff"), form.watch("canBoth")]);
-  
+
   // State for event location coordinates
   const [eventLocation, setEventLocation] = useState<[number, number]>([51.5074, -0.1278]);
-  
+
   // Geocode the event address when partyGroup data is loaded
   useEffect(() => {
     if (partyGroup) {
       // Create a complete address from the partyGroup details
       const fullAddress = `${partyGroup.partyAddress}, ${partyGroup.partyCity}, ${partyGroup.partyPostcode}`;
-      
+
       // Geocode the address
       geocodeAddress(partyGroup.partyAddress, partyGroup.partyCity, partyGroup.partyPostcode)
         .then(coordinates => {
@@ -329,18 +380,18 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   // Format date for display
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "";
-    
+
     return new Date(dateStr).toLocaleDateString(undefined, {
       weekday: 'long',
       month: 'long',
       day: 'numeric'
     });
   };
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <h2 className="text-xl font-semibold mb-6 text-neutral-800">Offer a Carpool</h2>
-      
+
       {/* Party Details Section */}
       {isLoadingPartyGroup ? (
         <Card className="mb-6">
@@ -360,7 +411,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
               <MapPinIcon className="mr-2 h-5 w-5 text-primary-600" />
               {partyGroup.name}
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 mb-3">
               <div className="flex items-center">
                 <CalendarIcon className="mr-2 h-4 w-4 text-primary-600" />
@@ -371,7 +422,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                 <span>Time: {partyGroup.targetArrivalTime} - {partyGroup.endTime || "Not specified"}</span>
               </div>
             </div>
-            
+
             <div className="bg-white p-3 rounded-md border border-primary-200 mb-2">
               <div className="flex justify-between items-center">
                 <p className="text-gray-700">
@@ -388,7 +439,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   {showMap ? 'Hide Map' : 'Show Map'}
                 </Button>
               </div>
-              
+
               {/* Collapsible map section */}
               {showMap && (
                 <div className="mt-3">
@@ -404,7 +455,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                 </div>
               )}
             </div>
-            
+
             {partyGroup.additionalInformation && (
               <div className="mt-3 text-xs text-gray-600">
                 <strong>Additional Info:</strong> {partyGroup.additionalInformation}
@@ -413,14 +464,14 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
           </CardContent>
         </Card>
       ) : null}
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Parent Information */}
             <div className="space-y-4 md:col-span-2">
               <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Your Information</h3>
-              
+
               <FormField
                 control={form.control}
                 name="parentName"
@@ -434,7 +485,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="childName"
@@ -448,7 +499,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="address"
@@ -462,7 +513,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   </FormItem>
                 )}
               />
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -477,7 +528,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="postcode"
@@ -491,7 +542,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="phoneNumber"
@@ -507,11 +558,11 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                 />
               </div>
             </div>
-            
+
             {/* Carpool Options */}
             <div className="space-y-4 md:col-span-2">
               <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Carpool Options</h3>
-              
+
               <div className="space-y-3">
                 <FormLabel>I can offer:</FormLabel>
                 <div className="flex flex-wrap gap-4">
@@ -538,7 +589,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="canDropoff"
@@ -562,7 +613,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="canBoth"
@@ -588,7 +639,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   />
                 </div>
               </div>
-              
+
               {/* Outbound spaces (TO party) */}
               {showOutboundPreferences && (
                 <div className="space-y-4 border-l-2 border-primary-200 pl-4">
@@ -623,7 +674,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   />
                 </div>
               )}
-              
+
               {/* Return spaces (FROM party) */}
               {showReturnPreferences && (
                 <div className="space-y-4 border-l-2 border-primary-200 pl-4">
@@ -658,12 +709,12 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   />
                 </div>
               )}
-              
+
               {/* Outbound dropoff preferences (TO party) */}
               {showOutboundPreferences && (
                 <div className="space-y-3 border-t border-gray-100 pt-4 mt-4">
                   <h4 className="font-medium text-primary-700">Trip Preferences (TO Party)</h4>
-                  
+
                   <FormLabel>Dropoff Preference when taking TO the party:</FormLabel>
                   <FormField
                     control={form.control}
@@ -706,12 +757,12 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       </FormItem>
                     )}
                   />
-                  
+
                   {/* Outbound pickup location fields if pickup-point is selected */}
                   {showOutboundPickupLocation && (
                     <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
                       <h4 className="font-medium text-gray-800">TO Party: Central Pickup Point</h4>
-                      
+
                       <FormField
                         control={form.control}
                         name="outboundPickupLocation"
@@ -725,7 +776,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                           </FormItem>
                         )}
                       />
-                      
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -756,7 +807,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Show parent's address when "my address" is selected */}
                   {showOutboundMyAddressDisplay && (
                     <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
@@ -769,7 +820,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       <p className="text-xs text-gray-500 mt-2">Parents will bring their children to this address and you'll take them to the party</p>
                     </div>
                   )}
-                  
+
                   {/* Departure time to party */}
                   <FormField
                     control={form.control}
@@ -777,7 +828,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Target departure time (when leaving to party)</FormLabel>
-                        
+
                         <div className="flex space-x-2">
                           {/* Hour Select */}
                           <div className="w-1/2">
@@ -807,7 +858,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           {/* Minute Select */}
                           <div className="w-1/2">
                             <Select
@@ -833,7 +884,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                             </Select>
                           </div>
                         </div>
-                        
+
                         <p className="text-xs text-muted-foreground">
                           When you'll be leaving for the party (not arrival time)
                         </p>
@@ -843,17 +894,17 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   />
                 </div>
               )}
-              
+
               {/* Return dropoff preferences (FROM party) */}
               {showReturnPreferences && (
                 <div className="space-y-3 border-t border-gray-100 pt-4 mt-4">
                   <h4 className="font-medium text-primary-700">Return Trip Preferences (FROM Party)</h4>
-                  
+
                   {/* Collection Time Field */}
                   <div className="mb-4">
                     <div className="mb-3">
                       <FormLabel>Collection Time (when picking up from the event)</FormLabel>
-                      
+
                       {/* Radio selection for end time or custom time */}
                       <RadioGroup 
                         className="flex space-x-4 mt-2 mb-3"
@@ -865,7 +916,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                             form.setValue("returnCollectionTime", newTime);
                             setReturnCollectionTime(newTime);
                           }
-                          
+
                           // Set state to show/hide time selectors
                           setShowCustomReturnTime(value === "custom");
                         }}
@@ -892,7 +943,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                           <div className="mb-2">
                             <p className="text-sm font-medium">Selected time: {field.value || "Not set"}</p>
                           </div>
-                          
+
                           {/* Only show time selectors when custom time is selected */}
                           {showCustomReturnTime && (
                             <div className="flex space-x-2">
@@ -924,7 +975,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                                   </SelectContent>
                                 </Select>
                               </div>
-                              
+
                               {/* Minute Select */}
                               <div className="w-1/2">
                                 <Select
@@ -959,7 +1010,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       )}
                     />
                   </div>
-                  
+
                   <FormLabel>Dropoff Preference when picking up FROM the party:</FormLabel>
                   <FormField
                     control={form.control}
@@ -1002,7 +1053,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       </FormItem>
                     )}
                   />
-                  
+
                   {/* RETURN TRIP - FROM PARTY - Show address fields if needed */}
                   {/* Show parent's address when "my address" is selected for return */}
                   {showReturnMyAddressDisplay && (
@@ -1016,15 +1067,15 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       <p className="text-xs text-gray-500 mt-2">Parents will be asked to pick up their children from this address after the party</p>
                     </div>
                   )}
-                  
+
                   {/* Hidden field for return max distance - default value */}
                   <input type="hidden" name="returnMaxDistance" value="5" />
-                  
+
                   {/* Show pickup location fields if pickup-point is selected for return */}
                   {showReturnPickupLocation && (
                     <div className="space-y-4 p-3 bg-gray-50 rounded-md border border-gray-200 mt-2">
                       <h4 className="font-medium text-gray-800">FROM Party: Central Pickup Point</h4>
-                      
+
                       <FormField
                         control={form.control}
                         name="returnPickupLocation"
@@ -1038,7 +1089,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                           </FormItem>
                         )}
                       />
-                      
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -1071,10 +1122,10 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   )}
                 </div>
               )}
-              
+
               {/* For backward compatibility - hidden field */}
               <input type="hidden" name="dropoffPreference" value={outboundDropoffPreference} />
-              
+
               {/* Legacy fields - hidden for backward compatibility */}
               <div className="hidden">
                 <input type="hidden" name="pickupLocation" value={form.getValues("outboundPickupLocation") || ""} />
@@ -1082,7 +1133,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                 <input type="hidden" name="pickupLocationPostcode" value={form.getValues("outboundPickupLocationPostcode") || ""} />
                 <input type="hidden" name="maxDistance" value="5" />
               </div>
-              
+
               <FormField
                 control={form.control}
                 name="additionalNotes"
@@ -1103,7 +1154,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
               />
             </div>
           </div>
-          
+
           <div className="flex justify-end gap-2">
             <Button 
               type="button" 
@@ -1124,6 +1175,15 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
           </div>
         </form>
       </Form>
+       <SMSVerificationDialog
+        isOpen={showVerification}
+        onClose={() => setShowVerification(false)}
+        onVerified={handleVerificationSuccess}
+        phoneNumber={form.getValues("phoneNumber")}
+        action="create_carpool"
+        title="Verify Phone Number"
+        description="Please verify your phone number to create this carpool offer."
+      />
     </div>
   );
 }

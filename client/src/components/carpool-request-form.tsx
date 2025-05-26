@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery } from "@tanstack/react-query";
+import { SMSVerificationDialog } from "@/components/sms-verification-dialog";
 
 // Define the form schema with direction preferences
 const carpoolRequestFormSchema = z.object({
@@ -39,6 +40,8 @@ interface CarpoolRequestFormProps {
 export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: CarpoolRequestFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [pendingRequestData, setPendingRequestData] = useState<CarpoolRequestFormValues | null>(null);
 
   // Fetch the carpool details to determine available directions
   const { data: carpoolDetails } = useQuery({
@@ -81,10 +84,36 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       return;
     }
 
+    if (!values.phoneNumber) {
+      toast({
+        title: "Error",
+        description: "Please enter your phone number for verification",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Store request data and show verification dialog
+    setPendingRequestData(values);
+    setShowVerification(true);
+  };
+
+  const handleVerificationSuccess = async () => {
+    setShowVerification(false);
     setIsSubmitting(true);
 
     try {
       // Update with the selected carpool ID
+      if (!selectedCarpoolId || !pendingRequestData) {
+        toast({
+          title: "Error",
+          description: "Missing carpool ID or request data",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const values = pendingRequestData;
       values.carpoolId = selectedCarpoolId;
 
       // Calculate needsBoth based on both directions being selected
@@ -118,6 +147,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       });
     } finally {
       setIsSubmitting(false);
+      setPendingRequestData(null);
     }
   };
 
@@ -293,6 +323,15 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
           </Button>
         </div>
       </form>
+       <SMSVerificationDialog
+        isOpen={showVerification}
+        onClose={() => setShowVerification(false)}
+        onVerified={handleVerificationSuccess}
+        phoneNumber={form.watch("phoneNumber")}
+        action="book_carpool"
+        title="Verify Phone Number"
+        description="Please verify your phone number to book this carpool spot."
+      />
     </Form>
   );
 }

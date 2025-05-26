@@ -19,6 +19,7 @@ export const messagingService = {
     const actionMessages = {
       'verification': 'Your KidPool verification code is',
       'create_event': 'To create an event, enter this verification code',
+      'create_carpool': 'To create a carpool offer, enter this verification code',
       'edit_event': 'To edit this event, enter this verification code',
       'book_carpool': 'To book this carpool, enter this verification code',
       'delete_event': 'To delete this event, enter this verification code',
