@@ -562,7 +562,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
         isOpen={showVerification}
         onClose={() => setShowVerification(false)}
         onVerified={handleVerificationSuccess}
-        phoneNumber={form.watch("createdBy") || ""}
+        phoneNumber={form.watch("phoneNumber") || ""}
         action="create_event"
         title="Verify Phone Number"
         description="Please verify your phone number to create this event."
