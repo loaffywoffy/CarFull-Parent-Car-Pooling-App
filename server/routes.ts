@@ -41,6 +41,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Normalize phone number
       const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+      console.log(`[DEBUG] Routes - Original phone: "${phoneNumber}"`);
+      console.log(`[DEBUG] Routes - Normalized phone: "${normalizedPhone}"`);
 
       // Check rate limits
       const phoneLimit = rateLimitService.checkPhoneNumberLimit(normalizedPhone);
