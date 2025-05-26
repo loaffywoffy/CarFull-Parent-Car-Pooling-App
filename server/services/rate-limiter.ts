@@ -38,6 +38,9 @@ class RateLimitService {
 
   checkPhoneNumberLimit(phoneNumber: string): { allowed: boolean; timeUntilReset?: number } {
     // Check if this phone number is exempted for testing
+    console.log(`[DEBUG] Checking rate limit for phone: "${phoneNumber}"`);
+    console.log(`[DEBUG] Exempted numbers:`, Array.from(this.EXEMPTED_NUMBERS));
+    
     if (this.EXEMPTED_NUMBERS.has(phoneNumber)) {
       console.log(`[DEBUG] Phone number ${phoneNumber} is exempted from rate limiting`);
       return { allowed: true };
@@ -165,6 +168,11 @@ class RateLimitService {
         this.bruteForceProtection.delete(identifier);
       }
     }
+  }
+
+  clearPhoneNumberLimit(phoneNumber: string) {
+    this.phoneNumberLimits.delete(phoneNumber);
+    console.log(`[DEBUG] Cleared rate limit for phone: ${phoneNumber}`);
   }
 
   getStats() {

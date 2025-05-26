@@ -119,6 +119,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rate limit reset endpoint for development
+  app.post("/api/reset-rate-limit", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      if (phoneNumber) {
+        const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+        rateLimitService.clearPhoneNumberLimit(normalizedPhone);
+        res.json({ message: `Rate limit cleared for ${normalizedPhone}` });
+      } else {
+        res.status(400).json({ message: "Phone number required" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to reset rate limit" });
+    }
+  });
+
   // SMS Test endpoint for development (protected)
   app.post("/api/sms/send", async (req, res) => {
     try {
