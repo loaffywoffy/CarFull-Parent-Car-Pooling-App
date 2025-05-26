@@ -12,6 +12,8 @@ import { z } from "zod";
 import { setupAuth, isAuthenticated, isPartyGroupCreator, isCarpoolProvider } from "./auth";
 import { messagingService } from "./services/sms";
 import { verificationService } from "./services/verification";
+import { rateLimitService } from "./services/rate-limiter";
+import { phoneValidator } from "./services/phone-validator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth system is disabled for MVP
@@ -21,14 +23,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/verification/send", async (req, res) => {
     try {
       const { phoneNumber, action } = req.body;
+      const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
       
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
+
+      // Validate phone number format and check for suspicious patterns
+      const validation = phoneValidator.validatePhoneNumber(phoneNumber);
+      if (!validation.valid) {
+        rateLimitService.logSuspiciousActivity(clientIP, 'invalid_phone_attempt', { 
+          phoneNumber, 
+          reason: validation.reason 
+        });
+        return res.status(400).json({ message: validation.reason || "Invalid phone number" });
+      }
+
+      // Normalize phone number
+      const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+
+      // Check rate limits
+      const phoneLimit = rateLimitService.checkPhoneNumberLimit(normalizedPhone);
+      if (!phoneLimit.allowed) {
+        const minutes = Math.ceil((phoneLimit.timeUntilReset || 0) / (60 * 1000));
+        rateLimitService.logSuspiciousActivity(normalizedPhone, 'phone_rate_limit_exceeded');
+        return res.status(429).json({ 
+          message: `Too many SMS requests for this phone number. Try again in ${minutes} minutes.` 
+        });
+      }
+
+      const ipLimit = rateLimitService.checkIPLimit(clientIP);
+      if (!ipLimit.allowed) {
+        const minutes = Math.ceil((ipLimit.timeUntilReset || 0) / (60 * 1000));
+        rateLimitService.logSuspiciousActivity(clientIP, 'ip_rate_limit_exceeded');
+        return res.status(429).json({ 
+          message: `Too many SMS requests from this location. Try again in ${minutes} minutes.` 
+        });
+      }
+
+      // Check brute force protection
+      const bruteForceCheck = rateLimitService.checkBruteForceProtection(clientIP);
+      if (!bruteForceCheck.allowed) {
+        const minutes = Math.ceil((bruteForceCheck.blockTimeRemaining || 0) / (60 * 1000));
+        return res.status(429).json({ 
+          message: `Account temporarily blocked due to suspicious activity. Try again in ${minutes} minutes.` 
+        });
+      }
+
+      // Log high-risk attempts
+      if (validation.risk === 'high') {
+        rateLimitService.logSuspiciousActivity(clientIP, 'high_risk_phone_attempt', { 
+          phoneNumber: normalizedPhone,
+          action 
+        });
+      }
       
       const code = verificationService.generateCode();
-      await verificationService.storeVerificationCode(phoneNumber, code, action);
-      await messagingService.sendVerificationCode(phoneNumber, code, action);
+      await verificationService.storeVerificationCode(normalizedPhone, code, action);
+      await messagingService.sendVerificationCode(normalizedPhone, code, action);
+      
+      console.log(`[INFO] SMS sent to ${normalizedPhone} from IP ${clientIP} for action: ${action}`);
       
       res.json({ message: "Verification code sent successfully" });
     } catch (error) {
@@ -58,16 +112,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // SMS Test endpoint for development
+  // SMS Test endpoint for development (protected)
   app.post("/api/sms/send", async (req, res) => {
     try {
       const { phoneNumber, message } = req.body;
+      const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
       
       if (!phoneNumber || !message) {
         return res.status(400).json({ message: "Phone number and message are required" });
       }
+
+      // Only allow in development mode with additional protection
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ message: "Test endpoint disabled in production" });
+      }
+
+      // Apply same protections as verification endpoint
+      const validation = phoneValidator.validatePhoneNumber(phoneNumber);
+      if (!validation.valid) {
+        return res.status(400).json({ message: validation.reason || "Invalid phone number" });
+      }
+
+      const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
       
-      await messagingService.sendCarpoolUpdate(phoneNumber, message);
+      const ipLimit = rateLimitService.checkIPLimit(clientIP);
+      if (!ipLimit.allowed) {
+        return res.status(429).json({ message: "Rate limit exceeded" });
+      }
+      
+      await messagingService.sendCarpoolUpdate(normalizedPhone, message);
+      console.log(`[TEST] SMS sent to ${normalizedPhone} from IP ${clientIP}`);
       res.json({ message: "SMS sent successfully" });
     } catch (error) {
       console.error("Error sending test SMS:", error);
@@ -523,6 +597,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!event) {
         return res.status(404).json({ message: "Calendar event not found" });
       }
+
+  // Security monitoring endpoint
+  app.get("/api/security/stats", async (req, res) => {
+    try {
+      // Only show stats in development or to authenticated admins
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const stats = rateLimitService.getStats();
+      res.json({
+        timestamp: new Date().toISOString(),
+        rateLimitStats: stats,
+        message: "Security monitoring active"
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error retrieving security stats" });
+    }
+  });
+
       
       // Get the carpool associated with this calendar event
       const carpool = await storage.getCarpoolById(event.carpoolId);

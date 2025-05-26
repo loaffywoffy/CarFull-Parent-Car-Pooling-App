@@ -1,10 +1,16 @@
-
 import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { SimpleCaptcha } from "./simple-captcha";
 
 interface SMSVerificationDialogProps {
   isOpen: boolean;
@@ -36,12 +42,12 @@ export function SMSVerificationDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phoneNumber, action })
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Failed to send code");
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -67,13 +73,13 @@ export function SMSVerificationDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phoneNumber, code, action })
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || "Verification failed");
       }
-      
+
       return data;
     },
     onSuccess: (data) => {
@@ -124,13 +130,13 @@ export function SMSVerificationDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div>
             <p className="text-sm text-muted-foreground mb-2">
               Phone number: <span className="font-medium">{phoneNumber}</span>
             </p>
-            
+
             {!codeSent ? (
               <Button 
                 onClick={handleSendCode} 
@@ -148,7 +154,7 @@ export function SMSVerificationDialog({
                   maxLength={6}
                   className="text-center text-lg tracking-wider"
                 />
-                
+
                 <div className="flex gap-2">
                   <Button 
                     onClick={handleVerifyCode} 
@@ -157,7 +163,7 @@ export function SMSVerificationDialog({
                   >
                     {verifyCodeMutation.isPending ? "Verifying..." : "Verify Code"}
                   </Button>
-                  
+
                   <Button 
                     variant="outline" 
                     onClick={handleSendCode}
@@ -170,7 +176,7 @@ export function SMSVerificationDialog({
             )}
           </div>
         </div>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>
             Cancel
