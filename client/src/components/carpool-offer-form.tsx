@@ -70,8 +70,6 @@ const carpoolFormSchema = z.object({
   
   additionalNotes: z.string().optional(),
   estimatedDepartureTime: z.string().optional(),
-  isPrivate: z.boolean().default(true),
-  allowedParents: z.string().optional(),
 }).refine((data) => {
   // If canPickup or canBoth is selected, spacesAvailable is required
   if ((data.canPickup || data.canBoth) && !data.spacesAvailable) {
@@ -163,8 +161,6 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
       pickupLocationPostcode: "",
       additionalNotes: "",
       estimatedDepartureTime: "",
-      isPrivate: true,
-      allowedParents: "",
     },
   });
 
@@ -1105,55 +1101,6 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   </FormItem>
                 )}
               />
-              
-              {/* Privacy Controls */}
-              <div className="space-y-4 border-t border-gray-100 pt-4 mt-4">
-                <h4 className="font-medium text-primary-700">Privacy Settings</h4>
-                
-                <FormField
-                  control={form.control}
-                  name="isPrivate"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2">
-                      <FormControl>
-                        <Checkbox 
-                          checked={field.value} 
-                          onCheckedChange={(checked: CheckedState) => {
-                            field.onChange(checked);
-                          }} 
-                        />
-                      </FormControl>
-                      <FormLabel className="font-normal cursor-pointer">
-                        Make this carpool private (only visible to parents I specify)
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-                
-                {form.watch("isPrivate") && (
-                  <FormField
-                    control={form.control}
-                    name="allowedParents"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Allowed Parents (Phone Numbers or Emails)</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Enter phone numbers or emails separated by commas (e.g., 07123456789, john@example.com, 07987654321)"
-                            className="resize-none" 
-                            rows={3}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <p className="text-xs text-muted-foreground">
-                          Only parents with these phone numbers or emails will be able to see and request spots in your carpool
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-              </div>
             </div>
           </div>
           

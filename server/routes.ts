@@ -145,33 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const carpools = await storage.getCarpoolsByPartyGroupId(id);
-      
-      // Get user's phone number and email from headers for privacy filtering
-      const userPhone = req.headers['x-user-phone'];
-      const userEmail = req.headers['x-user-email'];
-      
-      // Filter out private carpools that don't include this user
-      const filteredCarpools = carpools.filter(carpool => {
-        // If carpool is not private, show it to everyone
-        if (!carpool.isPrivate) {
-          return true;
-        }
-        
-        // If carpool is private but no allowed parents list, only show to creator
-        if (!carpool.allowedParents) {
-          return carpool.phoneNumber === userPhone || carpool.parentName === req.headers['x-user-name'];
-        }
-        
-        // Check if user is in the allowed parents list
-        const allowedList = carpool.allowedParents.split(',').map(item => item.trim().toLowerCase());
-        const userInList = allowedList.includes(userPhone?.toLowerCase()) || 
-                          allowedList.includes(userEmail?.toLowerCase());
-        
-        // Show if user is in allowed list or is the creator
-        return userInList || carpool.phoneNumber === userPhone;
-      });
-      
-      res.json(filteredCarpools);
+      res.json(carpools);
     } catch (error) {
       console.error("Error fetching carpools for party group:", error);
       res.status(500).json({ message: "Failed to fetch carpools" });
@@ -182,33 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/carpools", async (req, res) => {
     try {
       const carpools = await storage.getCarpools();
-      
-      // Get user's phone number and email from headers for privacy filtering
-      const userPhone = req.headers['x-user-phone'];
-      const userEmail = req.headers['x-user-email'];
-      
-      // Filter out private carpools that don't include this user
-      const filteredCarpools = carpools.filter(carpool => {
-        // If carpool is not private, show it to everyone
-        if (!carpool.isPrivate) {
-          return true;
-        }
-        
-        // If carpool is private but no allowed parents list, only show to creator
-        if (!carpool.allowedParents) {
-          return carpool.phoneNumber === userPhone || carpool.parentName === req.headers['x-user-name'];
-        }
-        
-        // Check if user is in the allowed parents list
-        const allowedList = carpool.allowedParents.split(',').map(item => item.trim().toLowerCase());
-        const userInList = allowedList.includes(userPhone?.toLowerCase()) || 
-                          allowedList.includes(userEmail?.toLowerCase());
-        
-        // Show if user is in allowed list or is the creator
-        return userInList || carpool.phoneNumber === userPhone;
-      });
-      
-      res.json(filteredCarpools);
+      res.json(carpools);
     } catch (error) {
       console.error("Error fetching carpools:", error);
       res.status(500).json({ message: "Failed to fetch carpools" });

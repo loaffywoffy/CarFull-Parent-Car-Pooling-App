@@ -133,25 +133,6 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                 </div>
               ) : null}
             </div>
-            <div className="flex gap-2">
-            {carpool.canPickup || carpool.canBoth ? (
-              <Badge variant="outline" className="bg-green-50 whitespace-nowrap">
-                <ArrowRight className="h-3 w-3 mr-1" />
-                To Event
-              </Badge>
-            ) : null}
-            {carpool.canDropoff || carpool.canBoth ? (
-              <Badge variant="outline" className="bg-blue-50 whitespace-nowrap">
-                <ArrowLeft className="h-3 w-3 mr-1" />
-                From Event
-              </Badge>
-            ) : null}
-            {carpool.isPrivate && (
-              <Badge variant="outline" className="bg-purple-50 text-purple-700 whitespace-nowrap">
-                Private
-              </Badge>
-            )}
-          </div>
 
             <CardContent className="p-4">
               <div className="space-y-4">
