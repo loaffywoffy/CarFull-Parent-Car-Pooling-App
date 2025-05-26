@@ -432,6 +432,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/carpool-requests", async (req, res) => {
     try {
+      // Check if this action requires phone verification
+      const { phoneNumber, verificationCode } = req.body;
+      if (phoneNumber && verificationCode) {
+        const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+        const isVerified = await verificationService.verifyCode(normalizedPhone, verificationCode, 'book_carpool');
+        
+        if (!isVerified) {
+          return res.status(400).json({ 
+            message: "Phone verification required. Please verify your phone number to book this carpool.",
+            requiresVerification: true,
+            action: 'book_carpool'
+          });
+        }
+      }
+
       // Validate request body against schema
       const validationResult = insertCarpoolRequestSchema.safeParse(req.body);
       
