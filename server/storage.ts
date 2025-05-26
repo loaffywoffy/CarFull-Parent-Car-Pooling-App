@@ -51,6 +51,10 @@ export interface IStorage {
   getCalendarEventsByCarpoolId(carpoolId: number): Promise<CalendarEvent[]>;
   updateCalendarEvent(id: number, event: Partial<InsertCalendarEvent>): Promise<CalendarEvent | undefined>;
   deleteCalendarEvent(id: number): Promise<boolean>;
+  
+  // Verification operations
+  storeVerificationCode(phoneNumber: string, code: string, action: string): Promise<void>;
+  verifyCode(phoneNumber: string, code: string, action?: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -408,6 +412,50 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return !!deletedEvent;
+  }
+
+  // Verification methods (using in-memory storage for simplicity)
+  private verificationCodes = new Map<string, { code: string; action: string; timestamp: number }>();
+
+  async storeVerificationCode(phoneNumber: string, code: string, action: string): Promise<void> {
+    const key = `${phoneNumber}:${action}`;
+    this.verificationCodes.set(key, {
+      code,
+      action,
+      timestamp: Date.now()
+    });
+    
+    // Clean up expired codes (older than 10 minutes)
+    const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+    for (const [storedKey, data] of this.verificationCodes.entries()) {
+      if (data.timestamp < tenMinutesAgo) {
+        this.verificationCodes.delete(storedKey);
+      }
+    }
+  }
+
+  async verifyCode(phoneNumber: string, code: string, action: string = 'general'): Promise<boolean> {
+    const key = `${phoneNumber}:${action}`;
+    const stored = this.verificationCodes.get(key);
+    
+    if (!stored) {
+      return false;
+    }
+    
+    // Check if code is expired (10 minutes)
+    const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+    if (stored.timestamp < tenMinutesAgo) {
+      this.verificationCodes.delete(key);
+      return false;
+    }
+    
+    // Verify code matches
+    if (stored.code === code) {
+      this.verificationCodes.delete(key); // Remove used code
+      return true;
+    }
+    
+    return false;
   }
 }
 
