@@ -173,7 +173,7 @@ export default function Home() {
           <p className="text-neutral-600">Organize carpools for your child's party easily</p>
         </header>
 
-        {/* Navigation Tabs */}
+        {/* Navigation Tabs - Only show carpool tabs when an event is selected */}
         <div className="mb-8">
           <div className="flex flex-wrap border-b border-neutral-300 sm:space-x-4">
             <button
@@ -186,38 +186,42 @@ export default function Home() {
             >
               Event Details
             </button>
-            <button
-              onClick={() => selectedPartyGroup ? handleTabChange("offer") : handleTabChange("partyGroups")}
-              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
-                activeTab === "offer"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-neutral-600"
-              }`}
-            >
-              Offer a Carpool
-            </button>
-            <button
-              onClick={() => selectedPartyGroup ? handleTabChange("request") : handleTabChange("partyGroups")}
-              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
-                activeTab === "request"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-neutral-600"
-              }`}
-            >
-              Request a Spot
-            </button>
-            <button
-              onClick={() => handleTabChange("view")}
-              className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
-                activeTab === "view"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-neutral-600"
-              }`}
-            >
-              View All Carpools
-            </button>
-
-
+            
+            {/* Only show carpool tabs when an event is selected */}
+            {selectedPartyGroup && (
+              <>
+                <button
+                  onClick={() => handleTabChange("offer")}
+                  className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
+                    activeTab === "offer"
+                      ? "border-b-2 border-primary text-primary"
+                      : "text-neutral-600"
+                  }`}
+                >
+                  Offer a Carpool
+                </button>
+                <button
+                  onClick={() => handleTabChange("request")}
+                  className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
+                    activeTab === "request"
+                      ? "border-b-2 border-primary text-primary"
+                      : "text-neutral-600"
+                  }`}
+                >
+                  Request a Spot
+                </button>
+                <button
+                  onClick={() => handleTabChange("view")}
+                  className={`py-2 px-3 font-medium flex-1 sm:flex-none text-sm sm:text-base ${
+                    activeTab === "view"
+                      ? "border-b-2 border-primary text-primary"
+                      : "text-neutral-600"
+                  }`}
+                >
+                  View All Carpools
+                </button>
+              </>
+            )}
           </div>
         </div>
 
