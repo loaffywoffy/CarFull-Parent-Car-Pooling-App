@@ -57,6 +57,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to verify code" });
     }
   });
+
+  // SMS Test endpoint for development
+  app.post("/api/sms/send", async (req, res) => {
+    try {
+      const { phoneNumber, message } = req.body;
+      
+      if (!phoneNumber || !message) {
+        return res.status(400).json({ message: "Phone number and message are required" });
+      }
+      
+      await messagingService.sendCarpoolUpdate(phoneNumber, message);
+      res.json({ message: "SMS sent successfully" });
+    } catch (error) {
+      console.error("Error sending test SMS:", error);
+      res.status(500).json({ message: "Failed to send SMS" });
+    }
+  });
   
   // Middleware to check if the current user is the creator of a party group
   const isCreatorMiddleware = async (req: any, res: any, next: any) => {
