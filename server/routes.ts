@@ -101,6 +101,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Normalize phone number to match the format used when storing the code
       const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+      console.log(`[DEBUG] Verify endpoint - Original phone: "${phoneNumber}"`);
+      console.log(`[DEBUG] Verify endpoint - Normalized phone: "${normalizedPhone}"`);
+      console.log(`[DEBUG] Verify endpoint - Code: "${code}"`);
+      console.log(`[DEBUG] Verify endpoint - Action: "${action}"`);
+      
       const isValid = await verificationService.verifyCode(normalizedPhone, code, action);
       
       if (isValid) {
