@@ -43,7 +43,8 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   eventPostcode: z.string().min(3, "Postcode is required"),
   targetArrivalTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
-  eventEndDate: z.string().min(1, "End date is required")
+  eventEndDate: z.string().min(1, "End date is required"),
+  phoneNumber: z.string().min(10, "Phone number is required")
 }).refine(
   (data) => {
     // If end date is provided, it must be >= start date
@@ -94,7 +95,8 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
       eventEndDate: "",
       targetArrivalTime: "",
       endTime: "",
-      createdBy: ""
+      createdBy: "",
+      phoneNumber: ""
     },
   });
 
@@ -512,6 +514,20 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                     <FormLabel>Your Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Your name (as the event organizer)" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Your Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., +44 7123 456789" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
