@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import LocationMap from "./location-map";
 import { geocodeAddress } from "@/lib/geocoding";
 import { useQueryClient } from "@tanstack/react-query";
+import CalendarIntegration from "./calendar-integration";
 
 interface PartyGroupDetailsProps {
   partyGroup: PartyGroup;
