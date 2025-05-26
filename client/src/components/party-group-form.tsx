@@ -35,6 +35,52 @@ interface PartyGroupFormProps {
   onCancel?: () => void; // Add optional cancel callback
 }
 
+// Phone number validation function
+const validatePhoneNumber = (phoneNumber: string): boolean => {
+  // Remove all non-digit characters except +
+  const cleanNumber = phoneNumber.replace(/[^\d+]/g, '');
+  
+  // Check basic format: must be 7-15 digits, optionally starting with +
+  if (!/^\+?[\d]{7,15}$/.test(cleanNumber)) {
+    return false;
+  }
+  
+  // Check for invalid patterns
+  const invalidPatterns = [
+    /^\+?0+$/, // All zeros
+    /^\+?1+$/, // All ones
+    /^(\+?\d)\1{9,}$/, // Too many repeated digits
+    /^\+?1234567890$/, // Sequential numbers
+    /^\+?0123456789$/, // Sequential starting with 0
+  ];
+  
+  for (const pattern of invalidPatterns) {
+    if (pattern.test(cleanNumber)) {
+      return false;
+    }
+  }
+  
+  // Additional validation for UK numbers (most common format)
+  if (cleanNumber.startsWith('+44') || cleanNumber.startsWith('44') || cleanNumber.startsWith('0')) {
+    let ukNumber = cleanNumber.replace(/^\+44/, '').replace(/^44/, '').replace(/^0/, '');
+    
+    // UK mobile numbers start with 7 and are 10 digits total
+    if (/^7\d{9}$/.test(ukNumber)) {
+      return true;
+    }
+    
+    // UK landline validation (basic patterns)
+    if (/^[1-6]\d{8,9}$/.test(ukNumber)) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  // For international numbers, ensure reasonable length
+  return cleanNumber.length >= 8 && cleanNumber.length <= 15;
+};
+
 // Create the form schema with custom validations
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
   name: z.string().min(3, "Event name must be at least 3 characters"),
@@ -44,7 +90,18 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   targetArrivalTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
   eventEndDate: z.string().min(1, "End date is required"),
-  phoneNumber: z.string().min(10, "Phone number is required")
+  phoneNumber: z.string()
+    .min(7, "Phone number must be at least 7 digits")
+    .max(20, "Phone number is too long")
+    .refine((phone) => {
+      // Remove spaces, dashes, brackets for validation
+      const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+      return /^[\+\d]+$/.test(cleaned);
+    }, "Phone number can only contain digits, +, spaces, dashes, and brackets")
+    .refine((phone) => {
+      const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+      return validatePhoneNumber(cleaned);
+    }, "Please enter a valid phone number")
 }).refine(
   (data) => {
     // If end date is provided, it must be >= start date
