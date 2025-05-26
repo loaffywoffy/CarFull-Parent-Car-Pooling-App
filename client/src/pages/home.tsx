@@ -205,6 +205,11 @@ export default function Home() {
                 partyGroup={selectedPartyGroup} 
                 onOfferCarpool={() => handleOfferCarpool(selectedPartyGroup.id)}
                 onRequestSpot={() => handleTabChange("request")} 
+                onBack={() => {
+                  setSelectedPartyGroup(null);
+                  setPartyGroupTab("list");
+                  setActiveTab("partyGroups");
+                }}
                 isCreator={createdGroupIds.includes(selectedPartyGroup.id)}
               />
             )}
