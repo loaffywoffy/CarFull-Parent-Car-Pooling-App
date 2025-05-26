@@ -15,6 +15,7 @@ export const partyGroups = pgTable("party_groups", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
+  eventType: text("event_type").default("birthday"), // birthday, wedding, graduation, barmitzvah, batmitzvah, sports, school, other
   eventAddress: text("party_address").notNull(),
   eventCity: text("party_city").notNull(),
   eventPostcode: text("party_postcode").notNull(),

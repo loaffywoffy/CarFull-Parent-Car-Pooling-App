@@ -27,6 +27,8 @@ import { SMSVerificationDialog } from "./sms-verification-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createPartyGroup } from "@/api/partyGroups";
 import { queryClient } from "@/lib/queryClient";
+import { eventTypeOptions } from "@/lib/event-colors";
+import { z } from "zod";
 
 interface PartyGroupFormProps {
   onSuccess: (partyGroupId: number) => void;
@@ -84,6 +86,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
     defaultValues: {
       name: "",
       description: "",
+      eventType: "birthday",
       eventAddress: "",
       eventCity: "",
       eventPostcode: "",
