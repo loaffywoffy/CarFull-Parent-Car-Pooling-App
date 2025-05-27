@@ -177,6 +177,18 @@ export default function PartyGroupDetails({
         <TabsContent value="details" className="pt-2 pb-0 px-0 m-0">
           <CardContent className="pt-4">
             <div className="space-y-4">
+              {/* Minimized Calendar Integration */}
+              <div className="pb-4 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Add to calendar:</span>
+                  <CalendarIntegration 
+                    eventData={partyGroup}
+                    buttonVariant="outline"
+                    size="sm"
+                  />
+                </div>
+              </div>
+
               {partyGroup.description && (
                 <p className="text-gray-600 text-sm">{partyGroup.description}</p>
               )}
@@ -401,17 +413,7 @@ export default function PartyGroupDetails({
                 </div>
               </div>
 
-              {/* Minimized Calendar Integration */}
-              <div className="mt-8 pt-4 border-t border-gray-100">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Add to calendar:</span>
-                  <CalendarIntegration 
-                    eventData={partyGroup}
-                    buttonVariant="outline"
-                    size="sm"
-                  />
-                </div>
-              </div>
+
             </div>
           </CardContent>
         </TabsContent>
