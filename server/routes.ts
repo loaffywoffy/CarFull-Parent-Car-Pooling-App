@@ -667,7 +667,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Send confirmation SMS to the parent
         try {
-          const message = `Great news! ${request.parentName} has approved your ride request for ${request.childName} to ${eventName}.`;
+          // Create detailed confirmation message with pickup/dropoff details
+          let pickupDetails = '';
+          let dropoffDetails = '';
+          
+          // Determine pickup details based on request direction
+          if (request.needsPickup || request.needsBoth) {
+            if (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') {
+              pickupDetails = `Pickup: Bring ${request.childName} to ${carpool.address}, ${carpool.city}, ${carpool.postcode}`;
+            } else if (carpool.outboundDropoffPreference === 'pickup-point') {
+              pickupDetails = `Pickup: Meet at ${carpool.outboundPickupLocation || carpool.meetingPoint || carpool.address}`;
+            } else {
+              pickupDetails = `Pickup: ${request.parentName} will collect from your address`;
+            }
+            
+            if (carpool.pickupTime) {
+              pickupDetails += ` at ${carpool.pickupTime}`;
+            }
+          }
+          
+          // Determine dropoff details based on request direction
+          if (request.needsDropoff || request.needsBoth) {
+            if (carpool.returnDropoffPreference === 'direct-home') {
+              dropoffDetails = `Dropoff: ${request.parentName} will return ${request.childName} to your address`;
+            } else if (carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address') {
+              dropoffDetails = `Dropoff: Collect ${request.childName} from ${carpool.address}, ${carpool.city}, ${carpool.postcode}`;
+            } else {
+              dropoffDetails = `Dropoff: Collect ${request.childName} from ${carpool.meetingPoint || carpool.address}`;
+            }
+            
+            if (carpool.returnCollectionTime) {
+              dropoffDetails += ` around ${carpool.returnCollectionTime}`;
+            }
+          }
+          
+          const message = `Great news! ${request.parentName} has approved your ride request for ${request.childName} to ${eventName}.\n\n` +
+            `${pickupDetails}${pickupDetails && dropoffDetails ? '\n' : ''}${dropoffDetails}\n\n` +
+            `Driver contact: ${carpool.phoneNumber}`;
+          
           await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
         } catch (smsError) {
           console.error("Failed to send approval confirmation SMS:", smsError);
