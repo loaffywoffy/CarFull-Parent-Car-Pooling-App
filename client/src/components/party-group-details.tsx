@@ -201,14 +201,11 @@ export default function PartyGroupDetails({
                 <div className="flex items-start space-x-2">
                   <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
                   <div>
-                    <p className="font-medium text-gray-900">Add to Calendar</p>
-                    <div className="mt-1">
-                      <CalendarIntegration 
-                        eventData={partyGroup}
-                        buttonVariant="outline"
-                        size="sm"
-                      />
-                    </div>
+                    <CalendarIntegration 
+                      eventData={partyGroup}
+                      buttonVariant="outline"
+                      size="sm"
+                    />
                   </div>
                 </div>
 
