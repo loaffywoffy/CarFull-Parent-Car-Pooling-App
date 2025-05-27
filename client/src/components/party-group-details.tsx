@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   CalendarIcon, MapPinIcon, ClockIcon, UserIcon, CopyIcon, 
   CheckIcon, LinkIcon, Share2Icon, CarIcon, Map as MapIcon,
-  Pencil, ChevronLeft, ChevronDown, Mail, MessageSquare, Share, ArrowRight
+  Pencil, ChevronLeft, ChevronDown, Mail, MessageSquare, Share
 } from "lucide-react";
 import { type PartyGroup } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -219,43 +219,26 @@ export default function PartyGroupDetails({
               )}
 
               {(partyGroup.eventEndDate || partyGroup.endTime) && (
-                <div className="mt-6">
-                  {/* Timeline progression visual */}
-                  <div className="bg-gradient-to-r from-green-50 to-red-50 p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-center mb-3">
-                      <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <span className="text-green-600">Start</span>
-                        <div className="flex items-center gap-1">
-                          <div className="w-8 h-px bg-gradient-to-r from-green-400 to-red-400"></div>
-                          <ArrowRight className="h-3 w-3 text-gray-500" />
-                          <div className="w-8 h-px bg-gradient-to-r from-green-400 to-red-400"></div>
-                        </div>
-                        <span className="text-red-600">End</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {partyGroup.eventEndDate && (
+                    <div className="flex items-start space-x-2">
+                      <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-gray-900">End Date</p>
+                        <p className="text-gray-600 text-sm">{formattedEndDate}</p>
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {partyGroup.eventEndDate && (
-                        <div className="flex items-start space-x-2 bg-white/60 p-3 rounded-md">
-                          <CalendarIcon className="h-5 w-5 text-red-500 mt-0.5" />
-                          <div>
-                            <p className="font-medium text-gray-900">End Date</p>
-                            <p className="text-gray-600 text-sm">{formattedEndDate}</p>
-                          </div>
-                        </div>
-                      )}
+                  )}
 
-                      {partyGroup.endTime && (
-                        <div className="flex items-start space-x-2 bg-white/60 p-3 rounded-md">
-                          <ClockIcon className="h-5 w-5 text-red-500 mt-0.5" />
-                          <div>
-                            <p className="font-medium text-gray-900">End Time</p>
-                            <p className="text-gray-600 text-sm">{partyGroup.endTime}</p>
-                          </div>
-                        </div>
-                      )}
+                  {partyGroup.endTime && (
+                    <div className="flex items-start space-x-2">
+                      <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-gray-900">End Time</p>
+                        <p className="text-gray-600 text-sm">{partyGroup.endTime}</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
