@@ -129,8 +129,9 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
       });
 
       toast({
-        title: "Success!",
-        description: `Your ${needsBoth ? "to & from party" : (values.needsPickup ? "to party" : "from party")} ride request has been submitted.`
+        title: "Request Sent!",
+        description: `Your ${needsBoth ? "to & from event" : (values.needsPickup ? "to event" : "from event")} ride request for ${values.childName} has been sent to ${carpoolDetails?.parentName}. You'll get a confirmation message once they respond.`,
+        duration: 6000 // Show for 6 seconds so parents can read the full message
       });
 
       // Reset the form
