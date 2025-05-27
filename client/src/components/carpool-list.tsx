@@ -433,7 +433,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                           <Badge className="bg-green-100 text-green-800">
                             <Users className="h-3 w-3 mr-1" />
                             {carpoolRequests?.length 
-                              ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
+                              ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => (r.needsPickup || r.needsBoth) && r.approvalStatus !== 'rejected').length)} of ${carpool.spacesAvailable} spaces left`
                               : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`}
                           </Badge>
                         </>
@@ -447,7 +447,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                           <Badge className="bg-blue-100 text-blue-800">
                             <Users className="h-3 w-3 mr-1" />
                             {carpoolRequests?.length
-                              ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                              ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => (r.needsDropoff || r.needsBoth) && r.approvalStatus !== 'rejected').length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
                               : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`}
                           </Badge>
                         </>
