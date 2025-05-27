@@ -499,6 +499,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pickupRequests = existingRequests.filter(req => (req.needsPickup || req.needsBoth) && req.approvalStatus !== 'rejected').length;
       const dropoffRequests = existingRequests.filter(req => (req.needsDropoff || req.needsBoth) && req.approvalStatus !== 'rejected').length;
       
+      console.log(`[DEBUG] Space validation for carpool ${carpoolId}:`);
+      console.log(`[DEBUG] Total existing requests: ${existingRequests.length}`);
+      console.log(`[DEBUG] Pickup requests (non-rejected): ${pickupRequests} out of ${carpool.spacesAvailable} spaces`);
+      console.log(`[DEBUG] Dropoff requests (non-rejected): ${dropoffRequests} out of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces`);
+      console.log(`[DEBUG] Request statuses:`, existingRequests.map(req => `${req.childName}: ${req.approvalStatus} (pickup: ${req.needsPickup}, dropoff: ${req.needsDropoff}, both: ${req.needsBoth})`));
+      
       // For outbound (to party), use spacesAvailable field
       const outboundSpaces = carpool.spacesAvailable;
       // For return (from party), use returnSpacesAvailable if present, otherwise spacesAvailable
