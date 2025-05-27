@@ -1290,7 +1290,12 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h3 className="text-lg font-semibold text-gray-700">Find available rides below</h3>
+        <h3 className="text-lg font-semibold text-gray-700">
+          Find available rides below or{" "}
+          <Link href={`/events/${partyGroupId}`} className="text-blue-600 hover:text-blue-800 underline">
+            offer a ride
+          </Link>
+        </h3>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
