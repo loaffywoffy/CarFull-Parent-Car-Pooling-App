@@ -1066,7 +1066,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                           {/* Only show TO event option if spaces are available */}
                           {(carpool.canPickup || carpool.canBoth) && 
                            !(carpoolRequests?.length && 
-                             carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length) && (
+                             carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsPickup || r.needsBoth) && r.approvalStatus !== 'rejected').length) && (
                             <div className="flex items-center space-x-2 py-1 px-2 rounded hover:bg-gray-100">
                               <Checkbox 
                                 id={`pickup-${carpool.id}`} 
@@ -1088,7 +1088,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                           {/* Only show FROM party option if spaces are available */}
                           {(carpool.canDropoff || carpool.canBoth) && 
                            !(carpoolRequests?.length && 
-                             (carpool.returnSpacesAvailable || carpool.spacesAvailable) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length) && (
+                             (carpool.returnSpacesAvailable || carpool.spacesAvailable) <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsDropoff || r.needsBoth) && r.approvalStatus !== 'rejected').length) && (
                             <div className="flex items-center space-x-2 py-1 px-2 rounded hover:bg-gray-100">
                               <Checkbox 
                                 id={`dropoff-${carpool.id}`} 
