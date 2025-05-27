@@ -181,138 +181,30 @@ export default function PartyGroupDetails({
                 <p className="text-gray-600 text-sm">{partyGroup.description}</p>
               )}
 
-              {/* Event Details Grid - Optimized Layout */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column - Date & Time */}
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-2">
-                    <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-gray-900">Date</p>
-                      <p className="text-gray-600 text-sm">{formattedDate}</p>
-                      {partyGroup.eventEndDate && (
-                        <p className="text-gray-500 text-xs mt-1">
-                          Ends: {formattedEndDate}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-2">
-                    <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-gray-900">Time</p>
-                      <p className="text-gray-600 text-sm">
-                        {partyGroup.targetArrivalTime}
-                        {partyGroup.endTime && ` - ${partyGroup.endTime}`}
-                      </p>
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-start space-x-2">
+                  <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">Date</p>
+                    <p className="text-gray-600 text-sm">{formattedDate}</p>
                   </div>
                 </div>
 
-                {/* Right Column - Location & Actions */}
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-2">
-                    <MapPinIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-gray-900">Location</p>
-                      <p className="text-gray-600 text-sm">
-                        {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
-                      </p>
-                    </div>
+                <div className="flex items-start space-x-2">
+                  <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">Start Time</p>
+                    <p className="text-gray-600 text-sm">{partyGroup.targetArrivalTime}</p>
                   </div>
+                </div>
 
-                  {/* Quick Actions */}
-                  <div className="flex flex-col gap-2">
-                    <CalendarIntegration 
-                      eventData={partyGroup}
-                      buttonVariant="outline"
-                      size="sm"
-                    />
-                    
-                    {isCreator && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="outline"
-                            size="sm"
-                            className="text-blue-700 border-blue-200 hover:bg-blue-50"
-                          >
-                            <Share className="h-4 w-4 mr-2" />
-                            Share Event
-                            <ChevronDown className="h-4 w-4 ml-2" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
-                                `📅 Event Date: ${formattedDate}\n` +
-                                `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
-                                `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
-                                `Link: ${shareableUrl}`;
-                              window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
-                            }}
-                          >
-                            <MessageSquare className="h-4 w-4 mr-2 text-green-600" />
-                            Share via WhatsApp
-                          </DropdownMenuItem>
-                          
-                          <DropdownMenuItem
-                            onClick={() => {
-                              const subject = `Join "${partyGroup.name}" Event`;
-                              const body = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
-                                `📅 Event Date: ${formattedDate}\n` +
-                                `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
-                                `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
-                                `Link: ${shareableUrl}`;
-                              window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
-                            }}
-                          >
-                            <Mail className="h-4 w-4 mr-2 text-blue-600" />
-                            Share via Email
-                          </DropdownMenuItem>
-                          
-                          <DropdownMenuItem
-                            onClick={() => {
-                              const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
-                                `📅 Event Date: ${formattedDate}\n` +
-                                `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
-                                `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
-                                `Link: ${shareableUrl}`;
-                              window.open(`sms:?body=${encodeURIComponent(message)}`);
-                            }}
-                          >
-                            <MessageSquare className="h-4 w-4 mr-2 text-gray-600" />
-                            Share via SMS
-                          </DropdownMenuItem>
-                          
-                          <DropdownMenuItem
-                            onClick={() => {
-                              if (navigator.share) {
-                                navigator.share({
-                                  title: `Join "${partyGroup.name}"`,
-                                  text: `Join "${partyGroup.name}" on ParentPooling!\n\n📅 ${formattedDate} ⏰ ${partyGroup.targetArrivalTime}\n📍 ${partyGroup.eventAddress}, ${partyGroup.eventCity}`,
-                                  url: shareableUrl
-                                }).catch(console.error);
-                              } else {
-                                const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
-                                  `📅 Event Date: ${formattedDate}\n` +
-                                  `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
-                                  `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
-                                  `Link: ${shareableUrl}`;
-                                navigator.clipboard.writeText(message);
-                                setCopySuccess({ ...copySuccess, social: true });
-                                setTimeout(() => setCopySuccess(prev => ({ ...prev, social: false })), 2000);
-                              }
-                            }}
-                          >
-                            <Share className="h-4 w-4 mr-2 text-purple-600" />
-                            {copySuccess.social ? 'Copied to Clipboard!' : 'Share to Social Media'}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
+                <div className="flex items-start space-x-2 md:col-span-2">
+                  <MapPinIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">Location</p>
+                    <p className="text-gray-600 text-sm">
+                      {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -326,7 +218,170 @@ export default function PartyGroupDetails({
                 </div>
               )}
 
+              {(partyGroup.eventEndDate || partyGroup.endTime) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {partyGroup.eventEndDate && (
+                    <div className="flex items-start space-x-2">
+                      <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-gray-900">End Date</p>
+                        <p className="text-gray-600 text-sm">{formattedEndDate}</p>
+                      </div>
+                    </div>
+                  )}
 
+                  {partyGroup.endTime && (
+                    <div className="flex items-start space-x-2">
+                      <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-gray-900">End Time</p>
+                        <p className="text-gray-600 text-sm">{partyGroup.endTime}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Share Event Section */}
+              {isCreator && (
+                <div className="mt-6 mb-4 pb-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <Share2Icon className="h-4 w-4 text-primary-600" />
+                      <p className="font-medium text-sm text-gray-700">Share Event</p>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Input 
+                        readOnly 
+                        value={shareableUrl} 
+                        className="font-mono text-xs bg-gray-50" 
+                      />
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          navigator.clipboard.writeText(shareableUrl);
+                          setCopySuccess({ ...copySuccess, link: true });
+                          setTimeout(() => setCopySuccess(prev => ({ ...prev, link: false })), 2000);
+                        }}
+                        className="flex gap-1 shrink-0" 
+                        size="sm"
+                      >
+                        {copySuccess.link ? (
+                          <>
+                            <CheckIcon className="h-3 w-3 text-green-600" />
+                            <span>Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <LinkIcon className="h-3 w-3" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          className="w-full bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                        >
+                          <Share className="h-4 w-4 mr-2" />
+                          Share with Parents
+                          <ChevronDown className="h-4 w-4 ml-2" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                              `📅 Event Date: ${formattedDate}\n` +
+                              `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                              `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                              `Link: ${shareableUrl}`;
+                            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                          }}
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2 text-green-600" />
+                          Share via WhatsApp
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const subject = `Join "${partyGroup.name}" Event`;
+                            const body = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                              `📅 Event Date: ${formattedDate}\n` +
+                              `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                              `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                              `Link: ${shareableUrl}`;
+                            window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+                          }}
+                        >
+                          <Mail className="h-4 w-4 mr-2 text-blue-600" />
+                          Share via Email
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                              `📅 Event Date: ${formattedDate}\n` +
+                              `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                              `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                              `Link: ${shareableUrl}`;
+                            window.open(`sms:?body=${encodeURIComponent(message)}`);
+                          }}
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2 text-gray-600" />
+                          Share via SMS
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem
+                          onClick={() => {
+                            if (navigator.share) {
+                              navigator.share({
+                                title: `Join "${partyGroup.name}"`,
+                                text: `Join "${partyGroup.name}" on ParentPooling!\n\n📅 ${formattedDate} ⏰ ${partyGroup.targetArrivalTime}\n📍 ${partyGroup.eventAddress}, ${partyGroup.eventCity}`,
+                                url: shareableUrl
+                              }).catch(console.error);
+                            } else {
+                              // Fallback: copy to clipboard
+                              const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                                `📅 Event Date: ${formattedDate}\n` +
+                                `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                                `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                                `Link: ${shareableUrl}`;
+                              navigator.clipboard.writeText(message);
+                              setCopySuccess({ ...copySuccess, social: true });
+                              setTimeout(() => setCopySuccess(prev => ({ ...prev, social: false })), 2000);
+                            }
+                          }}
+                        >
+                          <Share className="h-4 w-4 mr-2 text-purple-600" />
+                          {copySuccess.social ? 'Copied to Clipboard!' : 'Share to Social Media'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              )}
+
+              {/* Calendar Integration Section */}
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="font-medium text-blue-900">Add to Your Calendar</h4>
+                    <p className="text-sm text-blue-700">Never miss this event - add it to your personal calendar</p>
+                  </div>
+                </div>
+                <CalendarIntegration 
+                  eventData={partyGroup}
+                  buttonVariant="default"
+                />
+              </div>
 
               <div className="mt-6 space-y-4">
                 <h3 className="font-medium text-lg text-neutral-800">Travel Options</h3>
@@ -359,8 +414,6 @@ export default function PartyGroupDetails({
                   </div>
                 </div>
               </div>
-
-
             </div>
           </CardContent>
         </TabsContent>
