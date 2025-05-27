@@ -559,14 +559,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send SMS approval notification to the driver
       try {
+        console.log(`[DEBUG] Starting SMS approval notification process for carpool ${carpoolId}`);
         const direction = needsBoth ? "both ways" : (needsPickup ? "to event" : "from event");
         const childName = validationResult.data.childName;
         const parentName = validationResult.data.parentName;
         const approvalToken = newRequest.approvalToken;
         
+        console.log(`[DEBUG] Request details - Child: ${childName}, Parent: ${parentName}, Direction: ${direction}`);
+        console.log(`[DEBUG] Approval token: ${approvalToken}`);
+        
         // Get party group info for context
         const partyGroup = await storage.getPartyGroupById(carpool.partyGroupId);
         const eventName = partyGroup?.name || "the event";
+        
+        console.log(`[DEBUG] Event name: ${eventName}, Driver phone: ${carpool.phoneNumber}`);
         
         // Create approval links
         const baseUrl = process.env.REPLIT_DEV_DOMAIN ? 
@@ -576,6 +582,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const approveUrl = `${baseUrl}/approve/${approvalToken}?action=approve`;
         const rejectUrl = `${baseUrl}/approve/${approvalToken}?action=reject`;
         
+        console.log(`[DEBUG] Approval URLs - Approve: ${approveUrl}, Reject: ${rejectUrl}`);
+        
         const message = `New ride request for ${eventName}:\n\n` +
           `Child: ${childName}\n` +
           `Parent: ${parentName}\n` +
@@ -583,6 +591,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           `Approve: ${approveUrl}\n` +
           `Reject: ${rejectUrl}`;
         
+        console.log(`[DEBUG] SMS message prepared, sending to ${carpool.phoneNumber}`);
         await messagingService.sendCarpoolUpdate(carpool.phoneNumber, message);
         
         console.log(`[INFO] SMS approval notification sent to ${carpool.phoneNumber}`);
@@ -641,7 +650,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Send confirmation SMS to the parent
         try {
           const message = `Great news! Your ride request for ${request.childName} has been approved by the driver.`;
-          await messagingService.sendCarpoolUpdate(request.parentPhone, message);
+          await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
         } catch (smsError) {
           console.error("Failed to send approval confirmation SMS:", smsError);
         }
@@ -662,7 +671,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Send rejection SMS to the parent
         try {
           const message = `Your ride request for ${request.childName} has been declined by the driver. Please try booking with another carpool.`;
-          await messagingService.sendCarpoolUpdate(request.parentPhone, message);
+          await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
         } catch (smsError) {
           console.error("Failed to send rejection notification SMS:", smsError);
         }
