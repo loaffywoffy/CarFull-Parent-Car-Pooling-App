@@ -530,6 +530,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check space availability for each direction
       if ((needsPickup || needsBoth) && (pickupRequests >= outboundSpaces)) {
+        console.log(`[DEBUG] Pickup space check failed - Requests: ${pickupRequests}, Available spaces: ${outboundSpaces}`);
         canBookPickup = false;
       }
       
