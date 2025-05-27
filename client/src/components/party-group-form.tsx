@@ -531,7 +531,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                         value={field.value || ""}
                         onChange={field.onChange}
                         label="Your Phone Number"
-                        placeholder="07123 456789"
+                        placeholder="Your Phone Number (used to validate event)"
                         required={true}
                       />
                     </FormControl>

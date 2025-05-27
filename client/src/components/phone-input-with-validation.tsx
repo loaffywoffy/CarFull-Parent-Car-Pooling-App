@@ -147,7 +147,6 @@ export function PhoneInputWithValidation({
       <Label htmlFor="phone-input" className="text-sm font-medium">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
-      
       <div className="relative">
         <Input
           id="phone-input"
@@ -169,19 +168,15 @@ export function PhoneInputWithValidation({
           )}
         </div>
       </div>
-      
       {/* Validation message */}
       {validationMessage && (
         <p className={`text-sm ${getValidationColor()}`}>
           {validationMessage}
         </p>
       )}
-      
       {/* Helper text when no validation message */}
       {!validationMessage && !value && (
-        <p className="text-sm text-gray-500">
-          Enter a UK phone number (mobile: 07123 456789, landline: 0203 123 4567)
-        </p>
+        <p className="text-gray-500 text-[12px]">Enter a valid UK mobile number e.g +447XXXXXXXXX or 07XXXXXXXXX</p>
       )}
     </div>
   );
