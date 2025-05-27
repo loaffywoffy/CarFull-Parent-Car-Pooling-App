@@ -536,6 +536,19 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                     setShowDetails(true);
                     setMapVisible(true); // Show map when opening details via request button
                   }
+                  
+                  // Auto-scroll to the form after a brief delay to ensure it's rendered
+                  if (!showRequestForm) {
+                    setTimeout(() => {
+                      const formElement = document.querySelector(`[data-carpool-form="${carpool.id}"]`);
+                      if (formElement) {
+                        formElement.scrollIntoView({ 
+                          behavior: 'smooth', 
+                          block: 'start' 
+                        });
+                      }
+                    }, 100);
+                  }
                 }}
                 variant="default"
                 size="sm"
@@ -978,7 +991,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               </div>
 
               {showRequestForm && (
-                <div className="mt-4 pt-4 border-t">
+                <div className="mt-4 pt-4 border-t" data-carpool-form={carpool.id}>
                   <h4 className="font-medium text-primary mb-3">Request a Spot</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
