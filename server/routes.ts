@@ -450,6 +450,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const requests = await storage.getCarpoolRequestsByCarpoolId(carpoolId);
+      
+      // Add debugging for carpool 52 specifically
+      if (carpoolId === 52) {
+        console.error(`[FORCE DEBUG] Carpool 52 requests: ${JSON.stringify(requests.map(r => ({
+          childName: r.childName,
+          status: r.approvalStatus,
+          needsPickup: r.needsPickup,
+          needsBoth: r.needsBoth
+        })))}`);
+        
+        const carpool = await storage.getCarpoolById(carpoolId);
+        console.error(`[FORCE DEBUG] Carpool 52 spaces: ${carpool?.spacesAvailable}`);
+        
+        const pickupRequests = requests.filter(req => (req.needsPickup || req.needsBoth) && req.approvalStatus !== 'rejected').length;
+        console.error(`[FORCE DEBUG] Non-rejected pickup requests: ${pickupRequests}`);
+      }
+      
       res.json(requests);
     } catch (error) {
       console.error("Error fetching carpool requests:", error);
