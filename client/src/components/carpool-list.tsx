@@ -1,5 +1,6 @@
 import { useState, useEffect, memo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { getCarpoolsByPartyGroupId, getPartyGroupById } from "@/api/partyGroups";
 import { getCarpoolRequests } from "@/api/carpools";
 import { CarpoolRequest } from "@shared/schema";
