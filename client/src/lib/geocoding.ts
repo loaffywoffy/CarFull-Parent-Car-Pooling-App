@@ -37,13 +37,9 @@ export async function geocodeAddress(
         headers: {
           'User-Agent': 'ParentPoolingApp/1.0',
           'Accept-Language': 'en-US,en;q=0.9'
-        },
-        timeout: 10000 // 10 second timeout
+        }
       }
-    ).catch(error => {
-      console.warn('Geocoding request failed:', error.message);
-      throw new Error(`Geocoding failed: ${error.message}`);
-    });
+    );
 
     if (response.data?.[0]) {
       const coordinates: [number, number] = [
