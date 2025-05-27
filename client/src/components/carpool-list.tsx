@@ -420,7 +420,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                           <ArrowLeft className="h-3 w-3 mr-1" />
                           <span className="whitespace-nowrap">
                             From: {carpoolRequests?.length
-                              ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable}`
+                              ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => (r.needsDropoff || r.needsBoth) && r.approvalStatus !== 'rejected').length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable}`
                               : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable}`}
                           </span>
                         </Badge>
