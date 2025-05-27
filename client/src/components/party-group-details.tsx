@@ -48,6 +48,37 @@ export default function PartyGroupDetails({
 
   const queryClient = useQueryClient();
 
+  const handleDeleteVerificationSuccess = async () => {
+    try {
+      const response = await fetch(`/api/party-groups/${partyGroup.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete event');
+      }
+
+      toast({
+        title: "Event Deleted",
+        description: "The event has been successfully deleted.",
+      });
+
+      // Invalidate the party groups cache
+      queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
+      
+      // Call the onDeleted callback if provided
+      if (onDeleted) {
+        onDeleted();
+      }
+    } catch (error) {
+      toast({
+        title: "Delete Failed",
+        description: error instanceof Error ? error.message : "Failed to delete event",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const loadPartyLocation = async () => {
       if (partyGroup.eventAddress && partyGroup.eventPostcode) {
@@ -112,6 +143,7 @@ export default function PartyGroupDetails({
   const [activeTab, setActiveTab] = useState("details");
 
   return (
+    <div>
     <Card className="w-full mb-6 overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-primary-100 to-primary-50 pb-4">
         <div className="flex justify-between items-start">
@@ -144,9 +176,17 @@ export default function PartyGroupDetails({
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8 rounded-full bg-white hover:bg-red-50 text-red-600 hover:text-red-700"
+                  onClick={() => setShowDeleteVerification(true)}
+                  title="Delete event"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </>
             )}
-            <Badge variant="outline" className="bg-white ml-1">Active</Badge>
           </div>
         </div>
       </CardHeader>
@@ -485,5 +525,16 @@ export default function PartyGroupDetails({
         </div>
       </CardFooter>
     </Card>
+
+    <SMSVerificationDialog
+      isOpen={showDeleteVerification}
+      onClose={() => setShowDeleteVerification(false)}
+      onVerified={handleDeleteVerificationSuccess}
+      phoneNumber={partyGroup.phoneNumber || ''}
+      action="delete_event"
+      title="Delete Event"
+      description="To delete this event, we need to verify your identity. A verification code has been sent to your phone."
+    />
+    </div>
   );
 }
