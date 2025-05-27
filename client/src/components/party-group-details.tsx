@@ -6,13 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { 
   CalendarIcon, MapPinIcon, ClockIcon, UserIcon, CopyIcon, 
   CheckIcon, LinkIcon, Share2Icon, CarIcon, Map as MapIcon,
-  Pencil, ChevronLeft, ChevronDown, Mail, MessageSquare, Share
+  Pencil, ChevronLeft, ChevronDown, Mail, MessageSquare, Share, Trash2
 } from "lucide-react";
 import { type PartyGroup } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { SMSVerificationDialog } from "./sms-verification-dialog";
 import CarpoolSummary from "./carpool-summary";
 import { Skeleton } from "@/components/ui/skeleton";
 import LocationMap from "./location-map";
@@ -43,6 +44,7 @@ export default function PartyGroupDetails({
   const [copySuccess, setCopySuccess] = useState<{code: boolean, link: boolean, social: boolean}>({code: false, link: false, social: false});
   const [partyLocation, setPartyLocation] = useState<[number, number] | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(true);
+  const [showDeleteVerification, setShowDeleteVerification] = useState(false);
 
   const queryClient = useQueryClient();
 
