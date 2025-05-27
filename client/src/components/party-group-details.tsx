@@ -331,90 +331,230 @@ export default function PartyGroupDetails({
                 </div>
               )}
               
-              {partyGroup.description && (
-                <p className="text-gray-600 text-sm">{partyGroup.description}</p>
-              )}
+              {/* 1. DETAILS Section */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                  <CalendarIcon className="h-6 w-6 text-primary-600" />
+                  <h3 className="text-xl font-semibold text-gray-900">Event Details</h3>
+                </div>
+                
+                {partyGroup.description && (
+                  <div className="p-4 bg-gray-50 rounded-lg border">
+                    <p className="text-gray-700">{partyGroup.description}</p>
+                  </div>
+                )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start space-x-2">
-                  <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-gray-900">Date</p>
-                    <p className="text-gray-600 text-sm">{formattedDate}</p>
+                {/* Primary details - Date and Time prominently displayed */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex items-center space-x-4 p-4 bg-primary-50 rounded-lg">
+                    <CalendarIcon className="h-8 w-8 text-primary-600" />
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Event Date</p>
+                      <p className="font-bold text-xl text-gray-900">{formattedDate}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4 p-4 bg-primary-50 rounded-lg">
+                    <ClockIcon className="h-8 w-8 text-primary-600" />
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Start Time</p>
+                      <p className="font-bold text-xl text-gray-900">{partyGroup.targetArrivalTime}</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2">
-                  <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-gray-900">Start Time</p>
-                    <p className="text-gray-600 text-sm">{partyGroup.targetArrivalTime}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-2 md:col-span-2">
-                  <MapPinIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-gray-900">Location</p>
-                    <p className="text-gray-600 text-sm">
+                {/* Location */}
+                <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
+                  <MapPinIcon className="h-6 w-6 text-primary-600 mt-1" />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 mb-1">Location</p>
+                    <p className="font-medium text-gray-900 text-lg">
                       {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
                     </p>
                   </div>
                 </div>
-              </div>
 
-              {partyGroup.additionalInformation && (
-                <div className="pt-2">
-                  <p className="font-medium text-gray-900 mb-1">Additional Information</p>
-                  <p className="text-gray-600 text-sm p-3 bg-gray-50 rounded-md">
-                    {partyGroup.additionalInformation}
-                  </p>
-                </div>
-              )}
-
-              {(partyGroup.eventEndDate || partyGroup.endTime) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  {partyGroup.eventEndDate && (
-                    <div className="flex items-start space-x-2">
-                      <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-gray-900">End Date</p>
-                        <p className="text-gray-600 text-sm">{formattedEndDate}</p>
+                {/* End time/date if available */}
+                {(partyGroup.eventEndDate || partyGroup.endTime) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                    {partyGroup.eventEndDate && (
+                      <div className="flex items-center space-x-3">
+                        <CalendarIcon className="h-5 w-5 text-gray-500" />
+                        <div>
+                          <p className="text-sm text-gray-600">End Date</p>
+                          <p className="font-medium text-gray-900">{formattedEndDate}</p>
+                        </div>
                       </div>
-                    </div>
-                  )}
-
-                  {partyGroup.endTime && (
-                    <div className="flex items-start space-x-2">
-                      <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-gray-900">End Time</p>
-                        <p className="text-gray-600 text-sm">{partyGroup.endTime}</p>
+                    )}
+                    {partyGroup.endTime && (
+                      <div className="flex items-center space-x-3">
+                        <ClockIcon className="h-5 w-5 text-gray-500" />
+                        <div>
+                          <p className="text-sm text-gray-600">End Time</p>
+                          <p className="font-medium text-gray-900">{partyGroup.endTime}</p>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Calendar Integration Section */}
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h4 className="font-medium text-blue-900">Add to Your Calendar</h4>
-                    <p className="text-sm text-blue-700">Never miss this event - add it to your personal calendar</p>
+                    )}
                   </div>
+                )}
+
+                {/* Additional Information */}
+                {partyGroup.additionalInformation && (
+                  <div className="pt-4 border-t border-gray-100">
+                    <p className="font-medium text-gray-900 mb-2">Additional Information</p>
+                    <p className="text-gray-600 p-3 bg-gray-50 rounded-md">
+                      {partyGroup.additionalInformation}
+                    </p>
+                  </div>
+                )}
+
+                {/* Add to Calendar Button - Prominently placed */}
+                <div className="pt-4 border-t border-gray-100">
+                  <CalendarIntegration 
+                    eventData={partyGroup}
+                    buttonVariant="default"
+                    size="lg"
+                  />
                 </div>
-                <CalendarIntegration 
-                  eventData={partyGroup}
-                  buttonVariant="default"
-                />
               </div>
 
-              <div className="mt-6 space-y-4">
-                <h3 className="font-medium text-lg text-neutral-800">Travel Options</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-5 bg-primary/5 rounded-lg border border-primary/20 shadow-sm">
-                    <h4 className="font-medium text-primary-700 mb-2">Want to help other parents?</h4>
+              {/* 2. SHARING Section */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                  <Share2Icon className="h-6 w-6 text-primary-600" />
+                  <h3 className="text-xl font-semibold text-gray-900">Share Event</h3>
+                </div>
+                
+                <p className="text-gray-600">Invite other parents to join this event and coordinate carpools together.</p>
+                
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="bg-neutral-50 border-neutral-200 text-neutral-700 hover:bg-neutral-100"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(shareableUrl);
+                        setCopySuccess({ ...copySuccess, link: true });
+                        setTimeout(() => setCopySuccess(prev => ({ ...prev, link: false })), 2000);
+                        toast({
+                          title: "Link copied",
+                          description: "Event link copied to clipboard!"
+                        });
+                      } catch (err) {
+                        const textArea = document.createElement('textarea');
+                        textArea.value = shareableUrl;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        setCopySuccess({ ...copySuccess, link: true });
+                        setTimeout(() => setCopySuccess(prev => ({ ...prev, link: false })), 2000);
+                        toast({
+                          title: "Link copied", 
+                          description: "Event link copied to clipboard!"
+                        });
+                      }
+                    }}
+                  >
+                    {copySuccess.link ? (
+                      <>
+                        <CheckIcon className="h-4 w-4 mr-2" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <CopyIcon className="h-4 w-4 mr-2" />
+                        Copy Link
+                      </>
+                    )}
+                  </Button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                        <Share2Icon className="h-4 w-4 mr-2" />
+                        Share Event
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem
+                        onClick={async () => {
+                          const text = `Join "${partyGroup.name}" on KidPool!\n\n` +
+                            `📅 ${formattedDate} at ${partyGroup.targetArrivalTime}\n` +
+                            `📍 ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                            `${shareableUrl}`;
+                          
+                          if (navigator.share) {
+                            try {
+                              await navigator.share({
+                                title: partyGroup.name,
+                                text: text,
+                                url: shareableUrl
+                              });
+                            } catch (err) {
+                              console.log('Share cancelled');
+                            }
+                          } else {
+                            try {
+                              await navigator.clipboard.writeText(text);
+                              toast({
+                                title: "Copied to clipboard",
+                                description: "Event details copied successfully!"
+                              });
+                            } catch (err) {
+                              console.log('Could not copy to clipboard');
+                            }
+                          }
+                        }}
+                      >
+                        <MoreHorizontal className="h-4 w-4 mr-2" />
+                        Share via...
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem
+                        onClick={() => {
+                          const message = `Join "${partyGroup.name}" on KidPool!\n\n` +
+                            `📅 Event Date: ${formattedDate}\n` +
+                            `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                            `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                            `Link: ${shareableUrl}`;
+                          window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                        }}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        WhatsApp
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem
+                        onClick={() => {
+                          const subject = `Join "${partyGroup.name}" - ${formattedDate}`;
+                          const body = `Hi!\n\nYou're invited to join "${partyGroup.name}" on KidPool!\n\n` +
+                            `📅 Event Date: ${formattedDate}\n` +
+                            `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                            `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                            `Join here: ${shareableUrl}\n\n` +
+                            `KidPool makes it easy to coordinate carpools with other parents for your children's events.`;
+                          window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+                        }}
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Email
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              {/* 3. TRAVEL OPTIONS Section */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                  <CarIcon className="h-6 w-6 text-primary-600" />
+                  <h3 className="text-xl font-semibold text-gray-900">Travel Options</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="p-6 bg-primary/5 rounded-lg border border-primary/20 shadow-sm">
+                    <h4 className="font-semibold text-primary-700 mb-2 text-lg">Want to help other parents?</h4>
                     <p className="text-sm text-neutral-600 mb-4">Share your car space and help other families get to the event.</p>
                     <Button
                       onClick={() => onOfferCarpool(partyGroup.id)}
@@ -425,8 +565,8 @@ export default function PartyGroupDetails({
                     </Button>
                   </div>
 
-                  <div className="p-5 bg-primary/5 rounded-lg border border-primary/20 shadow-sm">
-                    <h4 className="font-medium text-primary-700 mb-2">Need a lift?</h4>
+                  <div className="p-6 bg-blue-50 rounded-lg border border-blue-200 shadow-sm">
+                    <h4 className="font-semibold text-blue-700 mb-2 text-lg">Need a lift?</h4>
                     <p className="text-sm text-neutral-600 mb-4">Find available carpools and request a spot for your child.</p>
                     <Button
                       onClick={onRequestSpot ? () => onRequestSpot() : undefined}
