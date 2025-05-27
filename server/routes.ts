@@ -581,8 +581,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           `https://${process.env.REPLIT_DEV_DOMAIN}` : 
           `http://localhost:5000`;
         
-        const approveUrl = `${baseUrl}/approve/${approvalToken}?action=approve`;
-        const rejectUrl = `${baseUrl}/approve/${approvalToken}?action=reject`;
+        const approveUrl = `${baseUrl}/a/${approvalToken}`;
+        const rejectUrl = `${baseUrl}/r/${approvalToken}`;
         
         console.log(`[DEBUG] Approval URLs - Approve: ${approveUrl}, Reject: ${rejectUrl}`);
         
@@ -614,7 +614,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Approval routes for SMS links
+  // Short approval routes for SMS links
+  app.get("/a/:token", async (req, res) => {
+    req.query.action = "approve";
+    return handleApproval(req, res);
+  });
+
+  app.get("/r/:token", async (req, res) => {
+    req.query.action = "reject";
+    return handleApproval(req, res);
+  });
+
+  // Approval handler function
+  async function handleApproval(req: any, res: any) {
+    try {
+      const { token } = req.params;
+      const { action } = req.query;
+      
+      const request = await storage.getCarpoolRequestByToken(token);
+      if (!request) {
+        return res.status(404).send(`
+          <html>
+            <head><title>Request Not Found</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>Request Not Found</h2>
+              <p>This approval link is no longer valid or has expired.</p>
+            </body>
+          </html>
+        `);
+      }
+
+      if (request.approvalStatus !== "pending") {
+        const status = request.approvalStatus === "approved" ? "already approved" : "already rejected";
+        return res.status(400).send(`
+          <html>
+            <head><title>Request ${status}</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>Request ${status}</h2>
+              <p>This ride request has been ${status}.</p>
+            </body>
+          </html>
+        `);
+      }
+
+      if (action === "approve") {
+        await storage.approveCarpoolRequest(token);
+        
+        // Send confirmation SMS to the parent
+        try {
+          const message = `Great news! Your ride request for ${request.childName} has been approved by the driver.`;
+          await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
+        } catch (smsError) {
+          console.error("Failed to send approval confirmation SMS:", smsError);
+        }
+
+        return res.send(`
+          <html>
+            <head><title>Request Approved</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>✅ Request Approved</h2>
+              <p>You have successfully approved the ride request for <strong>${request.childName}</strong>.</p>
+              <p>The parent has been notified via SMS.</p>
+            </body>
+          </html>
+        `);
+      } else if (action === "reject") {
+        await storage.rejectCarpoolRequest(token, "Rejected by driver");
+        
+        // Send rejection SMS to the parent
+        try {
+          const message = `Your ride request for ${request.childName} has been declined by the driver. Please try booking with another carpool.`;
+          await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
+        } catch (smsError) {
+          console.error("Failed to send rejection notification SMS:", smsError);
+        }
+
+        return res.send(`
+          <html>
+            <head><title>Request Rejected</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>❌ Request Rejected</h2>
+              <p>You have rejected the ride request for <strong>${request.childName}</strong>.</p>
+              <p>The parent has been notified via SMS.</p>
+            </body>
+          </html>
+        `);
+      } else {
+        return res.status(400).send(`
+          <html>
+            <head><title>Invalid Action</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>Invalid Action</h2>
+              <p>Please use the links provided in your SMS message.</p>
+            </body>
+          </html>
+        `);
+      }
+    } catch (error) {
+      console.error("Error processing approval:", error);
+      return res.status(500).send(`
+        <html>
+          <head><title>Error</title></head>
+          <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+            <h2>Error</h2>
+            <p>An error occurred while processing your request. Please try again.</p>
+          </body>
+        </html>
+      `);
+    }
+  }
+
+  // Legacy approval routes for backward compatibility
   app.get("/approve/:token", async (req, res) => {
     try {
       const { token } = req.params;

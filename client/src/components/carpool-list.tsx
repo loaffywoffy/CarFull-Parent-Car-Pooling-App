@@ -767,7 +767,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             <ArrowRight size={14} className="text-green-600" />
                             <span>
                               <span className="font-medium text-green-800">To event:</span> <span className="text-green-700">{carpoolRequests?.length 
-                                ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable} spaces left`
+                                ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => (r.needsPickup || r.needsBoth) && r.approvalStatus !== 'rejected').length)} of ${carpool.spacesAvailable} spaces left`
                                 : `${carpool.spacesAvailable} of ${carpool.spacesAvailable} spaces left`}</span>
                             </span>
                           </div>
@@ -788,16 +788,29 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                     </div>
 
                     {/* Display booked kids information */}
-                    {carpoolRequests && carpoolRequests.length > 0 && (
+                    {carpoolRequests && carpoolRequests.filter((r: any) => r.approvalStatus !== 'rejected').length > 0 && (
                       <div className="mt-2 pt-2 border-t border-gray-100">
                         <h5 className="text-xs font-medium text-gray-600 mb-1">Booked Children:</h5>
                         <ul className="space-y-1">
-                          {carpoolRequests.map((request: any) => (
+                          {carpoolRequests.filter((r: any) => r.approvalStatus !== 'rejected').map((request: any) => (
                             <li key={request.id} className="text-xs text-gray-600 pb-2 mb-2 border-b border-gray-100 last:border-b-0 last:mb-0 last:pb-0">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center">
                                   <Users size={12} className="text-gray-400 mr-1" />
                                   <span className="font-medium">{request.childName}</span>
+                                  
+                                  {/* Status Badge */}
+                                  <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                                    request.approvalStatus === 'approved' 
+                                      ? 'bg-green-100 text-green-700' 
+                                      : request.approvalStatus === 'rejected'
+                                      ? 'bg-red-100 text-red-700'
+                                      : 'bg-yellow-100 text-yellow-700'
+                                  }`}>
+                                    {request.approvalStatus === 'approved' ? 'Confirmed' : 
+                                     request.approvalStatus === 'rejected' ? 'Rejected' : 'Pending'}
+                                  </span>
+                                  
                                   <span className="text-gray-400 mx-1">•</span>
                                   
                                   {request.needsBoth ? (
