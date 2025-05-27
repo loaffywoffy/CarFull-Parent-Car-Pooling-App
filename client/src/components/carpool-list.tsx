@@ -405,7 +405,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                           <ArrowRight className="h-3 w-3 mr-1" />
                           <span className="whitespace-nowrap">
                             To: {carpoolRequests?.length 
-                              ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length)} of ${carpool.spacesAvailable}`
+                              ? `${Math.max(0, carpool.spacesAvailable - carpoolRequests.filter((r: CarpoolRequest) => (r.needsPickup || r.needsBoth) && r.approvalStatus !== 'rejected').length)} of ${carpool.spacesAvailable}`
                               : `${carpool.spacesAvailable} of ${carpool.spacesAvailable}`}
                           </span>
                         </Badge>
