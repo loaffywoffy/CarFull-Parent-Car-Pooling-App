@@ -564,11 +564,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const partyGroup = await storage.getPartyGroupById(carpool.partyGroupId);
         const eventName = partyGroup?.name || 'the event';
         
-        const confirmationMessage = `Hi! Your ride request for ${validationResult.data.childName} to ${eventName} has been sent to ${validationResult.data.parentName}. ` +
+        console.log(`[DEBUG] Sending interim confirmation SMS to requesting parent: ${validationResult.data.phoneNumber}`);
+        console.log(`[DEBUG] Event: ${eventName}, Driver: ${carpool.parentName}`);
+        
+        const confirmationMessage = `Hi! Your ride request for ${validationResult.data.childName} to ${eventName} has been sent to ${carpool.parentName}. ` +
           `You'll get a confirmation message shortly once they respond. Thanks! 😊`;
         
+        console.log(`[DEBUG] Interim SMS message: ${confirmationMessage}`);
         await messagingService.sendCarpoolUpdate(validationResult.data.phoneNumber, confirmationMessage);
-        console.log(`[INFO] Interim confirmation SMS sent to requesting parent: ${validationResult.data.phoneNumber}`);
+        console.log(`[INFO] Interim confirmation SMS sent successfully to: ${validationResult.data.phoneNumber}`);
       } catch (smsError) {
         console.error("Failed to send interim confirmation SMS:", smsError);
         // Don't fail the request creation if SMS fails
