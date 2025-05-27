@@ -557,6 +557,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const newRequest = await storage.createCarpoolRequest(validationResult.data);
       
+      console.log(`[DEBUG] Created request with approval token: ${newRequest.approvalToken}, status: ${newRequest.approvalStatus}`);
+      
       // Send SMS approval notification to the driver
       try {
         console.log(`[DEBUG] Starting SMS approval notification process for carpool ${carpoolId}`);
