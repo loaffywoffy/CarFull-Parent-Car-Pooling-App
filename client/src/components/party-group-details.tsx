@@ -218,21 +218,123 @@ export default function PartyGroupDetails({
                       </Button>
                     </div>
                     
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      className="w-full bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                      onClick={() => {
-                        const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
-                          `📅 Event Date: ${formattedDate}\n` +
-                          `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
-                          `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
-                          `Link: ${shareableUrl}`;
-                        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
-                      }}
-                    >
-                      Share via WhatsApp
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                        onClick={() => {
+                          const message = `Join "${partyGroup.name}" on KidPool!\n\n` +
+                            `📅 Event Date: ${formattedDate}\n` +
+                            `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                            `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                            `Link: ${shareableUrl}`;
+                          window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                        }}
+                      >
+                        WhatsApp
+                      </Button>
+                      
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                        onClick={() => {
+                          const subject = `Join "${partyGroup.name}" - ${formattedDate}`;
+                          const body = `Hi!\n\nYou're invited to join "${partyGroup.name}" on KidPool!\n\n` +
+                            `📅 Event Date: ${formattedDate}\n` +
+                            `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                            `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                            `Join here: ${shareableUrl}\n\n` +
+                            `KidPool makes it easy to coordinate carpools with other parents for your children's events.`;
+                          window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+                        }}
+                      >
+                        Email
+                      </Button>
+                      
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                        onClick={() => {
+                          const text = `Join "${partyGroup.name}" on KidPool! ${formattedDate} at ${partyGroup.targetArrivalTime}. ${shareableUrl}`;
+                          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`);
+                        }}
+                      >
+                        Twitter
+                      </Button>
+                      
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="bg-blue-700 text-white border-blue-700 hover:bg-blue-800"
+                        onClick={() => {
+                          const url = shareableUrl;
+                          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+                        }}
+                      >
+                        Facebook
+                      </Button>
+                      
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+                        onClick={async () => {
+                          const text = `Join "${partyGroup.name}" on KidPool!\n\n` +
+                            `📅 ${formattedDate} at ${partyGroup.targetArrivalTime}\n` +
+                            `📍 ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                            `${shareableUrl}`;
+                          
+                          if (navigator.share) {
+                            try {
+                              await navigator.share({
+                                title: partyGroup.name,
+                                text: text,
+                                url: shareableUrl
+                              });
+                            } catch (err) {
+                              // User cancelled or error occurred
+                              console.log('Share cancelled');
+                            }
+                          } else {
+                            // Fallback to copying to clipboard
+                            try {
+                              await navigator.clipboard.writeText(text);
+                              alert('Event details copied to clipboard!');
+                            } catch (err) {
+                              console.log('Could not copy to clipboard');
+                            }
+                          }
+                        }}
+                      >
+                        More Options
+                      </Button>
+                      
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(shareableUrl);
+                            alert('Event link copied to clipboard!');
+                          } catch (err) {
+                            // Fallback for older browsers
+                            const textArea = document.createElement('textarea');
+                            textArea.value = shareableUrl;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            alert('Event link copied to clipboard!');
+                          }
+                        }}
+                      >
+                        Copy Link
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
