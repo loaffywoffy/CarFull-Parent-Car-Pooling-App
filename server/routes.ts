@@ -495,9 +495,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { needsPickup, needsDropoff, needsBoth } = validationResult.data;
       
-      // Count the existing requests by direction
-      const pickupRequests = existingRequests.filter(req => req.needsPickup || req.needsBoth).length;
-      const dropoffRequests = existingRequests.filter(req => req.needsDropoff || req.needsBoth).length;
+      // Count the existing requests by direction (excluding rejected requests)
+      const pickupRequests = existingRequests.filter(req => (req.needsPickup || req.needsBoth) && req.approvalStatus !== 'rejected').length;
+      const dropoffRequests = existingRequests.filter(req => (req.needsDropoff || req.needsBoth) && req.approvalStatus !== 'rejected').length;
       
       // For outbound (to party), use spacesAvailable field
       const outboundSpaces = carpool.spacesAvailable;
