@@ -657,12 +657,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `);
       }
 
+      // Get event details for personalized messages
+      const carpool = await storage.getCarpoolById(request.carpoolId);
+      const partyGroup = carpool ? await storage.getPartyGroupById(carpool.partyGroupId) : null;
+      const eventName = partyGroup?.name || 'the event';
+
       if (action === "approve") {
         await storage.approveCarpoolRequest(token);
         
         // Send confirmation SMS to the parent
         try {
-          const message = `Great news! Your ride request for ${request.childName} has been approved by the driver.`;
+          const message = `Great news! ${request.parentName} has approved your ride request for ${request.childName} to ${eventName}.`;
           await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
         } catch (smsError) {
           console.error("Failed to send approval confirmation SMS:", smsError);
@@ -673,7 +678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             <head><title>Request Approved</title></head>
             <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
               <h2>✅ Request Approved</h2>
-              <p>You have successfully approved the ride request for <strong>${request.childName}</strong>.</p>
+              <p>You have successfully approved the ride request for <strong>${request.childName}</strong> to <strong>${eventName}</strong>.</p>
               <p>The parent has been notified via SMS.</p>
             </body>
           </html>
@@ -683,7 +688,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Send rejection SMS to the parent
         try {
-          const message = `Your ride request for ${request.childName} has been declined by the driver. Please try booking with another carpool.`;
+          const message = `${request.parentName} has declined your ride request for ${request.childName} to ${eventName}. Please try booking with another carpool.`;
           await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
         } catch (smsError) {
           console.error("Failed to send rejection notification SMS:", smsError);
@@ -694,7 +699,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             <head><title>Request Rejected</title></head>
             <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
               <h2>❌ Request Rejected</h2>
-              <p>You have rejected the ride request for <strong>${request.childName}</strong>.</p>
+              <p>You have rejected the ride request for <strong>${request.childName}</strong> to <strong>${eventName}</strong>.</p>
               <p>The parent has been notified via SMS.</p>
             </body>
           </html>
