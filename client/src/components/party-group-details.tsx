@@ -177,23 +177,11 @@ export default function PartyGroupDetails({
         <TabsContent value="details" className="pt-2 pb-0 px-0 m-0">
           <CardContent className="pt-4">
             <div className="space-y-4">
-              {/* Minimized Calendar Integration */}
-              <div className="pb-4 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Add to calendar:</span>
-                  <CalendarIntegration 
-                    eventData={partyGroup}
-                    buttonVariant="outline"
-                    size="sm"
-                  />
-                </div>
-              </div>
-
               {partyGroup.description && (
                 <p className="text-gray-600 text-sm">{partyGroup.description}</p>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex items-start space-x-2">
                   <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
                   <div>
@@ -210,7 +198,21 @@ export default function PartyGroupDetails({
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2 md:col-span-2">
+                <div className="flex items-start space-x-2">
+                  <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">Add to Calendar</p>
+                    <div className="mt-1">
+                      <CalendarIntegration 
+                        eventData={partyGroup}
+                        buttonVariant="outline"
+                        size="sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2 md:col-span-3">
                   <MapPinIcon className="h-5 w-5 text-primary-600 mt-0.5" />
                   <div>
                     <p className="font-medium text-gray-900">Location</p>
