@@ -557,6 +557,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const newRequest = await storage.createCarpoolRequest(validationResult.data);
       
+      // Send SMS approval notification to the driver
+      try {
+        const direction = needsBoth ? "both ways" : (needsPickup ? "to event" : "from event");
+        const childName = validationResult.data.childName;
+        const parentName = validationResult.data.parentName;
+        const approvalToken = newRequest.approvalToken;
+        
+        // Get party group info for context
+        const partyGroup = await storage.getPartyGroupById(carpool.partyGroupId);
+        const eventName = partyGroup?.name || "the event";
+        
+        // Create approval links
+        const baseUrl = process.env.REPLIT_DEV_DOMAIN ? 
+          `https://${process.env.REPLIT_DEV_DOMAIN}` : 
+          `http://localhost:5000`;
+        
+        const approveUrl = `${baseUrl}/approve/${approvalToken}?action=approve`;
+        const rejectUrl = `${baseUrl}/approve/${approvalToken}?action=reject`;
+        
+        const message = `New ride request for ${eventName}:\n\n` +
+          `Child: ${childName}\n` +
+          `Parent: ${parentName}\n` +
+          `Direction: ${direction}\n\n` +
+          `Approve: ${approveUrl}\n` +
+          `Reject: ${rejectUrl}`;
+        
+        await messagingService.sendCarpoolUpdate(carpool.phoneNumber, message);
+        
+        console.log(`[INFO] SMS approval notification sent to ${carpool.phoneNumber}`);
+      } catch (smsError) {
+        console.error("Failed to send SMS approval notification:", smsError);
+        // Don't fail the request creation if SMS fails
+      }
+      
       // Log for debugging
       console.log(`[INFO] New request created for carpool ${carpoolId}. Total requests: ${existingRequests.length + 1}`);
       console.log(`[INFO] Direction: ${needsBoth ? "Both ways" : (needsPickup ? "To party" : "From party")}`);
@@ -566,6 +600,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating carpool request:", error);
       res.status(500).json({ message: "Failed to create carpool request" });
+    }
+  });
+
+  // Approval routes for SMS links
+  app.get("/approve/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { action } = req.query;
+      
+      const request = await storage.getCarpoolRequestByToken(token);
+      if (!request) {
+        return res.status(404).send(`
+          <html>
+            <head><title>Request Not Found</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>Request Not Found</h2>
+              <p>This approval link is no longer valid or has expired.</p>
+            </body>
+          </html>
+        `);
+      }
+
+      if (request.approvalStatus !== "pending") {
+        const status = request.approvalStatus === "approved" ? "already approved" : "already rejected";
+        return res.status(400).send(`
+          <html>
+            <head><title>Request ${status}</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>Request ${status}</h2>
+              <p>This ride request has been ${status}.</p>
+            </body>
+          </html>
+        `);
+      }
+
+      if (action === "approve") {
+        await storage.approveCarpoolRequest(token);
+        
+        // Send confirmation SMS to the parent
+        try {
+          const message = `Great news! Your ride request for ${request.childName} has been approved by the driver.`;
+          await messagingService.sendCarpoolUpdate(request.parentPhone, message);
+        } catch (smsError) {
+          console.error("Failed to send approval confirmation SMS:", smsError);
+        }
+
+        return res.send(`
+          <html>
+            <head><title>Request Approved</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>✅ Request Approved</h2>
+              <p>You have successfully approved the ride request for <strong>${request.childName}</strong>.</p>
+              <p>The parent has been notified via SMS.</p>
+            </body>
+          </html>
+        `);
+      } else if (action === "reject") {
+        await storage.rejectCarpoolRequest(token, "Rejected by driver");
+        
+        // Send rejection SMS to the parent
+        try {
+          const message = `Your ride request for ${request.childName} has been declined by the driver. Please try booking with another carpool.`;
+          await messagingService.sendCarpoolUpdate(request.parentPhone, message);
+        } catch (smsError) {
+          console.error("Failed to send rejection notification SMS:", smsError);
+        }
+
+        return res.send(`
+          <html>
+            <head><title>Request Rejected</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>❌ Request Rejected</h2>
+              <p>You have rejected the ride request for <strong>${request.childName}</strong>.</p>
+              <p>The parent has been notified via SMS.</p>
+            </body>
+          </html>
+        `);
+      } else {
+        return res.status(400).send(`
+          <html>
+            <head><title>Invalid Action</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              <h2>Invalid Action</h2>
+              <p>Please use the links provided in your SMS message.</p>
+            </body>
+          </html>
+        `);
+      }
+    } catch (error) {
+      console.error("Error processing approval:", error);
+      return res.status(500).send(`
+        <html>
+          <head><title>Error</title></head>
+          <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+            <h2>Error</h2>
+            <p>An error occurred while processing your request. Please try again.</p>
+          </body>
+        </html>
+      `);
     }
   });
   
