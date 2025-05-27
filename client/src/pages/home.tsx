@@ -377,6 +377,7 @@ export default function Home() {
               <CarpoolList 
                 partyGroupId={selectedPartyGroup.id}
                 onRequestSpot={handleRequestSpot}
+                onOfferRide={() => handleOfferCarpool(selectedPartyGroup.id)}
                 selectedCarpoolId={selectedCarpoolId}
               />
             </div>

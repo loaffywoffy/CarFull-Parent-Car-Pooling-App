@@ -165,6 +165,7 @@ export default function JoinCarpoolPage() {
           <CarpoolList 
             partyGroupId={Number(partyGroupId)} 
             onRequestSpot={(id) => setSelectedCarpoolId(id)}
+            onOfferRide={() => setLocation(`/?partyId=${partyGroupId}`)}
             selectedCarpoolId={selectedCarpoolId}
           />
         </div>
@@ -172,6 +173,7 @@ export default function JoinCarpoolPage() {
         <CarpoolList 
           partyGroupId={Number(partyGroupId)} 
           onRequestSpot={(id) => setSelectedCarpoolId(id)}
+          onOfferRide={() => setLocation(`/?partyId=${partyGroupId}`)}
         />
       )}
     </div>
