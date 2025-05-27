@@ -264,7 +264,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
     // Mutation for submitting a carpool request
     const requestMutation = useMutation({
       mutationFn: async (data: any) => {
+        console.log("[DEBUG Frontend] Submitting carpool request with data:", data);
         const response = await apiRequest("POST", "/api/carpool-requests", data);
+        console.log("[DEBUG Frontend] Response status:", response.status);
         return response.json();
       },
       onSuccess: () => {
