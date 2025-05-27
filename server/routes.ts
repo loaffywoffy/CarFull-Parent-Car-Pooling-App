@@ -453,7 +453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Add debugging for carpool 52 specifically
       if (carpoolId === 52) {
-        console.error(`[FORCE DEBUG] Carpool 52 requests: ${JSON.stringify(requests.map(r => ({
+        console.error(`[FORCE DEBUG ${Date.now()}] Carpool 52 requests: ${JSON.stringify(requests.map(r => ({
           childName: r.childName,
           status: r.approvalStatus,
           needsPickup: r.needsPickup,
@@ -461,10 +461,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })))}`);
         
         const carpool = await storage.getCarpoolById(carpoolId);
-        console.error(`[FORCE DEBUG] Carpool 52 spaces: ${carpool?.spacesAvailable}`);
+        console.error(`[FORCE DEBUG ${Date.now()}] Carpool 52 spaces: ${carpool?.spacesAvailable}`);
         
         const pickupRequests = requests.filter(req => (req.needsPickup || req.needsBoth) && req.approvalStatus !== 'rejected').length;
-        console.error(`[FORCE DEBUG] Non-rejected pickup requests: ${pickupRequests}`);
+        console.error(`[FORCE DEBUG ${Date.now()}] Non-rejected pickup requests: ${pickupRequests}`);
+        
+        // Force cache bypass
+        res.setHeader('Cache-Control', 'no-cache');
       }
       
       res.json(requests);
