@@ -148,7 +148,6 @@ export default function PartyGroupDetails({
           </div>
         </div>
       </CardHeader>
-
       {onBack && (
         <div className="bg-white px-6 pt-4 border-b border-gray-100">
           <Button
@@ -162,7 +161,6 @@ export default function PartyGroupDetails({
           </Button>
         </div>
       )}
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start px-6 pt-4 bg-white border-b">
           <TabsTrigger value="details" className="data-[state=active]:bg-primary-50">
@@ -179,12 +177,78 @@ export default function PartyGroupDetails({
         <TabsContent value="details" className="pt-2 pb-0 px-0 m-0">
           <CardContent className="pt-4">
             <div className="space-y-4">
+              {partyGroup.description && (
+                <p className="text-gray-600 text-sm">{partyGroup.description}</p>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-start space-x-2">
+                  <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">Date</p>
+                    <p className="text-gray-600 text-sm">{formattedDate}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2">
+                  <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">Start Time</p>
+                    <p className="text-gray-600 text-sm">{partyGroup.targetArrivalTime}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2 md:col-span-2">
+                  <MapPinIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">Location</p>
+                    <p className="text-gray-600 text-sm">
+                      {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {partyGroup.additionalInformation && (
+                <div className="pt-2">
+                  <p className="font-medium text-gray-900 mb-1">Additional Information</p>
+                  <p className="text-gray-600 text-sm p-3 bg-gray-50 rounded-md">
+                    {partyGroup.additionalInformation}
+                  </p>
+                </div>
+              )}
+
+              {(partyGroup.eventEndDate || partyGroup.endTime) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {partyGroup.eventEndDate && (
+                    <div className="flex items-start space-x-2">
+                      <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-gray-900">End Date</p>
+                        <p className="text-gray-600 text-sm">{formattedEndDate}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {partyGroup.endTime && (
+                    <div className="flex items-start space-x-2">
+                      <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-gray-900">End Time</p>
+                        <p className="text-gray-600 text-sm">{partyGroup.endTime}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Share Event Section */}
               {isCreator && (
-                <div className="mb-4 pb-4 border-b border-gray-200">
+                <div className="mt-6 mb-4 pb-4 border-b border-gray-200">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <Share2Icon className="h-4 w-4 text-primary-600" />
-                      <p className="font-medium text-sm text-gray-700">Share with Parents</p>
+                      <p className="font-medium text-sm text-gray-700">Share Event</p>
                     </div>
                   </div>
                   
@@ -304,71 +368,6 @@ export default function PartyGroupDetails({
                   </div>
                 </div>
               )}
-              
-              {partyGroup.description && (
-                <p className="text-gray-600 text-sm">{partyGroup.description}</p>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start space-x-2">
-                  <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-gray-900">Date</p>
-                    <p className="text-gray-600 text-sm">{formattedDate}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-2">
-                  <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-gray-900">Start Time</p>
-                    <p className="text-gray-600 text-sm">{partyGroup.targetArrivalTime}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-2 md:col-span-2">
-                  <MapPinIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-gray-900">Location</p>
-                    <p className="text-gray-600 text-sm">
-                      {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {partyGroup.additionalInformation && (
-                <div className="pt-2">
-                  <p className="font-medium text-gray-900 mb-1">Additional Information</p>
-                  <p className="text-gray-600 text-sm p-3 bg-gray-50 rounded-md">
-                    {partyGroup.additionalInformation}
-                  </p>
-                </div>
-              )}
-
-              {(partyGroup.eventEndDate || partyGroup.endTime) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  {partyGroup.eventEndDate && (
-                    <div className="flex items-start space-x-2">
-                      <CalendarIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-gray-900">End Date</p>
-                        <p className="text-gray-600 text-sm">{formattedEndDate}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {partyGroup.endTime && (
-                    <div className="flex items-start space-x-2">
-                      <ClockIcon className="h-5 w-5 text-primary-600 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-gray-900">End Time</p>
-                        <p className="text-gray-600 text-sm">{partyGroup.endTime}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Calendar Integration Section */}
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -467,7 +466,6 @@ export default function PartyGroupDetails({
 
         
       </Tabs>
-
       <CardFooter className="bg-gray-50 py-4 flex justify-between items-center">
         {onBack && (
           <Button
