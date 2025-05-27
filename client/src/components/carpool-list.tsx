@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home, AlertCircle, Timer, Phone, Share2, Copy, Check } from "lucide-react";
-import { geocodeAddress, calculateDistance } from "@/lib/geocoding";
+import { geocodeAddress, calculateDistance, calculateDrivingDistance } from "@/lib/geocoding";
 import { compareTimeStrings } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -144,8 +144,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 carpool.postcode
               );
 
-              // Calculate distance from event (if event location is available)
+              // Calculate driving distance from event (if event location is available)
               let distance = null;
+              let drivingTime = null;
               if (partyGroup?.eventAddress && partyGroup?.eventPostcode) {
                 const partyCoordinates = await geocodeAddress(
                   partyGroup.eventAddress,
@@ -156,31 +157,38 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 // Only calculate distance if both coordinates are valid (not [0,0])
                 if (partyCoordinates[0] !== 0 && partyCoordinates[1] !== 0 && 
                     carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0) {
-                  distance = calculateDistance(
-                    partyCoordinates[0],
-                    partyCoordinates[1],
-                    carpoolCoordinates[0],
-                    carpoolCoordinates[1]
+                  const drivingResult = await calculateDrivingDistance(
+                    partyCoordinates,
+                    carpoolCoordinates
                   );
+                  if (drivingResult) {
+                    distance = drivingResult.distance;
+                    drivingTime = drivingResult.duration;
+                  }
                 }
               }
 
-              // Calculate distance from user (if user location is available)
+              // Calculate driving distance from user (if user location is available)
               let distanceFromUser = null;
+              let drivingTimeFromUser = null;
               if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
                   carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0) {
-                distanceFromUser = calculateDistance(
-                  userCoordinates[0],
-                  userCoordinates[1],
-                  carpoolCoordinates[0],
-                  carpoolCoordinates[1]
+                const drivingResult = await calculateDrivingDistance(
+                  userCoordinates,
+                  carpoolCoordinates
                 );
+                if (drivingResult) {
+                  distanceFromUser = drivingResult.distance;
+                  drivingTimeFromUser = drivingResult.duration;
+                }
               }
 
               return { 
                 ...carpool, 
                 distance, 
                 distanceFromUser,
+                drivingTime,
+                drivingTimeFromUser,
                 carpoolCoordinates
               };
             } catch (error) {
