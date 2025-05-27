@@ -153,17 +153,22 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                   partyGroup.eventPostcode
                 );
 
-                distance = calculateDistance(
-                  partyCoordinates[0],
-                  partyCoordinates[1],
-                  carpoolCoordinates[0],
-                  carpoolCoordinates[1]
-                );
+                // Only calculate distance if both coordinates are valid (not [0,0])
+                if (partyCoordinates[0] !== 0 && partyCoordinates[1] !== 0 && 
+                    carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0) {
+                  distance = calculateDistance(
+                    partyCoordinates[0],
+                    partyCoordinates[1],
+                    carpoolCoordinates[0],
+                    carpoolCoordinates[1]
+                  );
+                }
               }
 
               // Calculate distance from user (if user location is available)
               let distanceFromUser = null;
-              if (userCoordinates) {
+              if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
+                  carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0) {
                 distanceFromUser = calculateDistance(
                   userCoordinates[0],
                   userCoordinates[1],
