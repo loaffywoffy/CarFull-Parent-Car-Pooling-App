@@ -559,6 +559,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`[DEBUG] Created request with approval token: ${newRequest.approvalToken}, status: ${newRequest.approvalStatus}`);
       
+      // Send immediate confirmation SMS to the requesting parent
+      try {
+        const partyGroup = await storage.getPartyGroupById(carpool.partyGroupId);
+        const eventName = partyGroup?.name || 'the event';
+        
+        const confirmationMessage = `Hi! Your ride request for ${validationResult.data.childName} to ${eventName} has been sent to ${validationResult.data.parentName}. ` +
+          `You'll get a confirmation message shortly once they respond. Thanks! 😊`;
+        
+        await messagingService.sendCarpoolUpdate(validationResult.data.phoneNumber, confirmationMessage);
+        console.log(`[INFO] Interim confirmation SMS sent to requesting parent: ${validationResult.data.phoneNumber}`);
+      } catch (smsError) {
+        console.error("Failed to send interim confirmation SMS:", smsError);
+        // Don't fail the request creation if SMS fails
+      }
+      
       // Send SMS approval notification to the driver
       try {
         console.log(`[DEBUG] Starting SMS approval notification process for carpool ${carpoolId}`);
