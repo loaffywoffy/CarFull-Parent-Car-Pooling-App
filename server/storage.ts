@@ -45,6 +45,11 @@ export interface IStorage {
   getCarpoolRequestsByCarpoolId(carpoolId: number): Promise<CarpoolRequest[]>;
   deleteCarpoolRequest(id: number): Promise<boolean>;
   
+  // Approval operations
+  getCarpoolRequestByToken(token: string): Promise<CarpoolRequest | undefined>;
+  approveCarpoolRequest(token: string): Promise<CarpoolRequest | undefined>;
+  rejectCarpoolRequest(token: string, reason?: string): Promise<CarpoolRequest | undefined>;
+  
   // Calendar event operations
   createCalendarEvent(event: InsertCalendarEvent): Promise<CalendarEvent>;
   getCalendarEventById(id: number): Promise<CalendarEvent | undefined>;
@@ -309,8 +314,16 @@ export class DatabaseStorage implements IStorage {
     return !!deletedCarpool;
   }
   
+  // Approval token generation
+  private generateApprovalToken(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  }
+
   // Carpool request methods
   async createCarpoolRequest(insertRequest: InsertCarpoolRequest): Promise<CarpoolRequest> {
+    // Generate unique approval token
+    const approvalToken = this.generateApprovalToken();
+    
     // Ensure all nullable fields have proper null values instead of undefined
     const requestData = {
       ...insertRequest,
@@ -323,7 +336,9 @@ export class DatabaseStorage implements IStorage {
       emergencyContactPhone: insertRequest.emergencyContactPhone ?? null,
       emergencyContactRelationship: insertRequest.emergencyContactRelationship ?? null,
       pickupCarpoolId: insertRequest.pickupCarpoolId ?? null,
-      dropoffCarpoolId: insertRequest.dropoffCarpoolId ?? null
+      dropoffCarpoolId: insertRequest.dropoffCarpoolId ?? null,
+      approvalToken,
+      approvalStatus: "pending" as const
     };
 
     const [request] = await db
@@ -349,6 +364,39 @@ export class DatabaseStorage implements IStorage {
       console.error("Error deleting carpool request:", error);
       return false;
     }
+  }
+
+  // Approval methods
+  async getCarpoolRequestByToken(token: string): Promise<CarpoolRequest | undefined> {
+    const [request] = await db.select().from(carpoolRequests).where(eq(carpoolRequests.approvalToken, token));
+    return request || undefined;
+  }
+
+  async approveCarpoolRequest(token: string): Promise<CarpoolRequest | undefined> {
+    const [request] = await db
+      .update(carpoolRequests)
+      .set({
+        approvalStatus: "approved",
+        approvedAt: new Date().toISOString()
+      })
+      .where(eq(carpoolRequests.approvalToken, token))
+      .returning();
+    
+    return request || undefined;
+  }
+
+  async rejectCarpoolRequest(token: string, reason?: string): Promise<CarpoolRequest | undefined> {
+    const [request] = await db
+      .update(carpoolRequests)
+      .set({
+        approvalStatus: "rejected",
+        rejectedAt: new Date().toISOString(),
+        rejectionReason: reason || null
+      })
+      .where(eq(carpoolRequests.approvalToken, token))
+      .returning();
+    
+    return request || undefined;
   }
   
   // Calendar event methods
