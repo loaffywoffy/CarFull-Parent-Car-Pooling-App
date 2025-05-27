@@ -291,7 +291,7 @@ export default function PartyGroupDetails({
                           className="w-full bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                         >
                           <Share className="h-4 w-4 mr-2" />
-                          Share with Parents
+                          Share Event
                           <ChevronDown className="h-4 w-4 ml-2" />
                         </Button>
                       </DropdownMenuTrigger>
