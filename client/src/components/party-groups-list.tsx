@@ -217,8 +217,8 @@ export default function PartyGroupsList({
               <h3 className="text-lg font-medium text-gray-800">
                 Upcoming Events
               </h3>
-              <Badge variant="outline" className="text-xs">
-                {futureEvents.length}
+              <Badge className="text-xs bg-green-100 text-green-700 border-green-200 hover:bg-green-200 font-semibold px-2 py-1">
+                🎉 {futureEvents.length} {futureEvents.length === 1 ? 'event' : 'events'}
               </Badge>
             </div>
             
@@ -257,8 +257,8 @@ export default function PartyGroupsList({
                   <h3 className="text-lg font-medium text-gray-600">
                     Past Events
                   </h3>
-                  <Badge variant="secondary" className="text-xs">
-                    {pastEvents.length}
+                  <Badge className="text-xs bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200 font-semibold px-2 py-1">
+                    📚 {pastEvents.length} {pastEvents.length === 1 ? 'event' : 'events'}
                   </Badge>
                 </Button>
               </CollapsibleTrigger>
