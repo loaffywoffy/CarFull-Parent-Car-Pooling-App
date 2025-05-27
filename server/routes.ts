@@ -227,6 +227,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API routes for party groups
   app.post("/api/party-groups", async (req, res) => {
     try {
+      // Validate phone number first before processing the request
+      const { phoneNumber } = req.body;
+      if (phoneNumber) {
+        const phoneValidation = phoneValidator.validatePhoneNumber(phoneNumber);
+        if (!phoneValidation.valid) {
+          return res.status(400).json({ 
+            message: phoneValidation.reason || "Invalid phone number format. Please enter a valid UK phone number.",
+            field: "phoneNumber"
+          });
+        }
+      }
+
       // Validate request body against schema
       const validationResult = insertPartyGroupSchema.safeParse(req.body);
       
