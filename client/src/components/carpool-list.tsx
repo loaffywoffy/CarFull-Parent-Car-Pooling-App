@@ -511,14 +511,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                     ((carpool.canPickup || carpool.canBoth) && 
                      (carpool.canDropoff || carpool.canBoth)) ?
                       // Check if BOTH directions are full
-                      (carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length &&
-                       (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)
+                      (carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsPickup || r.needsBoth) && r.approvalStatus !== 'rejected').length &&
+                       (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsDropoff || r.needsBoth) && r.approvalStatus !== 'rejected').length)
                     :
                       // Only one direction, check just that one
                       ((carpool.canPickup || carpool.canBoth) &&
-                       carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length) ||
+                       carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsPickup || r.needsBoth) && r.approvalStatus !== 'rejected').length) ||
                       ((carpool.canDropoff || carpool.canBoth) &&
-                       (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)
+                       (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsDropoff || r.needsBoth) && r.approvalStatus !== 'rejected').length)
                   )
                 }
               >
@@ -528,14 +528,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                   (((carpool.canPickup || carpool.canBoth) && 
                     (carpool.canDropoff || carpool.canBoth)) ? 
                     // Bidirectional carpool - both directions must be full to show "No Spots Available"
-                    (carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length &&
-                     (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)
+                    (carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsPickup || r.needsBoth) && r.approvalStatus !== 'rejected').length &&
+                     (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsDropoff || r.needsBoth) && r.approvalStatus !== 'rejected').length)
                     : 
                     // Single-direction carpool - just check the one direction
                     ((carpool.canPickup || carpool.canBoth) && 
-                     carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => r.needsPickup || r.needsBoth).length) ||
+                     carpool.spacesAvailable <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsPickup || r.needsBoth) && r.approvalStatus !== 'rejected').length) ||
                     ((carpool.canDropoff || carpool.canBoth) && 
-                     (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)) 
+                     (carpool.returnSpacesAvailable || 0) <= carpoolRequests.filter((r: CarpoolRequest) => (r.needsDropoff || r.needsBoth) && r.approvalStatus !== 'rejected').length)) 
                   ? "No Spots Available" 
                   : "Request Spot"}
               </Button>
@@ -779,7 +779,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                             <ArrowLeft size={14} className="text-blue-600" />
                             <span>
                               <span className="font-medium text-blue-800">From event:</span> <span className="text-blue-700">{carpoolRequests?.length 
-                                ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => r.needsDropoff || r.needsBoth).length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
+                                ? `${Math.max(0, (carpool.returnSpacesAvailable || carpool.spacesAvailable) - carpoolRequests.filter((r: CarpoolRequest) => (r.needsDropoff || r.needsBoth) && r.approvalStatus !== 'rejected').length)} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`
                                 : `${carpool.returnSpacesAvailable || carpool.spacesAvailable} of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces left`}</span>
                             </span>
                           </div>
