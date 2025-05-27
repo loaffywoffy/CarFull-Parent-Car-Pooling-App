@@ -526,9 +526,14 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Your Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., +44 7123 456789" {...field} />
+                      <PhoneInputWithValidation
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        label="Your Phone Number"
+                        placeholder="07123 456789"
+                        required={true}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
