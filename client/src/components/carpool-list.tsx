@@ -466,9 +466,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                   {sortBy === "distance" && (
                     <Badge className="bg-gray-100 text-gray-800">
                       <MapPin className="h-3 w-3 mr-1" />
-                      {userCoordinates && carpool.distanceFromUser !== null 
+                      {userCoordinates && carpool.distanceFromUser !== null && carpool.distanceFromUser !== undefined
                         ? `${carpool.distanceFromUser.toFixed(1)} miles from you` 
-                        : carpool.distance !== null 
+                        : carpool.distance !== null && carpool.distance !== undefined
                           ? `${carpool.distance.toFixed(1)} miles from event`
                           : "Distance unknown"}
                     </Badge>
