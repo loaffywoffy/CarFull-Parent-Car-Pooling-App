@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home, AlertCircle, Timer, Phone, Share2, Copy, Check } from "lucide-react";
+import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home, AlertCircle, Timer, Phone, Share2, Copy, Check, Map } from "lucide-react";
 import { geocodeAddress, calculateDistance, calculateDrivingDistance } from "@/lib/geocoding";
+import MapboxMap from './mapbox-map';
 import { compareTimeStrings } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -81,6 +82,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
   const [showPostcodeInput, setShowPostcodeInput] = useState(false);
   const [userPostcode, setUserPostcode] = useState("");
   const [userCoordinates, setUserCoordinates] = useState<[number, number] | null>(null);
+  const [showMapView, setShowMapView] = useState(false);
 
   const { data: carpools, isLoading, refetch: refetchCarpools } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId, "carpools"],
