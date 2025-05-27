@@ -6,12 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { 
   CalendarIcon, MapPinIcon, ClockIcon, UserIcon, CopyIcon, 
   CheckIcon, LinkIcon, Share2Icon, CarIcon, Map as MapIcon,
-  Pencil, ChevronLeft
+  Pencil, ChevronLeft, ChevronDown, Mail, MessageSquare, Share
 } from "lucide-react";
 import { type PartyGroup } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import CarpoolSummary from "./carpool-summary";
 import { Skeleton } from "@/components/ui/skeleton";
 import LocationMap from "./location-map";
@@ -39,7 +40,7 @@ export default function PartyGroupDetails({
   isCreator = false 
 }: PartyGroupDetailsProps) {
   const { toast } = useToast();
-  const [copySuccess, setCopySuccess] = useState<{code: boolean, link: boolean}>({code: false, link: false});
+  const [copySuccess, setCopySuccess] = useState<{code: boolean, link: boolean, social: boolean}>({code: false, link: false, social: false});
   const [partyLocation, setPartyLocation] = useState<[number, number] | null>(null);
   const [isMapLoading, setIsMapLoading] = useState(true);
 
@@ -218,21 +219,88 @@ export default function PartyGroupDetails({
                       </Button>
                     </div>
                     
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      className="w-full bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                      onClick={() => {
-                        const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
-                          `📅 Event Date: ${formattedDate}\n` +
-                          `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
-                          `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
-                          `Link: ${shareableUrl}`;
-                        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
-                      }}
-                    >
-                      Share via WhatsApp
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          className="w-full bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                        >
+                          <Share className="h-4 w-4 mr-2" />
+                          Share with Parents
+                          <ChevronDown className="h-4 w-4 ml-2" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                              `📅 Event Date: ${formattedDate}\n` +
+                              `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                              `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                              `Link: ${shareableUrl}`;
+                            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                          }}
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2 text-green-600" />
+                          Share via WhatsApp
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const subject = `Join "${partyGroup.name}" Event`;
+                            const body = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                              `📅 Event Date: ${formattedDate}\n` +
+                              `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                              `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                              `Link: ${shareableUrl}`;
+                            window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+                          }}
+                        >
+                          <Mail className="h-4 w-4 mr-2 text-blue-600" />
+                          Share via Email
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                              `📅 Event Date: ${formattedDate}\n` +
+                              `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                              `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                              `Link: ${shareableUrl}`;
+                            window.open(`sms:?body=${encodeURIComponent(message)}`);
+                          }}
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2 text-gray-600" />
+                          Share via SMS
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem
+                          onClick={() => {
+                            if (navigator.share) {
+                              navigator.share({
+                                title: `Join "${partyGroup.name}"`,
+                                text: `Join "${partyGroup.name}" on ParentPooling!\n\n📅 ${formattedDate} ⏰ ${partyGroup.targetArrivalTime}\n📍 ${partyGroup.eventAddress}, ${partyGroup.eventCity}`,
+                                url: shareableUrl
+                              }).catch(console.error);
+                            } else {
+                              // Fallback: copy to clipboard
+                              const message = `Join "${partyGroup.name}" on ParentPooling!\n\n` +
+                                `📅 Event Date: ${formattedDate}\n` +
+                                `⏰ Start Time: ${partyGroup.targetArrivalTime}\n` +
+                                `📍 Event Location: ${partyGroup.eventAddress}, ${partyGroup.eventCity}\n\n` +
+                                `Link: ${shareableUrl}`;
+                              navigator.clipboard.writeText(message);
+                              setCopySuccess({ ...copySuccess, social: true });
+                              setTimeout(() => setCopySuccess(prev => ({ ...prev, social: false })), 2000);
+                            }
+                          }}
+                        >
+                          <Share className="h-4 w-4 mr-2 text-purple-600" />
+                          {copySuccess.social ? 'Copied to Clipboard!' : 'Share to Social Media'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               )}
