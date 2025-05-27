@@ -99,6 +99,12 @@ export const carpoolRequests = pgTable("carpool_requests", {
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),
   emergencyContactRelationship: text("emergency_contact_relationship"),
+  // Approval system
+  approvalStatus: text("approval_status").default("pending"), // pending, approved, rejected
+  approvalToken: text("approval_token"), // unique token for SMS approval links
+  approvedAt: text("approved_at"), // timestamp when approved
+  rejectedAt: text("rejected_at"), // timestamp when rejected
+  rejectionReason: text("rejection_reason"), // optional reason for rejection
 });
 
 // Calendar Events schema for carpool scheduling
