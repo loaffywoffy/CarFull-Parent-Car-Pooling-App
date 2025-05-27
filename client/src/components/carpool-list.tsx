@@ -249,12 +249,25 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
       .sort((a, b) => {
         // Sort based on selected option
         if (sortBy === "distance") {
-          // If user postcode is provided, sort by distance from user
-          if (userCoordinates && a.distanceFromUser !== null && b.distanceFromUser !== null) {
-            return (a.distanceFromUser || 0) - (b.distanceFromUser || 0);
+          // Primary sort: Your address to driver (if user postcode provided)
+          if (userCoordinates) {
+            const distanceA = a.distanceFromUser ?? Infinity;
+            const distanceB = b.distanceFromUser ?? Infinity;
+            
+            // If both have user distances, compare them
+            if (distanceA !== Infinity && distanceB !== Infinity) {
+              return distanceA - distanceB;
+            }
+            
+            // If only one has user distance, prioritize it
+            if (distanceA !== Infinity && distanceB === Infinity) return -1;
+            if (distanceA === Infinity && distanceB !== Infinity) return 1;
           }
-          // Otherwise sort by distance from event
-          return (a.distance || 0) - (b.distance || 0);
+          
+          // Secondary sort: Driver to event distance
+          const eventDistanceA = a.distance ?? Infinity;
+          const eventDistanceB = b.distance ?? Infinity;
+          return eventDistanceA - eventDistanceB;
         }
         if (sortBy === "spaces") {
           return (b.spacesAvailable || 0) - (a.spacesAvailable || 0);
