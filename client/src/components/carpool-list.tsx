@@ -66,13 +66,14 @@ const StableLocationMap = memo(({
 interface CarpoolListProps {
   partyGroupId: number;
   onRequestSpot: (carpoolId: number) => void;
+  onOfferRide?: () => void;
   selectedCarpoolId?: number | null; // Optional prop to auto-expand a carpool
 }
 
 // Map functionality has been removed
 type SortOption = "distance" | "spaces" | "name";
 
-export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpoolId }: CarpoolListProps) {
+export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, selectedCarpoolId }: CarpoolListProps) {
   // States for filtering and sorting
   const [sortBy, setSortBy] = useState<SortOption>("spaces");
   const [searchTerm, setSearchTerm] = useState("");
@@ -1294,7 +1295,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
         <h3 className="text-lg font-semibold text-gray-700">
           Find available rides below or{" "}
           <button 
-            onClick={() => window.history.back()} 
+            onClick={onOfferRide} 
             className="text-blue-600 hover:text-blue-800 underline"
           >
             offer a ride
