@@ -257,7 +257,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
     const { data: carpoolRequests = [] } = useQuery({
       queryKey: ["/api/carpools", carpool.id, "requests"],
       queryFn: () => getCarpoolRequests(carpool.id),
-      enabled: showDetails // Only fetch when details are shown
+      enabled: showDetails, // Only fetch when details are shown
+      refetchInterval: 3000, // Refresh every 3 seconds to catch approval status changes
     });
 
     // Mutation for submitting a carpool request
