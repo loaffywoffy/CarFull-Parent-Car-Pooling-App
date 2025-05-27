@@ -466,28 +466,58 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, selectedCarpo
                     </Badge>
                   )}
                   
-                  {/* Summary of booked kids */}
+                  {/* Summary of booked and pending kids with status indicators */}
                   {carpoolRequests && carpoolRequests.length > 0 && (
                     <div className="w-full mt-1.5 text-xs flex flex-wrap items-center text-gray-600">
-                      <span className="font-medium mr-1">Booked:</span>
-                      {carpoolRequests.map((request: CarpoolRequest, index: number) => (
-                        <span key={request.id} className="flex items-center">
-                          {index > 0 && <span className="mx-1">•</span>}
-                          <span className="font-medium mr-0.5">{request.childName}</span>
-                          <span className="flex items-center">
-                            {request.needsPickup && request.needsDropoff ? (
+                      {/* Show confirmed bookings */}
+                      {carpoolRequests.filter((r: CarpoolRequest) => r.approvalStatus === 'approved').length > 0 && (
+                        <div className="flex items-center mr-3">
+                          <span className="font-medium mr-1 text-green-700">Booked:</span>
+                          {carpoolRequests.filter((r: CarpoolRequest) => r.approvalStatus === 'approved').map((request: CarpoolRequest, index: number) => (
+                            <span key={request.id} className="flex items-center">
+                              {index > 0 && <span className="mx-1">•</span>}
+                              <span className="font-medium mr-0.5 text-green-600">{request.childName}</span>
                               <span className="flex items-center">
-                                <ArrowRight size={10} className="text-green-500" />
-                                <ArrowLeft size={10} className="text-blue-500" />
+                                {request.needsPickup && request.needsDropoff ? (
+                                  <span className="flex items-center">
+                                    <ArrowRight size={10} className="text-green-500" />
+                                    <ArrowLeft size={10} className="text-blue-500" />
+                                  </span>
+                                ) : request.needsPickup ? (
+                                  <ArrowRight size={10} className="text-green-500" />
+                                ) : (
+                                  <ArrowLeft size={10} className="text-blue-500" />
+                                )}
                               </span>
-                            ) : request.needsPickup ? (
-                              <ArrowRight size={10} className="text-green-500" />
-                            ) : (
-                              <ArrowLeft size={10} className="text-blue-500" />
-                            )}
-                          </span>
-                        </span>
-                      ))}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Show pending requests */}
+                      {carpoolRequests.filter((r: CarpoolRequest) => r.approvalStatus === 'pending').length > 0 && (
+                        <div className="flex items-center">
+                          <span className="font-medium mr-1 text-yellow-700">Pending:</span>
+                          {carpoolRequests.filter((r: CarpoolRequest) => r.approvalStatus === 'pending').map((request: CarpoolRequest, index: number) => (
+                            <span key={request.id} className="flex items-center">
+                              {index > 0 && <span className="mx-1">•</span>}
+                              <span className="font-medium mr-0.5 text-yellow-600">{request.childName}</span>
+                              <span className="flex items-center">
+                                {request.needsPickup && request.needsDropoff ? (
+                                  <span className="flex items-center">
+                                    <ArrowRight size={10} className="text-green-500" />
+                                    <ArrowLeft size={10} className="text-blue-500" />
+                                  </span>
+                                ) : request.needsPickup ? (
+                                  <ArrowRight size={10} className="text-green-500" />
+                                ) : (
+                                  <ArrowLeft size={10} className="text-blue-500" />
+                                )}
+                              </span>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
