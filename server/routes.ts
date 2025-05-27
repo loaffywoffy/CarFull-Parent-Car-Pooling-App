@@ -459,6 +459,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/carpool-requests", async (req, res) => {
     try {
+      console.log(`[DEBUG] Carpool request received for carpool ID: ${req.body.carpoolId}`);
+      console.log(`[DEBUG] Request data:`, req.body);
+      
       // Check if this action requires phone verification
       const { phoneNumber, verificationCode } = req.body;
       if (phoneNumber && verificationCode) {
