@@ -164,6 +164,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                   if (drivingResult) {
                     distance = drivingResult.distance;
                     drivingTime = drivingResult.duration;
+                  } else {
+                    // Fallback to straight-line distance if driving distance fails
+                    distance = calculateDistance(
+                      partyCoordinates[0],
+                      partyCoordinates[1],
+                      carpoolCoordinates[0],
+                      carpoolCoordinates[1]
+                    );
                   }
                 }
               }
@@ -180,6 +188,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 if (drivingResult) {
                   distanceFromUser = drivingResult.distance;
                   drivingTimeFromUser = drivingResult.duration;
+                } else {
+                  // Fallback to straight-line distance if driving distance fails
+                  distanceFromUser = calculateDistance(
+                    userCoordinates[0],
+                    userCoordinates[1],
+                    carpoolCoordinates[0],
+                    carpoolCoordinates[1]
+                  );
                 }
               }
 
@@ -475,9 +491,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                     <Badge className="bg-gray-100 text-gray-800">
                       <MapPin className="h-3 w-3 mr-1" />
                       {userCoordinates && carpool.distanceFromUser !== null && carpool.distanceFromUser !== undefined
-                        ? `${carpool.distanceFromUser.toFixed(1)} miles from you${carpool.drivingTimeFromUser ? ` (${Math.round(carpool.drivingTimeFromUser)} min drive)` : ''}` 
+                        ? `${carpool.distanceFromUser.toFixed(1)} miles to driver${carpool.drivingTimeFromUser ? ` (${Math.round(carpool.drivingTimeFromUser)} min)` : ''}` 
                         : carpool.distance !== null && carpool.distance !== undefined
-                          ? `${carpool.distance.toFixed(1)} miles from event${carpool.drivingTime ? ` (${Math.round(carpool.drivingTime)} min drive)` : ''}`
+                          ? `${carpool.distance.toFixed(1)} miles driver-to-event${carpool.drivingTime ? ` (${Math.round(carpool.drivingTime)} min)` : ''}`
                           : "Distance unknown"}
                     </Badge>
                   )}
