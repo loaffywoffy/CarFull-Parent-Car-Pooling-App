@@ -67,7 +67,7 @@ export default function MapboxMap({
 
     map.current.on('load', () => {
       setMapLoaded(true);
-      if (onMapReady) {
+      if (onMapReady && map.current) {
         onMapReady(map.current);
       }
     });
@@ -200,7 +200,7 @@ export default function MapboxMap({
       const bounds = new mapboxgl.LngLatBounds();
       allPoints.forEach(point => bounds.extend(point));
       
-      map.current.fitBounds(bounds, {
+      map.current?.fitBounds(bounds, {
         padding: 50,
         maxZoom: 15
       });

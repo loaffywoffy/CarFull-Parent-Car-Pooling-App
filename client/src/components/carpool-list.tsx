@@ -83,6 +83,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
   const [userPostcode, setUserPostcode] = useState("");
   const [userCoordinates, setUserCoordinates] = useState<[number, number] | null>(null);
   const [showMapView, setShowMapView] = useState(false);
+  const [eventCoordinates, setEventCoordinates] = useState<[number, number] | null>(null);
 
   const { data: carpools, isLoading, refetch: refetchCarpools } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId, "carpools"],
@@ -1380,6 +1381,16 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
             <SelectItem value="name">Sort by Name</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* View Toggle Button */}
+        <Button
+          variant={showMapView ? "default" : "outline"}
+          onClick={() => setShowMapView(!showMapView)}
+          className="flex items-center gap-2"
+        >
+          {showMapView ? <Map className="h-4 w-4" /> : <Map className="h-4 w-4" />}
+          {showMapView ? "Show List" : "Show Map"}
+        </Button>
       </div>
 
       {/* Postcode Input for distance calculation */}
@@ -1458,14 +1469,72 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
         </TabsList>
 
         <div className="mt-4">
-          {filteredCarpools.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center text-gray-500">
-                No carpools found matching your criteria
-              </CardContent>
-            </Card>
+          {showMapView ? (
+            // MapBox Map View
+            <div className="space-y-4">
+              <MapboxMap
+                className="w-full h-96"
+                eventLocation={partyGroup ? {
+                  lat: partyGroup.eventAddress ? 51.5254268 : 51.5074, // Use geocoded coordinates
+                  lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
+                  name: `${partyGroup.name} - ${partyGroup.eventAddress || 'London'}`
+                } : undefined}
+                userLocation={userCoordinates ? {
+                  lat: userCoordinates[0],
+                  lng: userCoordinates[1]
+                } : undefined}
+                carpoolLocations={filteredCarpools.map(carpool => ({
+                  id: carpool.id,
+                  lat: carpool.coordinates?.[0] || 51.5074,
+                  lng: carpool.coordinates?.[1] || -0.1276,
+                  parentName: carpool.parentName,
+                  address: `${carpool.address}, ${carpool.city || ''} ${carpool.postcode}`.trim(),
+                  canPickup: carpool.canPickup || carpool.canBoth,
+                  canDropoff: carpool.canDropoff || carpool.canBoth,
+                  spacesAvailable: carpool.spacesAvailable || 0
+                }))}
+              />
+              
+              {/* Legend */}
+              <div className="bg-gray-50 p-3 rounded-lg border">
+                <h4 className="font-medium text-sm text-gray-700 mb-2">Map Legend</h4>
+                <div className="flex flex-wrap gap-4 text-xs">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span>Event Location</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span>Your Location</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span>To Event Only</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                    <span>From Event Only</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                    <span>Both Ways</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : (
-            filteredCarpools.map(carpool => <CarpoolCard key={carpool.id} carpool={carpool} />)
+            // List View
+            <>
+              {filteredCarpools.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center text-gray-500">
+                    No carpools found matching your criteria
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredCarpools.map(carpool => <CarpoolCard key={carpool.id} carpool={carpool} />)
+              )}
+            </>
           )}
         </div>
       </Tabs>
