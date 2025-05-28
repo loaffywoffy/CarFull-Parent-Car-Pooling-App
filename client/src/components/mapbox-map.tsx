@@ -168,7 +168,7 @@ export default function MapboxMap({
               </div>
             `)
         )
-        .addTo(map.current);
+        .addTo(map.current!);
 
       markers.push(marker);
     });
@@ -205,8 +205,8 @@ export default function MapboxMap({
         maxZoom: 15
       });
     } else if (allPoints.length === 1) {
-      map.current.setCenter(allPoints[0]);
-      map.current.setZoom(14);
+      map.current?.setCenter(allPoints[0]);
+      map.current?.setZoom(14);
     }
   }, [eventLocation, userLocation, carpoolLocations, mapLoaded]);
 

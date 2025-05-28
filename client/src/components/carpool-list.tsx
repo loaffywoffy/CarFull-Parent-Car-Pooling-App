@@ -21,48 +21,14 @@ import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
-import LocationMap from "@/components/location-map";
+// Removed old OpenStreetMap component - now using MapBox
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import DeleteCarpoolRequestButton from "@/components/delete-carpool-request-button";
 import DeleteCarpoolButton from "@/components/delete-carpool-button";
 
-// Memoized stable location map component that won't re-render on parent state changes
-const StableLocationMap = memo(({ 
-  partyName, 
-  partyCoordinates, 
-  carpoolName, 
-  carpoolCoordinates, 
-  height, 
-  initialZoom 
-}: { 
-  partyName: string;
-  partyCoordinates: [number, number];
-  carpoolName: string;
-  carpoolCoordinates: [number, number];
-  height: string;
-  initialZoom: number;
-}) => {
-  return (
-    <LocationMap 
-      locations={[
-        {
-          label: partyName,
-          position: partyCoordinates,
-          type: 'event'
-        },
-        {
-          label: carpoolName,
-          position: carpoolCoordinates,
-          type: 'pickup'
-        }
-      ]}
-      height={height}
-      initialZoom={initialZoom}
-    />
-  );
-});
+// Using MapBox component instead of old OpenStreetMap component
 
 interface CarpoolListProps {
   partyGroupId: number;
