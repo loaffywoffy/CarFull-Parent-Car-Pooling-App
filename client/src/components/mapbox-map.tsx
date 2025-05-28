@@ -67,7 +67,7 @@ export default function MapboxMap({
 
     map.current.on('load', () => {
       setMapLoaded(true);
-      if (onMapReady && map.current) {
+      if (onMapReady) {
         onMapReady(map.current);
       }
     });
