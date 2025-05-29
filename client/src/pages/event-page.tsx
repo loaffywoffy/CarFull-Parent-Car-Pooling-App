@@ -312,12 +312,12 @@ export default function EventPage() {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {/* Find a Ride */}
-              <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-center space-x-2">
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center space-x-2 mb-3">
                   <Users className="h-5 w-5 text-blue-600" />
                   <h3 className="font-semibold text-lg">Find a Ride</h3>
                 </div>
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-600 text-sm mb-4">
                   Browse rides offered by other parents and request spots for your child
                 </p>
                 <Link href={`/join-carpool?partyId=${event.id}`}>
@@ -332,12 +332,12 @@ export default function EventPage() {
               </div>
 
               {/* Offer a Ride */}
-              <div className="space-y-3 p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex items-center space-x-2">
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center space-x-2 mb-3">
                   <Car className="h-5 w-5 text-green-600" />
                   <h3 className="font-semibold text-lg">Offer a Ride</h3>
                 </div>
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-600 text-sm mb-4">
                   Help other parents by offering rides and sharing transportation costs
                 </p>
                 <Link href={`/?partyId=${event.id}`}>
