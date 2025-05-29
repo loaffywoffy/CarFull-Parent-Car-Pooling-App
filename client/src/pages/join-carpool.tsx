@@ -100,10 +100,10 @@ export default function JoinCarpoolPage() {
         variant="ghost" 
         size="sm" 
         className="mb-6"
-        onClick={() => setLocation("/")}
+        onClick={() => setLocation(`/events/${partyGroup.shareableUrl}`)}
       >
         <ChevronLeft className="h-4 w-4 mr-1" />
-        Back to all events
+        Back to event
       </Button>
 
       <div className="mb-8">
