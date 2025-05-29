@@ -4,53 +4,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phoneNumber: "",
     email: ""
   });
-  const { toast } = useToast();
+  const { loginMutation } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await apiRequest("POST", "/api/auth/login", {
-        name: formData.name,
-        phoneNumber: formData.phoneNumber,
-        email: formData.email || undefined
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Login successful",
-          description: "Welcome to the carpool coordinator!"
-        });
+    
+    loginMutation.mutate({
+      name: formData.name,
+      phoneNumber: formData.phoneNumber,
+      email: formData.email || undefined
+    }, {
+      onSuccess: () => {
         setLocation("/");
-      } else {
-        const error = await response.text();
-        toast({
-          title: "Login failed",
-          description: error || "Failed to log in",
-          variant: "destructive"
-        });
       }
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: "Unable to connect to the server",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
@@ -59,9 +35,9 @@ export default function AuthPage() {
         {/* Login Form */}
         <Card className="w-full max-w-md mx-auto">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Create Your Account</CardTitle>
             <CardDescription className="text-center">
-              Sign in to access your carpool events
+              Sign up to start organizing carpool events
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -101,8 +77,8 @@ export default function AuthPage() {
                 />
               </div>
               
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+              <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                {loginMutation.isPending ? "Creating account..." : "Create Account"}
               </Button>
             </form>
           </CardContent>
