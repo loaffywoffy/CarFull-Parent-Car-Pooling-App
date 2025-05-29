@@ -12,11 +12,12 @@ import { getQueryFn } from "@/lib/queryClient";
 import type { PartyGroup } from "@shared/schema";
 
 export default function EventPage() {
-  const { shareableUrl } = useParams();
+  const params = useParams();
+  const shareableUrl = params.shareableUrl;
 
   const { data: event, isLoading, error } = useQuery<PartyGroup>({
-    queryKey: ["/api/party-groups/by-url", shareableUrl],
-    queryFn: getQueryFn(),
+    queryKey: [`/api/party-groups/by-url/${shareableUrl}`],
+    queryFn: getQueryFn({ on401: "throw" }),
     enabled: !!shareableUrl,
   });
 
