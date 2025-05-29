@@ -338,7 +338,7 @@ export default function EventPage() {
                   <h3 className="font-semibold text-lg">Offer a Ride</h3>
                 </div>
                 <p className="text-gray-600 text-sm">
-                  Help other parents by offering a ride to this event. You can specify pickup/dropoff preferences and how many children you can take.
+                  Help other parents by offering rides and sharing transportation costs
                 </p>
                 <Link href={`/?partyId=${event.id}`}>
                   <Button 
