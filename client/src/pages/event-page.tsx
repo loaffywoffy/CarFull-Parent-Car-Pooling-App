@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map } from "lucide-react";
 import { Link } from "wouter";
 import CarpoolList from "@/components/carpool-list";
@@ -183,16 +183,6 @@ export default function EventPage() {
 
             <Separator className="my-6" />
             
-            {/* Event Location Map */}
-            <div className="mb-6">
-              <EventMap 
-                address={event.eventAddress}
-                city={event.eventCity}
-                postcode={event.eventPostcode}
-                eventName={event.name}
-              />
-            </div>
-
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 justify-center">
               <CalendarIntegration 
@@ -285,6 +275,46 @@ export default function EventPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Additional Information Tabs */}
+        <Tabs defaultValue="location" className="w-full mt-8">
+          <TabsList className="grid w-full grid-cols-1">
+            <TabsTrigger value="location" className="flex items-center">
+              <MapPin className="h-4 w-4 mr-2" />
+              Event Location
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="location">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="bg-gray-50 p-6 rounded-lg text-center">
+                  <MapPin className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                  <p className="text-gray-600 font-medium">{event.eventAddress}, {event.eventCity} {event.eventPostcode}</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Interactive map requires Mapbox configuration
+                  </p>
+                  <div className="mt-4 space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`https://maps.google.com/maps?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
+                    >
+                      Google Maps
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`https://maps.apple.com/?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
+                    >
+                      Apple Maps
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Help Section */}
         <Card className="mt-8 bg-blue-50 border-blue-200">

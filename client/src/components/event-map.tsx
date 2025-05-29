@@ -26,9 +26,16 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
       return;
     }
 
+    let map: any = null;
+
     // Initialize Mapbox map
     const initializeMap = async () => {
       try {
+        // Clear any existing content
+        if (mapRef.current) {
+          mapRef.current.innerHTML = '';
+        }
+
         const mapboxgl = await import('mapbox-gl');
         mapboxgl.default.accessToken = mapboxToken;
 
@@ -49,8 +56,10 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
 
         const [lng, lat] = geocodeData.features[0].center;
 
-        const map = new mapboxgl.default.Map({
-          container: mapRef.current!,
+        if (!mapRef.current) return;
+
+        map = new mapboxgl.default.Map({
+          container: mapRef.current,
           style: 'mapbox://styles/mapbox/streets-v12',
           center: [lng, lat],
           zoom: 15,
@@ -72,10 +81,6 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
           )
           .addTo(map);
 
-        // Cleanup function
-        return () => {
-          map.remove();
-        };
       } catch (error) {
         console.error('Map initialization error:', error);
         setMapError(true);
@@ -86,6 +91,17 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
       console.error('Failed to initialize map:', error);
       setMapError(true);
     });
+
+    // Cleanup function
+    return () => {
+      if (map) {
+        try {
+          map.remove();
+        } catch (error) {
+          console.error('Error removing map:', error);
+        }
+      }
+    };
   }, [fullAddress, eventName]);
 
   if (mapError) {
