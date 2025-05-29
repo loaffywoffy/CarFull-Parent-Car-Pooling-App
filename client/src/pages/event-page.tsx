@@ -140,94 +140,117 @@ export default function EventPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Date & Time */}
                   <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Date & Time</h3>
-                  <p className="text-gray-600">{formatDate(event.eventDate)}</p>
-                  <p className="text-sm text-gray-500">
-                    Starts at {formatTime(event.targetArrivalTime)}
-                    {event.endTime && ` • Ends at ${formatTime(event.endTime)}`}
-                  </p>
-                </div>
-              </div>
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Calendar className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Date & Time</h3>
+                      <p className="text-gray-600">{formatDate(event.eventDate)}</p>
+                      <p className="text-sm text-gray-500">
+                        Starts at {formatTime(event.targetArrivalTime)}
+                        {event.endTime && ` • Ends at ${formatTime(event.endTime)}`}
+                      </p>
+                    </div>
+                  </div>
 
-              {/* Location */}
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <MapPin className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Location</h3>
-                  <p className="text-gray-600">{event.eventAddress}</p>
-                  <p className="text-sm text-gray-500">
-                    {event.eventCity} {event.eventPostcode}
-                  </p>
-                </div>
-              </div>
+                  {/* Location */}
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <MapPin className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Location</h3>
+                      <p className="text-gray-600">{event.eventAddress}</p>
+                      <p className="text-sm text-gray-500">
+                        {event.eventCity} {event.eventPostcode}
+                      </p>
+                    </div>
+                  </div>
 
-              {/* Organizer */}
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Users className="h-5 w-5 text-purple-600" />
+                  {/* Organizer */}
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Users className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Organized by</h3>
+                      <p className="text-gray-600">{event.createdBy}</p>
+                      {event.phoneNumber && (
+                        <p className="text-sm text-gray-500">{event.phoneNumber}</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Organized by</h3>
-                  <p className="text-gray-600">{event.createdBy}</p>
-                  {event.phoneNumber && (
-                    <p className="text-sm text-gray-500">{event.phoneNumber}</p>
-                  )}
-                </div>
-              </div>
-            </div>
 
-            {event.additionalInformation && (
-              <>
+                {event.additionalInformation && (
+                  <>
+                    <Separator className="my-6" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Additional Information</h3>
+                      <p className="text-gray-600 whitespace-pre-wrap">{event.additionalInformation}</p>
+                    </div>
+                  </>
+                )}
+
                 <Separator className="my-6" />
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Additional Information</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{event.additionalInformation}</p>
+                
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3 justify-center">
+                  <CalendarIntegration 
+                    eventData={{
+                      title: event.name,
+                      startDate: event.eventDate,
+                      startTime: event.targetArrivalTime,
+                      endTime: event.endTime,
+                      location: `${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`,
+                      description: event.description || event.additionalInformation || `Join carpools for ${event.name}`
+                    }}
+                    buttonVariant="outline"
+                    size="default"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={shareEvent}
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share Event
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={copyEventUrl}
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    {copied ? "Copied!" : "Copy Link"}
+                  </Button>
                 </div>
-              </>
-            )}
+              </TabsContent>
 
-            <Separator className="my-6" />
-            
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 justify-center">
-              <CalendarIntegration 
-                eventData={{
-                  title: event.name,
-                  startDate: event.eventDate,
-                  startTime: event.targetArrivalTime,
-                  endTime: event.endTime,
-                  location: `${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`,
-                  description: event.description || event.additionalInformation || `Join carpools for ${event.name}`
-                }}
-                buttonVariant="outline"
-                size="default"
-              />
-              <Button
-                variant="outline"
-                onClick={shareEvent}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share Event
-              </Button>
-              <Button
-                variant="outline"
-                onClick={copyEventUrl}
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                {copied ? "Copied!" : "Copy Link"}
-              </Button>
-              <Link href="/">
-                <Button variant="outline">
-                  Edit Event
-                </Button>
-              </Link>
-            </div>
+              <TabsContent value="location">
+                <div className="bg-gray-50 p-6 rounded-lg text-center">
+                  <MapPin className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                  <p className="text-gray-600 font-medium">{event.eventAddress}, {event.eventCity} {event.eventPostcode}</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    View location in your preferred maps app
+                  </p>
+                  <div className="mt-4 space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`https://maps.google.com/maps?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
+                    >
+                      Google Maps
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`https://maps.apple.com/?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
+                    >
+                      Apple Maps
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
