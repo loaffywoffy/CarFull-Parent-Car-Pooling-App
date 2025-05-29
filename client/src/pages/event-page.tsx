@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map, Edit, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import CarpoolList from "@/components/carpool-list";
 import CalendarIntegration from "@/components/calendar-integration";
@@ -120,15 +120,26 @@ export default function EventPage() {
                 </CardDescription>
               </div>
               <div className="flex items-center space-x-2">
-                <Car className="h-6 w-6 text-blue-600" />
-                <span className="text-sm font-medium text-blue-600">Carpool Event</span>
+                <Button variant="ghost" size="sm">
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Date & Time */}
-              <div className="flex items-start space-x-3">
+            <Tabs defaultValue="details" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="details">Event Details</TabsTrigger>
+                <TabsTrigger value="location">Location & Map</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="details">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Date & Time */}
+                  <div className="flex items-start space-x-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                   <Calendar className="h-5 w-5 text-blue-600" />
                 </div>
@@ -242,15 +253,15 @@ export default function EventPage() {
                 <p className="text-gray-600 text-sm">
                   Browse rides offered by other parents and request spots for your child
                 </p>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <CarpoolList 
-                    partyGroupId={event.id} 
-                    onRequestSpot={(id) => {
-                      const carpoolSection = document.getElementById(`carpool-${id}`);
-                      carpoolSection?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                  />
-                </div>
+                <Link href={`/join-carpool?partyId=${event.id}`}>
+                  <Button 
+                    size="lg" 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Users className="h-5 w-5 mr-2" />
+                    Browse Available Rides
+                  </Button>
+                </Link>
               </div>
 
               {/* Offer a Ride */}
@@ -276,45 +287,7 @@ export default function EventPage() {
           </CardContent>
         </Card>
 
-        {/* Additional Information Tabs */}
-        <Tabs defaultValue="location" className="w-full mt-8">
-          <TabsList className="grid w-full grid-cols-1">
-            <TabsTrigger value="location" className="flex items-center">
-              <MapPin className="h-4 w-4 mr-2" />
-              Event Location
-            </TabsTrigger>
-          </TabsList>
 
-          <TabsContent value="location">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="bg-gray-50 p-6 rounded-lg text-center">
-                  <MapPin className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                  <p className="text-gray-600 font-medium">{event.eventAddress}, {event.eventCity} {event.eventPostcode}</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Interactive map requires Mapbox configuration
-                  </p>
-                  <div className="mt-4 space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => window.open(`https://maps.google.com/maps?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
-                    >
-                      Google Maps
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => window.open(`https://maps.apple.com/?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
-                    >
-                      Apple Maps
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
 
         {/* Help Section */}
         <Card className="mt-8 bg-blue-50 border-blue-200">
