@@ -29,6 +29,7 @@ export interface IStorage {
   getPartyGroups(): Promise<PartyGroup[]>;
   getPartyGroupById(id: number): Promise<PartyGroup | undefined>;
   getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined>;
+  getPartyGroupByShareableUrl(shareableUrl: string): Promise<PartyGroup | undefined>;
   updatePartyGroup(id: number, partyGroup: Partial<InsertPartyGroup>): Promise<PartyGroup | undefined>;
   deletePartyGroup(id: number): Promise<boolean>;
   
@@ -85,10 +86,23 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Party Group methods
+  private generateShareableUrl(name: string): string {
+    const baseUrl = name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .substring(0, 30);
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    return `${baseUrl}-${randomSuffix}`;
+  }
+
   async createPartyGroup(insertPartyGroup: InsertPartyGroup): Promise<PartyGroup> {
+    const shareableUrl = this.generateShareableUrl(insertPartyGroup.name);
+    
     // Ensure null values for nullable fields
     const partyGroupData = {
       ...insertPartyGroup,
+      shareableUrl,
       description: insertPartyGroup.description ?? null,
       eventEndDate: insertPartyGroup.eventEndDate ?? null,
       endTime: insertPartyGroup.endTime ?? null,
@@ -114,6 +128,11 @@ export class DatabaseStorage implements IStorage {
   
   async getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined> {
     const [partyGroup] = await db.select().from(partyGroups).where(eq(partyGroups.accessCode, accessCode));
+    return partyGroup || undefined;
+  }
+
+  async getPartyGroupByShareableUrl(shareableUrl: string): Promise<PartyGroup | undefined> {
+    const [partyGroup] = await db.select().from(partyGroups).where(eq(partyGroups.shareableUrl, shareableUrl));
     return partyGroup || undefined;
   }
   

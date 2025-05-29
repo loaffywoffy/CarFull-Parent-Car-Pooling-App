@@ -265,6 +265,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/party-groups/by-url/:shareableUrl", async (req, res) => {
+    try {
+      const { shareableUrl } = req.params;
+      const partyGroup = await storage.getPartyGroupByShareableUrl(shareableUrl);
+      if (!partyGroup) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      res.json(partyGroup);
+    } catch (error) {
+      console.error("Error fetching party group by shareable URL:", error);
+      res.status(500).json({ message: "Failed to fetch event" });
+    }
+  });
+
   app.get("/api/party-groups/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
