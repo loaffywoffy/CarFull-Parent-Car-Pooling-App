@@ -87,8 +87,8 @@ export function downloadICSFile(event: CalendarEvent, filename?: string) {
 // Format event for calendar display
 export function formatEventForCalendar(eventData: any, carpoolData?: any) {
   const eventTitle = carpoolData 
-    ? `Carpool: ${eventData.name}` 
-    : eventData.name;
+    ? `Carpool: ${eventData.title || eventData.name}` 
+    : (eventData.title || eventData.name);
     
   const description = [
     eventData.description,
@@ -97,16 +97,48 @@ export function formatEventForCalendar(eventData: any, carpoolData?: any) {
     eventData.additionalInformation
   ].filter(Boolean).join('\n');
 
-  const location = eventData.eventAddress 
-    ? `${eventData.eventAddress}, ${eventData.eventCity}, ${eventData.eventPostcode}`
-    : '';
+  const location = eventData.location ||
+    (eventData.eventAddress 
+      ? `${eventData.eventAddress}, ${eventData.eventCity}, ${eventData.eventPostcode}`
+      : '');
+
+  // Helper function to create a valid date
+  const createDate = (dateStr: string, timeStr?: string) => {
+    if (!dateStr) return new Date();
+    
+    // If time is provided, combine date and time
+    if (timeStr) {
+      const combinedDateTime = `${dateStr}T${timeStr}`;
+      const date = new Date(combinedDateTime);
+      return isNaN(date.getTime()) ? new Date() : date;
+    }
+    
+    // Just date, set to start of day
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? new Date() : date;
+  };
+
+  const startDate = createDate(
+    eventData.startDate || eventData.eventDate,
+    eventData.startTime || eventData.targetArrivalTime
+  );
+  
+  const endDate = createDate(
+    eventData.endDate || eventData.eventEndDate || eventData.startDate || eventData.eventDate,
+    eventData.endTime
+  );
+
+  // If end date is before start date, set end date to 2 hours after start
+  if (endDate <= startDate) {
+    endDate.setTime(startDate.getTime() + (2 * 60 * 60 * 1000));
+  }
 
   return {
     title: eventTitle,
     description,
     location,
-    startDate: new Date(`${eventData.eventDate}T${eventData.targetArrivalTime || '00:00'}`),
-    endDate: new Date(`${eventData.eventEndDate || eventData.eventDate}T${eventData.endTime || '23:59'}`),
-    allDay: !eventData.targetArrivalTime
+    startDate,
+    endDate,
+    allDay: !eventData.targetArrivalTime && !eventData.startTime
   };
 }

@@ -4,22 +4,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Clock, MapPin, Users, Car, ArrowLeft } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map } from "lucide-react";
 import { Link } from "wouter";
 import CarpoolList from "@/components/carpool-list";
+import CalendarIntegration from "@/components/calendar-integration";
+import EventMap from "@/components/event-map";
 import { useState } from "react";
 import { getQueryFn } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { PartyGroup } from "@shared/schema";
 
 export default function EventPage() {
   const params = useParams();
   const shareableUrl = params.shareableUrl;
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
 
   const { data: event, isLoading, error } = useQuery<PartyGroup>({
     queryKey: [`/api/party-groups/by-url/${shareableUrl}`],
     queryFn: getQueryFn({ on401: "throw" }),
     enabled: !!shareableUrl,
   });
+
+  const copyEventUrl = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    toast({
+      title: "Event URL copied!",
+      description: "Share this link with parents so they can join carpools.",
+    });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const shareEvent = () => {
+    if (navigator.share && event) {
+      navigator.share({
+        title: event.name,
+        text: `Join carpools for ${event.name}`,
+        url: window.location.href,
+      });
+    } else {
+      copyEventUrl();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -87,7 +116,25 @@ export default function EventPage() {
                 Create Your Own Event
               </Button>
             </Link>
-            <Badge variant="secondary">Shareable Event</Badge>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={shareEvent}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share Event
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyEventUrl}
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                {copied ? "Copied!" : "Copy Link"}
+              </Button>
+              <Badge variant="secondary">Shareable Event</Badge>
+            </div>
           </div>
         </div>
       </div>
@@ -166,56 +213,100 @@ export default function EventPage() {
                 </div>
               </>
             )}
+
+            <Separator className="my-6" />
+            
+            {/* Calendar Integration */}
+            <div className="flex justify-center">
+              <CalendarIntegration 
+                eventData={{
+                  title: event.name,
+                  startDate: event.eventDate,
+                  startTime: event.targetArrivalTime,
+                  endTime: event.endTime,
+                  location: `${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`,
+                  description: event.description || event.additionalInformation || `Join carpools for ${event.name}`
+                }}
+                buttonVariant="outline"
+                size="lg"
+              />
+            </div>
           </CardContent>
         </Card>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <Link href={`/?partyId=${event.id}`}>
-            <Button 
-              size="lg" 
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              <Car className="h-5 w-5 mr-2" />
+        {/* Carpool Management Tabs */}
+        <Tabs defaultValue="find-ride" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="find-ride" className="flex items-center">
+              <Users className="h-4 w-4 mr-2" />
+              Find a Ride
+            </TabsTrigger>
+            <TabsTrigger value="offer-ride" className="flex items-center">
+              <Car className="h-4 w-4 mr-2" />
               Offer a Ride
-            </Button>
-          </Link>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="flex-1"
-            onClick={() => {
-              const carpoolSection = document.getElementById('available-carpools');
-              carpoolSection?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            <Users className="h-5 w-5 mr-2" />
-            Browse Available Rides
-          </Button>
-        </div>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Available Carpools */}
-        <div id="available-carpools">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Car className="h-5 w-5 mr-2" />
-                Available Rides
-              </CardTitle>
-              <CardDescription>
-                Browse rides offered by other parents and request spots
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CarpoolList 
-                partyGroupId={event.id} 
-                onRequestSpot={(id) => {
-                  const carpoolSection = document.getElementById(`carpool-${id}`);
-                  carpoolSection?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              />
-            </CardContent>
-          </Card>
+          <TabsContent value="find-ride">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="h-5 w-5 mr-2" />
+                  Available Rides
+                </CardTitle>
+                <CardDescription>
+                  Browse rides offered by other parents and request spots for your child
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CarpoolList 
+                  partyGroupId={event.id} 
+                  onRequestSpot={(id) => {
+                    const carpoolSection = document.getElementById(`carpool-${id}`);
+                    carpoolSection?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="offer-ride">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Car className="h-5 w-5 mr-2" />
+                  Offer a Ride
+                </CardTitle>
+                <CardDescription>
+                  Share your car details so other parents can request spots
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-gray-600">
+                  Help other parents by offering a ride to this event. You can specify pickup/dropoff preferences and how many children you can take.
+                </p>
+                <Link href={`/?partyId=${event.id}`}>
+                  <Button 
+                    size="lg" 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Car className="h-5 w-5 mr-2" />
+                    Create Ride Offer
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Event Location Map */}
+        <div className="mt-8">
+          <EventMap 
+            address={event.eventAddress}
+            city={event.eventCity}
+            postcode={event.eventPostcode}
+            eventName={event.name}
+          />
         </div>
 
         {/* Help Section */}
