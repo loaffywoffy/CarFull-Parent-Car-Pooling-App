@@ -12,7 +12,7 @@ export default function CreateCarpoolPage() {
   const shareableUrl = params?.shareableUrl;
 
   const { data: partyGroup, isLoading } = useQuery({
-    queryKey: ["/api/party-groups/by-url", shareableUrl],
+    queryKey: [`/api/party-groups/by-url/${shareableUrl}`],
     enabled: !!shareableUrl,
   });
 
