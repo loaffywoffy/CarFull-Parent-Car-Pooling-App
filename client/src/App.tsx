@@ -11,7 +11,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={OrganizerHomePage} />
-      <Route path="/event/:shareableUrl" component={EventPage} />
+      <Route path="/events/:shareableUrl" component={EventPage} />
       <Route path="/join-carpool" component={JoinCarpoolPage} />
       <Route component={NotFound} />
     </Switch>
