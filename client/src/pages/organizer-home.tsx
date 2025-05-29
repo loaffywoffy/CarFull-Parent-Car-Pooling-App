@@ -54,6 +54,25 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
 
 type PartyGroupFormValues = z.infer<typeof partyGroupFormSchema>;
 
+// Generate time options in 15-minute intervals
+const generateTimeOptions = () => {
+  const times = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      const displayTime = new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      times.push({ value: timeString, label: displayTime });
+    }
+  }
+  return times;
+};
+
+const timeOptions = generateTimeOptions();
+
 export default function OrganizerHomePage() {
   const [showForm, setShowForm] = useState(false);
   const [, setLocation] = useLocation();
@@ -258,9 +277,20 @@ export default function OrganizerHomePage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Start Time</FormLabel>
-                              <FormControl>
-                                <Input type="time" {...field} />
-                              </FormControl>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select start time" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-60">
+                                  {timeOptions.map((time) => (
+                                    <SelectItem key={time.value} value={time.value}>
+                                      {time.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -272,9 +302,20 @@ export default function OrganizerHomePage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>End Time</FormLabel>
-                              <FormControl>
-                                <Input type="time" {...field} />
-                              </FormControl>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select end time" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-60">
+                                  {timeOptions.map((time) => (
+                                    <SelectItem key={time.value} value={time.value}>
+                                      {time.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
