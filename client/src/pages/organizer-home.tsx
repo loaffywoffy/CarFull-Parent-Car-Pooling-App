@@ -107,7 +107,7 @@ export default function OrganizerHomePage() {
         description: "Redirecting to your event page...",
       });
       // Redirect to the shareable event URL
-      setLocation(`/event/${event.shareableUrl}`);
+      setLocation(`/events/${event.shareableUrl}`);
     },
     onError: (error) => {
       toast({

@@ -287,29 +287,35 @@ export default function EventPage() {
               </TabsContent>
 
               <TabsContent value="location">
-                <div className="bg-gray-50 p-4 sm:p-6 rounded-lg text-center">
-                  <MapPin className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-gray-400 mb-2" />
-                  <p className="text-gray-600 font-medium text-sm sm:text-base">{event.eventAddress}, {event.eventCity} {event.eventPostcode}</p>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-2">
-                    View location in your preferred maps app
-                  </p>
-                  <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-center">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="w-full sm:w-auto"
-                      onClick={() => window.open(`https://maps.google.com/maps?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
-                    >
-                      Google Maps
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="w-full sm:w-auto"
-                      onClick={() => window.open(`https://maps.apple.com/?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
-                    >
-                      Apple Maps
-                    </Button>
+                <div className="space-y-4">
+                  <div className="h-64 rounded-lg overflow-hidden border border-gray-200">
+                    <EventMap 
+                      address={event.eventAddress}
+                      city={event.eventCity}
+                      postcode={event.eventPostcode}
+                      eventName={event.name}
+                    />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-gray-600 font-medium text-sm mb-2">{event.eventAddress}, {event.eventCity} {event.eventPostcode}</p>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        onClick={() => window.open(`https://maps.google.com/maps?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
+                      >
+                        Open in Google Maps
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        onClick={() => window.open(`https://maps.apple.com/?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
+                      >
+                        Open in Apple Maps
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
