@@ -45,8 +45,6 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
         );
         
         if (!geocodeResponse.ok) {
-          console.error('Geocoding response status:', geocodeResponse.status);
-          console.error('Geocoding response text:', await geocodeResponse.text());
           throw new Error(`Geocoding failed with status: ${geocodeResponse.status}`);
         }
 
