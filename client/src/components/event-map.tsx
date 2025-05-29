@@ -17,8 +17,73 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
   useEffect(() => {
-    // Temporarily disable MapBox integration to prevent fetch errors
-    setMapError(true);
+    if (!mapboxToken) {
+      setMapError(true);
+      return;
+    }
+
+    let map: any = null;
+
+    const initializeMap = async () => {
+      try {
+        if (mapRef.current) {
+          mapRef.current.innerHTML = '';
+        }
+
+        const mapboxgl = await import('mapbox-gl');
+        mapboxgl.default.accessToken = mapboxToken;
+
+        // Try geocoding with a simpler approach
+        const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddress)}.json?access_token=${mapboxToken}&country=GB&limit=1`;
+        
+        const geocodeResponse = await fetch(geocodeUrl);
+        
+        if (!geocodeResponse.ok) {
+          throw new Error(`Geocoding failed: ${geocodeResponse.status}`);
+        }
+
+        const geocodeData = await geocodeResponse.json();
+        
+        if (!geocodeData.features || geocodeData.features.length === 0) {
+          throw new Error('Address not found');
+        }
+
+        const [lng, lat] = geocodeData.features[0].center;
+
+        if (!mapRef.current) return;
+
+        map = new mapboxgl.default.Map({
+          container: mapRef.current,
+          style: 'mapbox://styles/mapbox/streets-v12',
+          center: [lng, lat],
+          zoom: 14,
+        });
+
+        new mapboxgl.default.Marker({
+          color: '#3B82F6'
+        })
+          .setLngLat([lng, lat])
+          .setPopup(
+            new mapboxgl.default.Popup({ offset: 25 })
+              .setHTML(`<div style="font-weight: 500;">${eventName}</div><div style="font-size: 0.875rem; color: #6B7280;">${fullAddress}</div>`)
+          )
+          .addTo(map);
+
+        map.addControl(new mapboxgl.default.NavigationControl(), 'top-right');
+
+      } catch (error) {
+        console.error('Map initialization error:', error);
+        setMapError(true);
+      }
+    };
+
+    initializeMap();
+
+    return () => {
+      if (map) {
+        map.remove();
+      }
+    };
   }, [fullAddress, eventName, mapboxToken]);
 
   if (mapError) {
