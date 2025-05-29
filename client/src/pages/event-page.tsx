@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map } from "lucide-react";
 import { Link } from "wouter";
 import CarpoolList from "@/components/carpool-list";
@@ -106,39 +106,6 @@ export default function EventPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Create Your Own Event
-              </Button>
-            </Link>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={shareEvent}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share Event
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={copyEventUrl}
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                {copied ? "Copied!" : "Copy Link"}
-              </Button>
-              <Badge variant="secondary">Shareable Event</Badge>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Event Information */}
         <Card className="mb-8">
@@ -216,8 +183,18 @@ export default function EventPage() {
 
             <Separator className="my-6" />
             
-            {/* Calendar Integration */}
-            <div className="flex justify-center">
+            {/* Event Location Map */}
+            <div className="mb-6">
+              <EventMap 
+                address={event.eventAddress}
+                city={event.eventCity}
+                postcode={event.eventPostcode}
+                eventName={event.name}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 justify-center">
               <CalendarIntegration 
                 eventData={{
                   title: event.name,
@@ -228,86 +205,86 @@ export default function EventPage() {
                   description: event.description || event.additionalInformation || `Join carpools for ${event.name}`
                 }}
                 buttonVariant="outline"
-                size="lg"
+                size="default"
               />
+              <Button
+                variant="outline"
+                onClick={shareEvent}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share Event
+              </Button>
+              <Button
+                variant="outline"
+                onClick={copyEventUrl}
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                {copied ? "Copied!" : "Copy Link"}
+              </Button>
+              <Link href="/">
+                <Button variant="outline">
+                  Edit Event
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
 
-        {/* Carpool Management Tabs */}
-        <Tabs defaultValue="find-ride" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="find-ride" className="flex items-center">
-              <Users className="h-4 w-4 mr-2" />
-              Find a Ride
-            </TabsTrigger>
-            <TabsTrigger value="offer-ride" className="flex items-center">
-              <Car className="h-4 w-4 mr-2" />
-              Offer a Ride
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="find-ride">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Users className="h-5 w-5 mr-2" />
-                  Available Rides
-                </CardTitle>
-                <CardDescription>
+        {/* Travel Options */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Car className="h-5 w-5 mr-2" />
+              Travel Options
+            </CardTitle>
+            <CardDescription>
+              Find a ride or offer to drive other children to this event
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Find a Ride */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Users className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-semibold text-lg">Find a Ride</h3>
+                </div>
+                <p className="text-gray-600 text-sm">
                   Browse rides offered by other parents and request spots for your child
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CarpoolList 
-                  partyGroupId={event.id} 
-                  onRequestSpot={(id) => {
-                    const carpoolSection = document.getElementById(`carpool-${id}`);
-                    carpoolSection?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </p>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <CarpoolList 
+                    partyGroupId={event.id} 
+                    onRequestSpot={(id) => {
+                      const carpoolSection = document.getElementById(`carpool-${id}`);
+                      carpoolSection?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  />
+                </div>
+              </div>
 
-          <TabsContent value="offer-ride">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Car className="h-5 w-5 mr-2" />
-                  Offer a Ride
-                </CardTitle>
-                <CardDescription>
-                  Share your car details so other parents can request spots
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-gray-600">
+              {/* Offer a Ride */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Car className="h-5 w-5 text-green-600" />
+                  <h3 className="font-semibold text-lg">Offer a Ride</h3>
+                </div>
+                <p className="text-gray-600 text-sm">
                   Help other parents by offering a ride to this event. You can specify pickup/dropoff preferences and how many children you can take.
                 </p>
                 <Link href={`/?partyId=${event.id}`}>
                   <Button 
                     size="lg" 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-green-600 hover:bg-green-700"
                   >
                     <Car className="h-5 w-5 mr-2" />
                     Create Ride Offer
                   </Button>
                 </Link>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Event Location Map */}
-        <div className="mt-8">
-          <EventMap 
-            address={event.eventAddress}
-            city={event.eventCity}
-            postcode={event.eventPostcode}
-            eventName={event.name}
-          />
-        </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Help Section */}
         <Card className="mt-8 bg-blue-50 border-blue-200">
