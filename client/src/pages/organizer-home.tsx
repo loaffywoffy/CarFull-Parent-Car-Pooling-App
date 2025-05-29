@@ -14,6 +14,7 @@ import { InsertPartyGroup, insertPartyGroupSchema } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useLocation } from "wouter";
 
 // Form validation schema matching the existing party group form
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
@@ -55,7 +56,7 @@ type PartyGroupFormValues = z.infer<typeof partyGroupFormSchema>;
 
 export default function OrganizerHomePage() {
   const [showForm, setShowForm] = useState(false);
-  const [createdEvent, setCreatedEvent] = useState<any>(null);
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const form = useForm<PartyGroupFormValues>({
@@ -82,13 +83,12 @@ export default function OrganizerHomePage() {
       return await res.json();
     },
     onSuccess: (event) => {
-      setCreatedEvent(event);
-      setShowForm(false);
-      form.reset();
       toast({
         title: "Event created!",
-        description: "Your shareable event URL is ready.",
+        description: "Redirecting to your event page...",
       });
+      // Redirect to the shareable event URL
+      setLocation(`/event/${event.shareableUrl}`);
     },
     onError: (error) => {
       toast({
@@ -103,79 +103,7 @@ export default function OrganizerHomePage() {
     createEventMutation.mutate(values);
   };
 
-  const copyShareableUrl = () => {
-    if (createdEvent) {
-      const url = `${window.location.origin}/event/${createdEvent.shareableUrl}`;
-      navigator.clipboard.writeText(url);
-      toast({
-        title: "URL copied!",
-        description: "Share this link with parents so they can join carpools.",
-      });
-    }
-  };
 
-  if (createdEvent) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="max-w-2xl mx-auto pt-8">
-          <Card className="border-2 border-green-200 bg-green-50">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <Share2 className="h-8 w-8 text-green-600" />
-              </div>
-              <CardTitle className="text-2xl text-green-800">Event Created Successfully!</CardTitle>
-              <CardDescription className="text-green-600">
-                Your event "{createdEvent.name}" is ready to share
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-white p-4 rounded-lg border">
-                <Label className="text-sm font-medium text-gray-700">Shareable Event URL</Label>
-                <div className="flex items-center space-x-2 mt-2">
-                  <Input 
-                    value={`${window.location.origin}/event/${createdEvent.shareableUrl}`}
-                    readOnly
-                    className="font-mono text-sm"
-                  />
-                  <Button onClick={copyShareableUrl} size="sm">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Copy
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <Label className="font-medium text-gray-700">Event Date</Label>
-                  <p className="text-gray-600">{createdEvent.eventDate}</p>
-                </div>
-                <div>
-                  <Label className="font-medium text-gray-700">Start Time</Label>
-                  <p className="text-gray-600">{createdEvent.targetArrivalTime}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <Label className="font-medium text-gray-700">Location</Label>
-                  <p className="text-gray-600">{createdEvent.eventAddress}, {createdEvent.eventCity} {createdEvent.eventPostcode}</p>
-                </div>
-              </div>
-
-              <div className="flex space-x-3 pt-4">
-                <Button onClick={() => setCreatedEvent(null)} variant="outline" className="flex-1">
-                  Create Another Event
-                </Button>
-                <Button 
-                  onClick={() => window.open(`/event/${createdEvent.shareableUrl}`, '_blank')}
-                  className="flex-1"
-                >
-                  View Event Page
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -276,7 +204,12 @@ export default function OrganizerHomePage() {
                           <FormItem>
                             <FormLabel>Event Description</FormLabel>
                             <FormControl>
-                              <Textarea placeholder="Brief description of your event..." className="min-h-[60px]" {...field} />
+                              <Textarea 
+                                placeholder="Brief description of your event..." 
+                                className="min-h-[60px]" 
+                                {...field} 
+                                value={field.value || ""}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
