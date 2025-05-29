@@ -105,6 +105,8 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
   if (!req.session.user) {
     return res.status(401).json({ message: "Authentication required" });
   }
+  // Set the user on the request object for route handlers to access
+  req.user = req.session.user;
   next();
 };
 
