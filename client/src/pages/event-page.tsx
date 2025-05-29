@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map, Edit, Trash2 } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map, Edit, Trash2, Mail, MessageCircle, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import CarpoolList from "@/components/carpool-list";
 import CalendarIntegration from "@/components/calendar-integration";
@@ -38,15 +39,35 @@ export default function EventPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const shareEvent = () => {
-    if (navigator.share && event) {
-      navigator.share({
+  const shareViaEmail = () => {
+    if (!event) return;
+    const subject = encodeURIComponent(`Join carpools for ${event.name}`);
+    const body = encodeURIComponent(`Hi! I'd like to invite you to join carpools for ${event.name}.\n\n📅 ${formatDate(event.eventDate)}\n⏰ ${formatTime(event.targetArrivalTime)}\n📍 ${event.eventAddress}, ${event.eventCity}\n\nView the event and find rides here: ${window.location.href}`);
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+  };
+
+  const shareViaWhatsApp = () => {
+    if (!event) return;
+    const text = encodeURIComponent(`Join carpools for ${event.name}\n\n📅 ${formatDate(event.eventDate)}\n⏰ ${formatTime(event.targetArrivalTime)}\n📍 ${event.eventAddress}, ${event.eventCity}\n\n${window.location.href}`);
+    window.open(`https://wa.me/?text=${text}`);
+  };
+
+  const shareViaSMS = () => {
+    if (!event) return;
+    const text = encodeURIComponent(`Join carpools for ${event.name}\n\n📅 ${formatDate(event.eventDate)}\n⏰ ${formatTime(event.targetArrivalTime)}\n📍 ${event.eventAddress}, ${event.eventCity}\n\n${window.location.href}`);
+    window.open(`sms:?body=${text}`);
+  };
+
+  const shareNative = async () => {
+    if (!event || !navigator.share) return;
+    try {
+      await navigator.share({
         title: event.name,
         text: `Join carpools for ${event.name}`,
         url: window.location.href,
       });
-    } else {
-      copyEventUrl();
+    } catch (error) {
+      // User cancelled the share
     }
   };
 
@@ -137,7 +158,7 @@ export default function EventPage() {
               </TabsList>
 
               <TabsContent value="details">
-                <div className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                   {/* Date & Time */}
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -194,6 +215,27 @@ export default function EventPage() {
 
                 <Separator className="my-4 sm:my-6" />
                 
+                {/* Event URL Display */}
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-600 mb-2">Event URL:</p>
+                  <div className="flex gap-2">
+                    <input 
+                      readOnly 
+                      value={window.location.href} 
+                      className="flex-1 text-xs bg-white border border-gray-200 rounded px-2 py-1 font-mono" 
+                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={copyEventUrl}
+                      className="shrink-0"
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      {copied ? "Copied!" : "Copy"}
+                    </Button>
+                  </div>
+                </div>
+
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <CalendarIntegration 
@@ -208,24 +250,39 @@ export default function EventPage() {
                     buttonVariant="outline"
                     size="sm"
                   />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={shareEvent}
-                    className="w-full sm:w-auto"
-                  >
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share Event
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={copyEventUrl}
-                    className="w-full sm:w-auto"
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    {copied ? "Copied!" : "Copy Link"}
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                      >
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share Event
+                        <ChevronDown className="h-4 w-4 ml-2" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuItem onClick={shareViaEmail}>
+                        <Mail className="h-4 w-4 mr-2 text-blue-600" />
+                        Share via Email
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={shareViaWhatsApp}>
+                        <MessageCircle className="h-4 w-4 mr-2 text-green-600" />
+                        Share via WhatsApp
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={shareViaSMS}>
+                        <MessageCircle className="h-4 w-4 mr-2 text-gray-600" />
+                        Share via SMS
+                      </DropdownMenuItem>
+                      {navigator.share && (
+                        <DropdownMenuItem onClick={shareNative}>
+                          <Share2 className="h-4 w-4 mr-2 text-purple-600" />
+                          Share (Native)
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </TabsContent>
 
@@ -272,42 +329,42 @@ export default function EventPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {/* Find a Ride */}
-              <div className="space-y-3">
+              <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                  <h3 className="font-semibold text-base sm:text-lg">Find a Ride</h3>
+                  <Users className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-semibold text-lg">Find a Ride</h3>
                 </div>
-                <p className="text-gray-600 text-xs sm:text-sm">
+                <p className="text-gray-600 text-sm">
                   Browse rides offered by other parents and request spots for your child
                 </p>
                 <Link href={`/join-carpool?partyId=${event.id}`}>
                   <Button 
                     size="default" 
-                    className="w-full bg-blue-600 hover:bg-blue-700 h-11 sm:h-12"
+                    className="w-full bg-blue-600 hover:bg-blue-700"
                   >
-                    <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                    <Users className="h-4 w-4 mr-2" />
                     Browse Available Rides
                   </Button>
                 </Link>
               </div>
 
               {/* Offer a Ride */}
-              <div className="space-y-3">
+              <div className="space-y-3 p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="flex items-center space-x-2">
-                  <Car className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                  <h3 className="font-semibold text-base sm:text-lg">Offer a Ride</h3>
+                  <Car className="h-5 w-5 text-green-600" />
+                  <h3 className="font-semibold text-lg">Offer a Ride</h3>
                 </div>
-                <p className="text-gray-600 text-xs sm:text-sm">
+                <p className="text-gray-600 text-sm">
                   Help other parents by offering a ride to this event. You can specify pickup/dropoff preferences and how many children you can take.
                 </p>
                 <Link href={`/?partyId=${event.id}`}>
                   <Button 
                     size="default" 
-                    className="w-full bg-green-600 hover:bg-green-700 h-11 sm:h-12"
+                    className="w-full bg-green-600 hover:bg-green-700"
                   >
-                    <Car className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                    <Car className="h-4 w-4 mr-2" />
                     Create Ride Offer
                   </Button>
                 </Link>
