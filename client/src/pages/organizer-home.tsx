@@ -4,57 +4,103 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Calendar, Share2, Users, MapPin } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { InsertPartyGroup } from "@shared/schema";
+import { InsertPartyGroup, insertPartyGroupSchema } from "@shared/schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Form validation schema matching the existing party group form
+const partyGroupFormSchema = insertPartyGroupSchema.extend({
+  name: z.string().min(3, "Event name must be at least 3 characters"),
+  eventAddress: z.string().min(5, "Event address is required"),
+  eventCity: z.string().min(2, "City is required"),
+  eventPostcode: z.string().min(3, "Postcode is required"),
+  targetArrivalTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
+  eventEndDate: z.string().min(1, "End date is required"),
+  phoneNumber: z.string().min(10, "Phone number is required")
+}).refine(
+  (data) => {
+    if (data.eventEndDate && data.eventDate) {
+      return new Date(data.eventEndDate) >= new Date(data.eventDate);
+    }
+    return true;
+  },
+  {
+    message: "End date cannot be earlier than start date",
+    path: ["eventEndDate"]
+  }
+).refine(
+  (data) => {
+    if (data.eventEndDate && data.eventDate && data.endTime && data.targetArrivalTime) {
+      if (data.eventEndDate === data.eventDate) {
+        return data.endTime > data.targetArrivalTime;
+      }
+    }
+    return true;
+  },
+  {
+    message: "End time must be after start time on the same day",
+    path: ["endTime"]
+  }
+);
+
+type PartyGroupFormValues = z.infer<typeof partyGroupFormSchema>;
 
 export default function OrganizerHomePage() {
   const [showForm, setShowForm] = useState(false);
   const [createdEvent, setCreatedEvent] = useState<any>(null);
   const { toast } = useToast();
 
+  const form = useForm<PartyGroupFormValues>({
+    resolver: zodResolver(partyGroupFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      eventAddress: "",
+      eventCity: "",
+      eventPostcode: "",
+      eventDate: "",
+      eventEndDate: "",
+      targetArrivalTime: "",
+      endTime: "",
+      createdBy: "",
+      phoneNumber: "",
+      additionalInformation: "",
+    },
+  });
+
   const createEventMutation = useMutation({
-    mutationFn: async (eventData: InsertPartyGroup) => {
+    mutationFn: async (eventData: PartyGroupFormValues) => {
       const res = await apiRequest("POST", "/api/party-groups", eventData);
       return await res.json();
     },
     onSuccess: (event) => {
       setCreatedEvent(event);
       setShowForm(false);
+      form.reset();
       toast({
         title: "Event created!",
         description: "Your shareable event URL is ready.",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Failed to create event",
-        description: "Please try again.",
+        description: error.message || "Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const eventData: InsertPartyGroup = {
-      name: formData.get("name") as string,
-      eventAddress: formData.get("eventAddress") as string,
-      eventCity: formData.get("eventCity") as string,
-      eventPostcode: formData.get("eventPostcode") as string,
-      eventDate: formData.get("eventDate") as string,
-      targetArrivalTime: formData.get("targetArrivalTime") as string,
-      endTime: formData.get("endTime") as string || undefined,
-      createdBy: formData.get("createdBy") as string,
-      phoneNumber: formData.get("phoneNumber") as string || undefined,
-      additionalInformation: formData.get("additionalInformation") as string || undefined,
-    };
-
-    createEventMutation.mutate(eventData);
+  const onSubmit = (values: PartyGroupFormValues) => {
+    createEventMutation.mutate(values);
   };
 
   const copyShareableUrl = () => {
@@ -194,7 +240,7 @@ export default function OrganizerHomePage() {
 
         {/* Event Creation Form */}
         {showForm && (
-          <Card className="max-w-2xl mx-auto">
+          <Card className="max-w-4xl mx-auto">
             <CardHeader>
               <CardTitle className="text-2xl">Create New Event</CardTitle>
               <CardDescription>
@@ -202,126 +248,228 @@ export default function OrganizerHomePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Event Name *</Label>
-                  <Input 
-                    id="name" 
-                    name="name" 
-                    placeholder="e.g., Sarah's Birthday Party"
-                    required 
-                  />
-                </div>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 gap-6">
+                    {/* Event Information */}
+                    <div className="space-y-4">
+                      <h3 className="font-medium text-gray-700 border-b border-gray-200 pb-2">Event Information</h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="eventDate">Event Date *</Label>
-                    <Input 
-                      id="eventDate" 
-                      name="eventDate" 
-                      type="date" 
-                      required 
-                    />
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Event Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Sarah's 10th Birthday Party" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Event Description</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Brief description of your event..." className="min-h-[60px]" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Date and Time */}
+                    <div className="space-y-4">
+                      <h3 className="font-medium text-gray-700 border-b border-gray-200 pb-2">Date & Time</h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="eventDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Start Date</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="eventEndDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>End Date</FormLabel>
+                              <FormControl>
+                                <Input type="date" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="targetArrivalTime"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Start Time</FormLabel>
+                              <FormControl>
+                                <Input type="time" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="endTime"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>End Time</FormLabel>
+                              <FormControl>
+                                <Input type="time" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Location */}
+                    <div className="space-y-4">
+                      <h3 className="font-medium text-gray-700 border-b border-gray-200 pb-2">Location</h3>
+
+                      <FormField
+                        control={form.control}
+                        name="eventAddress"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Address</FormLabel>
+                            <FormControl>
+                              <Input placeholder="123 Main Street" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="eventCity"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>City</FormLabel>
+                              <FormControl>
+                                <Input placeholder="London" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="eventPostcode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Postcode</FormLabel>
+                              <FormControl>
+                                <Input placeholder="SW1A 1AA" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Organizer Information */}
+                    <div className="space-y-4">
+                      <h3 className="font-medium text-gray-700 border-b border-gray-200 pb-2">Organizer Information</h3>
+
+                      <FormField
+                        control={form.control}
+                        name="createdBy"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Your Name or Email</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Jane Smith or jane@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="phoneNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Your Phone Number</FormLabel>
+                            <FormControl>
+                              <Input placeholder="+44 7123 456789" type="tel" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="additionalInformation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Additional Notes for Parents</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Any additional information parents should know..." 
+                                className="min-h-[100px]" 
+                                {...field} 
+                                value={field.value || ''}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="targetArrivalTime">Start Time *</Label>
-                    <Input 
-                      id="targetArrivalTime" 
-                      name="targetArrivalTime" 
-                      type="time" 
-                      required 
-                    />
+
+                  <div className="flex space-x-3 pt-4">
+                    <Button 
+                      type="button" 
+                      onClick={() => setShowForm(false)} 
+                      variant="outline" 
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={createEventMutation.isPending}
+                      className="flex-1"
+                    >
+                      {createEventMutation.isPending ? "Creating..." : "Create Event"}
+                    </Button>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="endTime">End Time (Optional)</Label>
-                  <Input 
-                    id="endTime" 
-                    name="endTime" 
-                    type="time" 
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="eventAddress">Event Address *</Label>
-                  <Input 
-                    id="eventAddress" 
-                    name="eventAddress" 
-                    placeholder="123 Main Street"
-                    required 
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="eventCity">City *</Label>
-                    <Input 
-                      id="eventCity" 
-                      name="eventCity" 
-                      placeholder="London"
-                      required 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="eventPostcode">Postcode *</Label>
-                    <Input 
-                      id="eventPostcode" 
-                      name="eventPostcode" 
-                      placeholder="SW1A 1AA"
-                      required 
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="createdBy">Your Name/Email *</Label>
-                  <Input 
-                    id="createdBy" 
-                    name="createdBy" 
-                    placeholder="Jane Smith or jane@example.com"
-                    required 
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Your Phone Number (Optional)</Label>
-                  <Input 
-                    id="phoneNumber" 
-                    name="phoneNumber" 
-                    placeholder="+44 7123 456789"
-                    type="tel"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="additionalInformation">Additional Information (Optional)</Label>
-                  <Textarea 
-                    id="additionalInformation" 
-                    name="additionalInformation" 
-                    placeholder="Any special instructions or details for parents..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="flex space-x-3 pt-4">
-                  <Button 
-                    type="button" 
-                    onClick={() => setShowForm(false)} 
-                    variant="outline" 
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={createEventMutation.isPending}
-                    className="flex-1"
-                  >
-                    {createEventMutation.isPending ? "Creating..." : "Create Event"}
-                  </Button>
-                </div>
-              </form>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         )}
