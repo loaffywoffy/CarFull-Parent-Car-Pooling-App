@@ -287,37 +287,12 @@ export default function EventPage() {
               </TabsContent>
 
               <TabsContent value="location">
-                <div className="space-y-4">
-                  <div className="h-64 rounded-lg overflow-hidden border border-gray-200">
-                    <EventMap 
-                      address={event.eventAddress}
-                      city={event.eventCity}
-                      postcode={event.eventPostcode}
-                      eventName={event.name}
-                    />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-gray-600 font-medium text-sm mb-2">{event.eventAddress}, {event.eventCity} {event.eventPostcode}</p>
-                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="w-full sm:w-auto"
-                        onClick={() => window.open(`https://maps.google.com/maps?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
-                      >
-                        Open in Google Maps
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="w-full sm:w-auto"
-                        onClick={() => window.open(`https://maps.apple.com/?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`, '_blank')}
-                      >
-                        Open in Apple Maps
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                <EventMap 
+                  address={event.eventAddress}
+                  city={event.eventCity}
+                  postcode={event.eventPostcode}
+                  eventName={event.name}
+                />
               </TabsContent>
             </Tabs>
           </CardContent>
