@@ -33,12 +33,18 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
         const mapboxgl = await import('mapbox-gl');
         mapboxgl.default.accessToken = mapboxToken;
 
-        const geocodeResponse = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddress)}.json?access_token=${mapboxToken}&country=GB&limit=1`
-        );
+        const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddress)}.json?access_token=${mapboxToken}&country=GB&limit=1`;
+        
+        const geocodeResponse = await fetch(geocodeUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         
         if (!geocodeResponse.ok) {
-          throw new Error(`Geocoding failed`);
+          console.error('Geocoding failed:', geocodeResponse.status, geocodeResponse.statusText);
+          throw new Error(`Geocoding failed: ${geocodeResponse.status}`);
         }
 
         const geocodeData = await geocodeResponse.json();
@@ -135,9 +141,14 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
 
   return (
     <div className="space-y-4">
-      {/* Interactive Map */}
+      {/* Map Container */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div ref={mapRef} style={{ width: '100%', height: '300px' }} />
+        <div ref={mapRef} style={{ width: '100%', height: '300px' }} className="bg-gray-100 flex items-center justify-center">
+          <div className="text-center">
+            <MapPin className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+            <p className="text-gray-600 font-medium">Loading map...</p>
+          </div>
+        </div>
       </div>
 
       {/* Location Info */}
@@ -174,7 +185,7 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
             </a>
           </Button>
           <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
-            <a href={`https://waze.com/ul?q=${encodeURIComponent(fullAddress)}`} target="_blank" rel="noopener noreferrer">
+            <a href={`https://maps.apple.com/?q=${encodeURIComponent(fullAddress)}`} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-3 w-3" />
               Waze
             </a>
