@@ -35,10 +35,11 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
           <span className="text-sm font-medium text-gray-700">Get Directions</span>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <Button
             variant="outline"
-            className="flex items-center gap-2 h-auto p-4 justify-start"
+            size="sm"
+            className="flex items-center gap-1"
             asChild
           >
             <a
@@ -46,19 +47,15 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
               target="_blank"
               rel="noopener noreferrer"
             >
-              <div className="flex items-center gap-2">
-                <ExternalLink className="h-4 w-4" />
-                <div className="text-left">
-                  <div className="font-medium">Google Maps</div>
-                  <div className="text-xs text-gray-600">Get directions & traffic</div>
-                </div>
-              </div>
+              <ExternalLink className="h-3 w-3" />
+              Google Maps
             </a>
           </Button>
           
           <Button
             variant="outline"
-            className="flex items-center gap-2 h-auto p-4 justify-start"
+            size="sm"
+            className="flex items-center gap-1"
             asChild
           >
             <a
@@ -66,36 +63,27 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
               target="_blank"
               rel="noopener noreferrer"
             >
-              <div className="flex items-center gap-2">
-                <ExternalLink className="h-4 w-4" />
-                <div className="text-left">
-                  <div className="font-medium">Apple Maps</div>
-                  <div className="text-xs text-gray-600">Navigate on iPhone/iPad</div>
-                </div>
-              </div>
+              <ExternalLink className="h-3 w-3" />
+              Apple Maps
+            </a>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+            asChild
+          >
+            <a
+              href={`https://waze.com/ul?q=${encodeURIComponent(fullAddress)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Waze
             </a>
           </Button>
         </div>
-
-        <Button
-          variant="outline"
-          className="w-full flex items-center gap-2 h-auto p-4 justify-start"
-          asChild
-        >
-          <a
-            href={`https://waze.com/ul?q=${encodeURIComponent(fullAddress)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <div className="flex items-center gap-2">
-              <ExternalLink className="h-4 w-4" />
-              <div className="text-left">
-                <div className="font-medium">Waze</div>
-                <div className="text-xs text-gray-600">Real-time traffic & routes</div>
-              </div>
-            </div>
-          </a>
-        </Button>
       </div>
     </div>
   );
