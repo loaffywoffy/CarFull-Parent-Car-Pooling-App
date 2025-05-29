@@ -16,8 +16,8 @@ import { rateLimitService } from "./services/rate-limiter";
 import { phoneValidator } from "./services/phone-validator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Enable auth system for multi-tenant support
-  setupAuth(app);
+  // Disable auth system - use simple access codes instead
+  // setupAuth(app);
   
   // SMS Verification endpoints
   app.post("/api/verification/send", async (req, res) => {
@@ -225,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
   
   // API routes for party groups
-  app.post("/api/party-groups", isAuthenticated, async (req, res) => {
+  app.post("/api/party-groups", async (req, res) => {
     try {
       // Validate phone number first before processing the request
       const { phoneNumber } = req.body;
@@ -247,13 +247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: errorMessage });
       }
       
-      // Add the authenticated user's ID as the creator
-      const partyGroupData = {
-        ...validationResult.data,
-        createdBy: req.user.id
-      };
-      
-      const newPartyGroup = await storage.createPartyGroup(partyGroupData);
+      const newPartyGroup = await storage.createPartyGroup(validationResult.data);
       res.status(201).json(newPartyGroup);
     } catch (error) {
       console.error("Error creating party group:", error);
@@ -261,10 +255,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/party-groups", isAuthenticated, async (req, res) => {
+  app.get("/api/party-groups", async (req, res) => {
     try {
-      // Only get party groups the authenticated user owns or is invited to
-      const partyGroups = await storage.getPartyGroupsForUser(req.user.id);
+      const partyGroups = await storage.getPartyGroups();
       res.json(partyGroups);
     } catch (error) {
       console.error("Error fetching party groups:", error);

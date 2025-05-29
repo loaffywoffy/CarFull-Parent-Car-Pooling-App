@@ -27,20 +27,13 @@ export interface IStorage {
   getUserByPhoneNumber(phoneNumber: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
-  // Party group operations - now user-based
+  // Party group operations
   createPartyGroup(partyGroup: InsertPartyGroup): Promise<PartyGroup>;
-  getPartyGroupsForUser(userId: number): Promise<PartyGroup[]>; // Only events user owns or is invited to
-  getPartyGroupById(id: number, userId: number): Promise<PartyGroup | undefined>; // Check user access
+  getPartyGroups(): Promise<PartyGroup[]>;
+  getPartyGroupById(id: number): Promise<PartyGroup | undefined>;
   getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined>;
-  updatePartyGroup(id: number, partyGroup: Partial<InsertPartyGroup>, userId: number): Promise<PartyGroup | undefined>;
-  deletePartyGroup(id: number, userId: number): Promise<boolean>; // Only owner can delete
-  
-  // Event invitation operations
-  createEventInvitation(invitation: InsertEventInvitation): Promise<EventInvitation>;
-  getEventInvitationsByUserId(userId: number): Promise<EventInvitation[]>;
-  getEventInvitationsByPartyGroupId(partyGroupId: number): Promise<EventInvitation[]>;
-  updateEventInvitationStatus(id: number, status: string): Promise<EventInvitation | undefined>;
-  deleteEventInvitation(id: number): Promise<boolean>;
+  updatePartyGroup(id: number, partyGroup: Partial<InsertPartyGroup>): Promise<PartyGroup | undefined>;
+  deletePartyGroup(id: number): Promise<boolean>;
   
   // Carpool operations - user-based access control
   createCarpool(carpool: InsertCarpool): Promise<Carpool>;

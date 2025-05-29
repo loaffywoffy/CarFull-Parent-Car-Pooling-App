@@ -23,7 +23,7 @@ export const partyGroups = pgTable("party_groups", {
   eventEndDate: text("party_end_date"), // Optional end date for multi-day events
   targetArrivalTime: text("target_arrival_time").notNull(), // Start time
   endTime: text("end_time"), // Optional end time
-  createdBy: integer("created_by").notNull(), // Foreign key to users table
+  createdBy: text("created_by").notNull(), // Admin name or email
   phoneNumber: text("phone_number"), // Admin phone number for verification
   accessCode: text("access_code"), // Optional access code for parents to join
   additionalInformation: text("additional_information"),
