@@ -320,7 +320,7 @@ export default function EventPage() {
                 <p className="text-gray-600 text-sm mb-4">
                   Browse rides offered by other parents and request spots for your child
                 </p>
-                <Link href={`/join-carpool?partyId=${event.id}`}>
+                <Link href={`/join-carpool?partyGroupId=${event.id}`}>
                   <Button 
                     size="default" 
                     className="w-full bg-blue-600 hover:bg-blue-700"
@@ -340,7 +340,7 @@ export default function EventPage() {
                 <p className="text-gray-600 text-sm mb-4">
                   Help other parents by offering rides and sharing transportation costs
                 </p>
-                <Link href={`/?partyId=${event.id}`}>
+                <Link href={`/?partyGroupId=${event.id}`}>
                   <Button 
                     size="default" 
                     className="w-full bg-green-600 hover:bg-green-700"
