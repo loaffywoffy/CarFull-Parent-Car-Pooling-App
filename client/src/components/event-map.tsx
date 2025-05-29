@@ -82,7 +82,10 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
       }
     };
 
-    initializeMap();
+    initializeMap().catch((error) => {
+      console.error('Failed to initialize map:', error);
+      setMapError(true);
+    });
   }, [fullAddress, eventName]);
 
   if (mapError) {
