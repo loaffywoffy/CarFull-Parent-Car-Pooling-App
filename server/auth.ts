@@ -85,13 +85,6 @@ export const setupAuth = (app: Express) => {
   });
 
   // Current user endpoint
-  app.get("/api/auth/user", (req, res) => {
-    if (!req.session.user) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-    res.status(200).json(req.session.user);
-  });
-
   app.get("/api/auth/me", (req, res) => {
     if (!req.session.user) {
       return res.status(401).json({ message: "Not authenticated" });
@@ -105,8 +98,6 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
   if (!req.session.user) {
     return res.status(401).json({ message: "Authentication required" });
   }
-  // Set the user on the request object for route handlers to access
-  req.user = req.session.user;
   next();
 };
 

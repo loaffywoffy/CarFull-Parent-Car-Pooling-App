@@ -13,10 +13,7 @@ import {
   type InsertCarpoolRequest,
   calendarEvents,
   type CalendarEvent,
-  type InsertCalendarEvent,
-  eventInvitations,
-  type EventInvitation,
-  type InsertEventInvitation
+  type InsertCalendarEvent
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
@@ -35,10 +32,11 @@ export interface IStorage {
   updatePartyGroup(id: number, partyGroup: Partial<InsertPartyGroup>): Promise<PartyGroup | undefined>;
   deletePartyGroup(id: number): Promise<boolean>;
   
-  // Carpool operations - user-based access control
+  // Carpool operations
   createCarpool(carpool: InsertCarpool): Promise<Carpool>;
-  getCarpoolsByPartyGroupId(partyGroupId: number, userId: number): Promise<Carpool[]>; // Check user access to party group
-  getCarpoolById(id: number, userId: number): Promise<Carpool | undefined>;
+  getCarpools(): Promise<Carpool[]>;
+  getCarpoolsByPartyGroupId(partyGroupId: number): Promise<Carpool[]>;
+  getCarpoolById(id: number): Promise<Carpool | undefined>;
   updateCarpool(id: number, carpool: Partial<InsertCarpool>): Promise<Carpool | undefined>;
   deleteCarpool(id: number): Promise<boolean>;
   
@@ -105,51 +103,13 @@ export class DatabaseStorage implements IStorage {
     return partyGroup;
   }
   
-  // New method: only return party groups the user owns or is invited to
-  async getPartyGroupsForUser(userId: number): Promise<PartyGroup[]> {
-    // Get party groups the user created
-    const ownedGroups = await db.select().from(partyGroups).where(eq(partyGroups.createdBy, userId));
-    
-    // Get party groups the user is invited to (accepted invitations only)
-    const invitedGroups = await db
-      .select({ partyGroup: partyGroups })
-      .from(eventInvitations)
-      .innerJoin(partyGroups, eq(eventInvitations.partyGroupId, partyGroups.id))
-      .where(and(
-        eq(eventInvitations.userId, userId),
-        eq(eventInvitations.status, 'accepted')
-      ));
-    
-    // Combine and deduplicate
-    const allGroups = [...ownedGroups, ...invitedGroups.map(g => g.partyGroup)];
-    const uniqueGroups = allGroups.filter((group, index, self) => 
-      index === self.findIndex(g => g.id === group.id)
-    );
-    
-    return uniqueGroups;
+  async getPartyGroups(): Promise<PartyGroup[]> {
+    return db.select().from(partyGroups);
   }
   
-  async getPartyGroupById(id: number, userId: number): Promise<PartyGroup | undefined> {
+  async getPartyGroupById(id: number): Promise<PartyGroup | undefined> {
     const [partyGroup] = await db.select().from(partyGroups).where(eq(partyGroups.id, id));
-    
-    if (!partyGroup) return undefined;
-    
-    // Check if user owns this party group
-    if (partyGroup.createdBy === userId) {
-      return partyGroup;
-    }
-    
-    // Check if user is invited to this party group
-    const [invitation] = await db
-      .select()
-      .from(eventInvitations)
-      .where(and(
-        eq(eventInvitations.partyGroupId, id),
-        eq(eventInvitations.userId, userId),
-        eq(eventInvitations.status, 'accepted')
-      ));
-    
-    return invitation ? partyGroup : undefined;
+    return partyGroup || undefined;
   }
   
   async getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined> {
@@ -157,12 +117,7 @@ export class DatabaseStorage implements IStorage {
     return partyGroup || undefined;
   }
   
-  async updatePartyGroup(id: number, partyGroupUpdate: Partial<InsertPartyGroup>, userId: number): Promise<PartyGroup | undefined> {
-    // First check if user owns this party group
-    const existingGroup = await db.select().from(partyGroups).where(eq(partyGroups.id, id));
-    if (!existingGroup.length || existingGroup[0].createdBy !== userId) {
-      return undefined; // User doesn't own this party group
-    }
+  async updatePartyGroup(id: number, partyGroupUpdate: Partial<InsertPartyGroup>): Promise<PartyGroup | undefined> {
     // Process updates with proper null handling
     const processedUpdate: Partial<PartyGroup> = { id };
     
@@ -191,15 +146,9 @@ export class DatabaseStorage implements IStorage {
     return updatedPartyGroup || undefined;
   }
   
-  async deletePartyGroup(id: number, userId: number): Promise<boolean> {
-    // First check if user owns this party group
-    const existingGroup = await db.select().from(partyGroups).where(eq(partyGroups.id, id));
-    if (!existingGroup.length || existingGroup[0].createdBy !== userId) {
-      return false; // User doesn't own this party group
-    }
-    
+  async deletePartyGroup(id: number): Promise<boolean> {
     // First, delete all related carpools
-    const relatedCarpools = await this.getCarpoolsByPartyGroupId(id, userId);
+    const relatedCarpools = await this.getCarpoolsByPartyGroupId(id);
     
     for (const carpool of relatedCarpools) {
       // Delete all carpool requests for this carpool
@@ -279,23 +228,13 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(carpools);
   }
   
-  async getCarpoolsByPartyGroupId(partyGroupId: number, userId: number): Promise<Carpool[]> {
-    // First verify user has access to this party group
-    const hasAccess = await this.getPartyGroupById(partyGroupId, userId);
-    if (!hasAccess) {
-      return []; // User doesn't have access to this party group
-    }
-    
+  async getCarpoolsByPartyGroupId(partyGroupId: number): Promise<Carpool[]> {
     return db.select().from(carpools).where(eq(carpools.partyGroupId, partyGroupId));
   }
   
-  async getCarpoolById(id: number, userId: number): Promise<Carpool | undefined> {
+  async getCarpoolById(id: number): Promise<Carpool | undefined> {
     const [carpool] = await db.select().from(carpools).where(eq(carpools.id, id));
-    if (!carpool) return undefined;
-    
-    // Verify user has access to the party group this carpool belongs to
-    const hasAccess = await this.getPartyGroupById(carpool.partyGroupId, userId);
-    return hasAccess ? carpool : undefined;
+    return carpool || undefined;
   }
 
   async updateCarpool(id: number, carpoolUpdate: Partial<InsertCarpool>): Promise<Carpool | undefined> {
@@ -521,43 +460,6 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return !!deletedEvent;
-  }
-
-  // Event invitation methods for multi-tenant access control
-  async createEventInvitation(insertInvitation: InsertEventInvitation): Promise<EventInvitation> {
-    const [invitation] = await db
-      .insert(eventInvitations)
-      .values(insertInvitation)
-      .returning();
-    
-    return invitation;
-  }
-
-  async getEventInvitationsByUserId(userId: number): Promise<EventInvitation[]> {
-    return db.select().from(eventInvitations).where(eq(eventInvitations.userId, userId));
-  }
-
-  async getEventInvitationsByPartyGroupId(partyGroupId: number): Promise<EventInvitation[]> {
-    return db.select().from(eventInvitations).where(eq(eventInvitations.partyGroupId, partyGroupId));
-  }
-
-  async updateEventInvitationStatus(id: number, status: string): Promise<EventInvitation | undefined> {
-    const [updatedInvitation] = await db
-      .update(eventInvitations)
-      .set({ status, respondedAt: new Date() })
-      .where(eq(eventInvitations.id, id))
-      .returning();
-    
-    return updatedInvitation || undefined;
-  }
-
-  async deleteEventInvitation(id: number): Promise<boolean> {
-    const [deletedInvitation] = await db
-      .delete(eventInvitations)
-      .where(eq(eventInvitations.id, id))
-      .returning();
-    
-    return !!deletedInvitation;
   }
 
   // Verification methods (using in-memory storage for simplicity)

@@ -1,116 +1,77 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import LoginForm from "@/components/login-form";
 import { useAuth } from "@/hooks/use-auth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AuthPage() {
+  const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
-  const [formData, setFormData] = useState({
-    name: "",
-    phoneNumber: "",
-    email: ""
-  });
-  const { loginMutation } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    loginMutation.mutate({
-      name: formData.name,
-      phoneNumber: formData.phoneNumber,
-      email: formData.email || undefined
-    }, {
-      onSuccess: () => {
-        setLocation("/");
-      }
-    });
-  };
+  // If user is logged in, redirect to home
+  useEffect(() => {
+    if (user && !isLoading) {
+      setLocation("/");
+    }
+  }, [user, isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl w-full mx-4">
-        {/* Login Form */}
-        <Card className="w-full max-w-md mx-auto">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Create Your Account</CardTitle>
-            <CardDescription className="text-center">
-              Sign up to start organizing carpool events
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input
-                  id="phoneNumber"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email (Optional)</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                />
-              </div>
-              
-              <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-                {loginMutation.isPending ? "Creating account..." : "Create Account"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+    <div className="bg-neutral-100 min-h-screen">
+      <div className="container mx-auto p-4">
+        <div className="grid md:grid-cols-2 gap-10 mt-10 max-w-5xl mx-auto">
+          {/* Form Column */}
+          <div className="flex items-center">
+            <div className="w-full">
+              <LoginForm onSuccess={() => setLocation("/")} />
+            </div>
+          </div>
 
-        {/* Hero Section */}
-        <div className="flex flex-col justify-center text-center lg:text-left">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            Carpool Coordination Made Simple
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Organize safe and efficient transportation for children's events with our secure platform.
-          </p>
-          <div className="space-y-4">
-            <div className="flex items-center justify-center lg:justify-start space-x-3">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">✓</span>
-              </div>
-              <span className="text-gray-700">Secure user-based event access</span>
-            </div>
-            <div className="flex items-center justify-center lg:justify-start space-x-3">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">✓</span>
-              </div>
-              <span className="text-gray-700">Smart route planning with MapBox</span>
-            </div>
-            <div className="flex items-center justify-center lg:justify-start space-x-3">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">✓</span>
-              </div>
-              <span className="text-gray-700">Event invitation system</span>
-            </div>
+          {/* Hero Section */}
+          <div className="p-6 flex flex-col justify-center">
+            <Card className="border-none shadow-lg bg-gradient-to-br from-primary/10 to-primary/5">
+              <CardHeader>
+                <CardTitle className="text-3xl font-bold text-primary">Welcome to KidPool</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-lg">
+                  The simplest way to coordinate carpools for kids' events.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-2">
+                    <div className="rounded-full bg-primary/20 p-1 mt-0.5">
+                      <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p>Create or join event groups with a simple code</p>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <div className="rounded-full bg-primary/20 p-1 mt-0.5">
+                      <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p>Offer rides or request spots in available carpools</p>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <div className="rounded-full bg-primary/20 p-1 mt-0.5">
+                      <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p>Manage pickup and dropoff times with our calendar tools</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

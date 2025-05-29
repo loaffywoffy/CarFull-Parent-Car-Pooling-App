@@ -16,7 +16,7 @@ import { rateLimitService } from "./services/rate-limiter";
 import { phoneValidator } from "./services/phone-validator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Disable auth system - use simple access codes instead
+  // Auth system is disabled for MVP
   // setupAuth(app);
   
   // SMS Verification endpoints
@@ -265,15 +265,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/party-groups/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/party-groups/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid party group ID" });
       }
       
-      // Only get party group if the authenticated user has access to it
-      const partyGroup = await storage.getPartyGroupById(id, req.user!.id);
+      const partyGroup = await storage.getPartyGroupById(id);
       if (!partyGroup) {
         return res.status(404).json({ message: "Party group not found" });
       }
