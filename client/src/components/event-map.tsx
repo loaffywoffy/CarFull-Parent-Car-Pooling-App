@@ -45,7 +45,9 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
         );
         
         if (!geocodeResponse.ok) {
-          throw new Error('Geocoding failed');
+          console.error('Geocoding response status:', geocodeResponse.status);
+          console.error('Geocoding response text:', await geocodeResponse.text());
+          throw new Error(`Geocoding failed with status: ${geocodeResponse.status}`);
         }
 
         const geocodeData = await geocodeResponse.json();
@@ -106,23 +108,13 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
 
   if (mapError) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <MapPin className="h-5 w-5 mr-2" />
-            Event Location
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-gray-50 p-6 rounded-lg text-center">
-            <MapPin className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-            <p className="text-gray-600 font-medium">{fullAddress}</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Map unavailable - view in Google Maps or Apple Maps
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-gray-50 p-6 rounded-lg text-center">
+        <MapPin className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+        <p className="text-gray-600 font-medium">{fullAddress}</p>
+        <p className="text-sm text-gray-500 mt-2">
+          Interactive map temporarily unavailable
+        </p>
+      </div>
     );
   }
 
