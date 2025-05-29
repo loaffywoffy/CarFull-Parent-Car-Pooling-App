@@ -10,7 +10,7 @@ export const users = pgTable("users", {
   email: text("email"),
 });
 
-// Event Group schema for events created by an admin
+// Event Group schema for events created by authenticated users
 export const partyGroups = pgTable("party_groups", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -23,10 +23,21 @@ export const partyGroups = pgTable("party_groups", {
   eventEndDate: text("party_end_date"), // Optional end date for multi-day events
   targetArrivalTime: text("target_arrival_time").notNull(), // Start time
   endTime: text("end_time"), // Optional end time
-  createdBy: text("created_by").notNull(), // Admin name or email
+  createdBy: integer("created_by").notNull(), // Foreign key to users table
   phoneNumber: text("phone_number"), // Admin phone number for verification
   accessCode: text("access_code"), // Optional access code for parents to join
   additionalInformation: text("additional_information"),
+});
+
+// Event invitations table - controls who can see which events
+export const eventInvitations = pgTable("event_invitations", {
+  id: serial("id").primaryKey(),
+  partyGroupId: integer("party_group_id").notNull(), // Reference to party group
+  userId: integer("user_id").notNull(), // Reference to invited user
+  invitedBy: integer("invited_by").notNull(), // Reference to user who sent invitation
+  status: text("status").default("pending"), // pending, accepted, declined
+  invitedAt: timestamp("invited_at").defaultNow(),
+  respondedAt: timestamp("responded_at"),
 });
 
 // Carpool schema for carpool offers
@@ -178,6 +189,12 @@ export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit
   id: true,
 });
 
+export const insertEventInvitationSchema = createInsertSchema(eventInvitations).omit({
+  id: true,
+  invitedAt: true,
+  respondedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -193,3 +210,6 @@ export type CarpoolRequest = typeof carpoolRequests.$inferSelect;
 
 export type InsertCalendarEvent = z.infer<typeof insertCalendarEventSchema>;
 export type CalendarEvent = typeof calendarEvents.$inferSelect;
+
+export type InsertEventInvitation = z.infer<typeof insertEventInvitationSchema>;
+export type EventInvitation = typeof eventInvitations.$inferSelect;
