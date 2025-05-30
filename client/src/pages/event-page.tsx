@@ -372,7 +372,7 @@ export default function EventPage() {
                 <p className="text-gray-600 text-sm mb-4">
                   Help other parents by offering rides and sharing transportation costs
                 </p>
-                <Link href={`/events/${params?.shareableUrl}/create-carpool`}>
+                <Link href={`/create-carpool?shareableUrl=${params?.shareableUrl}`}>
                   <Button 
                     size="default" 
                     className="w-full bg-green-600 hover:bg-green-700"
