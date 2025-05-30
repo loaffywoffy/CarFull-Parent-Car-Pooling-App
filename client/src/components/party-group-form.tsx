@@ -44,6 +44,7 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   eventPostcode: z.string().min(3, "Postcode is required"),
   targetArrivalTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
+  eventDate: z.string().min(1, "Event date is required"),
   eventEndDate: z.string().min(1, "End date is required"),
   phoneNumber: z.string().min(10, "Phone number is required")
 }).refine(
@@ -81,6 +82,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
   const [isLoading, setIsLoading] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<PartyGroupFormValues | null>(null);
+  const [verificationCode, setVerificationCode] = useState<string>("");
   const { toast } = useToast();
 
   const form = useForm<PartyGroupFormValues>({
@@ -102,7 +104,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
   });
 
   const partyGroupMutation = useMutation({
-    mutationFn: (values: PartyGroupFormValues) => 
+    mutationFn: (values: PartyGroupFormValues & { verificationCode: string }) => 
       createPartyGroup(values),
     onSuccess: (data) => {
       // Invalidate party groups query to refresh the list
@@ -110,12 +112,16 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
 
       toast({
         title: "Success!",
-        description: "Event created successfully.",
+        description: "Event created successfully. You will receive an SMS with event details.",
       });
       form.reset();
+      setShowVerification(false);
+      setPendingFormData(null);
+      setVerificationCode("");
       onSuccess(data.id);
     },
     onError: (error) => {
+      setIsLoading(false);
       toast({
         title: "Error",
         description: error.message || "Failed to create event. Please try again.",
