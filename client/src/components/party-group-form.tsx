@@ -153,10 +153,11 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Event Name</FormLabel>
+                    <FormLabel>Event Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Sarah's 10th Birthday Party" {...field} />
+                      <Input placeholder="e.g., Sarah's 8th Birthday Party, Tom's Graduation" {...field} />
                     </FormControl>
+                    <p className="text-sm text-gray-600">Give your event a memorable name that parents will easily recognize</p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -195,10 +196,11 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
                 name="eventAddress"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Event Address</FormLabel>
+                    <FormLabel>Event Address *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Street Address" {...field} />
+                      <Input placeholder="123 Party Street or venue name" {...field} />
                     </FormControl>
+                    <p className="text-sm text-gray-600">Include street number and name, or the venue name if it's well-known</p>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -179,6 +179,7 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
                 <FormControl>
                   <Input placeholder="Enter child's name" {...field} className="w-full" /> {/* Added w-full */}
                 </FormControl>
+                <p className="text-sm text-gray-600">The driver will need to know which child they're picking up</p>
                 <FormMessage />
               </FormItem>
             )}
@@ -252,6 +253,26 @@ export default function CarpoolRequestForm({ onSuccess, selectedCarpoolId }: Car
               <FormControl>
                 <Input placeholder="Any special requirements or notes" {...field} className="w-full" /> {/* Added w-full */}
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="specialRequirements"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Special Requirements (Optional)</FormLabel>
+              <FormControl>
+                <textarea
+                  placeholder="e.g., car seat needed, food allergies, pickup instructions"
+                  className="resize-none w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  rows={3}
+                  {...field}
+                />
+              </FormControl>
+              <p className="text-sm text-gray-600">Let the driver know about any special needs, car seat requirements, or pickup instructions</p>
               <FormMessage />
             </FormItem>
           )}
