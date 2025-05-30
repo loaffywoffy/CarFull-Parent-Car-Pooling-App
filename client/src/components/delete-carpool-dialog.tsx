@@ -24,14 +24,13 @@ export default function DeleteCarpoolDialog({
   onDeleted 
 }: DeleteCarpoolDialogProps) {
   const [step, setStep] = useState<'confirm' | 'verify'>('confirm');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const { toast } = useToast();
 
   const sendVerificationMutation = useMutation({
     mutationFn: () => 
       apiRequest("POST", "/api/verification/send", {
-        phoneNumber,
+        phoneNumber: carpoolPhone,
         action: 'delete_carpool'
       }),
     onSuccess: () => {
@@ -53,7 +52,7 @@ export default function DeleteCarpoolDialog({
   const deleteCarpoolMutation = useMutation({
     mutationFn: () => 
       apiRequest("DELETE", `/api/carpools/${carpoolId}`, {
-        phoneNumber,
+        phoneNumber: carpoolPhone,
         verificationCode
       }),
     onSuccess: () => {
@@ -77,20 +76,11 @@ export default function DeleteCarpoolDialog({
 
   const handleClose = () => {
     setStep('confirm');
-    setPhoneNumber('');
     setVerificationCode('');
     onClose();
   };
 
   const handleConfirm = () => {
-    if (!phoneNumber) {
-      toast({
-        title: "Phone number required",
-        description: "Please enter your phone number to verify deletion.",
-        variant: "destructive",
-      });
-      return;
-    }
     sendVerificationMutation.mutate();
   };
 
@@ -127,16 +117,15 @@ export default function DeleteCarpoolDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Your phone number</Label>
+              <Label>Phone number for verification</Label>
               <Input
-                id="phone"
                 type="tel"
-                placeholder="Enter your phone number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                value={carpoolPhone}
+                readOnly
+                className="bg-gray-50"
               />
               <p className="text-xs text-gray-600">
-                We'll send a verification code to confirm this deletion
+                We'll send a verification code to this number to confirm deletion
               </p>
             </div>
           </div>
@@ -146,7 +135,7 @@ export default function DeleteCarpoolDialog({
           <div className="space-y-4">
             <div className="text-center">
               <p className="text-sm text-gray-600 mb-4">
-                We've sent a verification code to <strong>{phoneNumber}</strong>
+                We've sent a verification code to <strong>{carpoolPhone}</strong>
               </p>
               
               <div className="space-y-2">
