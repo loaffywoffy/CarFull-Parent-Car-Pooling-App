@@ -14,6 +14,8 @@ import EventMap from "@/components/event-map";
 import { useState } from "react";
 import { getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { DeleteEventDialog } from "@/components/delete-event-dialog";
+import { EditEventDialog } from "@/components/edit-event-dialog";
 import type { PartyGroup } from "@shared/schema";
 
 export default function EventPage() {
@@ -21,6 +23,8 @@ export default function EventPage() {
   const shareableUrl = params.shareableUrl;
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const { data: event, isLoading, error } = useQuery<PartyGroup>({
     queryKey: [`/api/party-groups/by-url/${shareableUrl}`],

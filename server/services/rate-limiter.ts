@@ -45,7 +45,8 @@ class RateLimitService {
   
   // Development/testing exemptions
   private readonly EXEMPTED_NUMBERS = new Set([
-    '+447961318588'  // This is the normalized format that will be checked
+    '+447961318588',  // Test number 1
+    '+447734660565'   // Test number 2
   ]);
 
   constructor() {
@@ -55,6 +56,11 @@ class RateLimitService {
 
   // Bot detection methods
   private isSuspiciousPhoneNumber(phoneNumber: string): boolean {
+    // Check if this phone number is exempted for testing first
+    if (this.EXEMPTED_NUMBERS.has(phoneNumber)) {
+      return false;
+    }
+
     // Check for patterns indicating fake/bot numbers
     for (const pattern of this.SUSPICIOUS_PATTERNS) {
       if (pattern.test(phoneNumber.replace(/^\+44/, '0'))) {
