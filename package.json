@@ -47,6 +47,7 @@
     "@types/leaflet": "^1.9.17",
     "@types/mapbox-gl": "^3.4.1",
     "axios": "^1.8.4",
+    "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",

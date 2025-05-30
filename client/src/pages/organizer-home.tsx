@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
+import confetti from "canvas-confetti";
 
 // Form validation schema matching the existing party group form
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
@@ -102,12 +103,22 @@ export default function OrganizerHomePage() {
       return await res.json();
     },
     onSuccess: (event) => {
+      // Trigger confetti animation
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      
       toast({
         title: "Event Created Successfully!",
         description: "Your event has been created and is ready for carpools. Share the link with parents.",
       });
-      // Redirect to the shareable event URL
-      setLocation(`/events/${event.shareableUrl}`);
+      
+      // Redirect to the shareable event URL after a short delay to show confetti
+      setTimeout(() => {
+        setLocation(`/events/${event.shareableUrl}`);
+      }, 1500);
     },
     onError: (error) => {
       toast({

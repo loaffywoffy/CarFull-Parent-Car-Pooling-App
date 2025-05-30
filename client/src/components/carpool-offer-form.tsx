@@ -15,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import confetti from "canvas-confetti";
 import { type CheckedState } from "@radix-ui/react-checkbox";
 import { getPartyGroupById } from "@/api/partyGroups";
 import { type PartyGroup } from "@shared/schema";
@@ -177,13 +178,24 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
       // Also invalidate the parent query in case counts need to be updated
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
 
+      // Trigger confetti animation
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
       toast({
         title: "Carpool Offer Submitted!",
         description: "Your carpool offer has been submitted successfully. Parents can now request spots.",
       });
 
       form.reset();
-      onSuccess();
+      
+      // Add small delay before calling onSuccess to show confetti
+      setTimeout(() => {
+        onSuccess();
+      }, 1000);
     },
     onError: (error) => {
       toast({
