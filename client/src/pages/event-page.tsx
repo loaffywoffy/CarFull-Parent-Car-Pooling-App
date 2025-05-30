@@ -28,6 +28,11 @@ export default function EventPage() {
     enabled: !!shareableUrl,
   });
 
+  console.log("Event page - shareableUrl:", shareableUrl);
+  console.log("Event page - isLoading:", isLoading);
+  console.log("Event page - error:", error);
+  console.log("Event page - event data:", event);
+
   const copyEventUrl = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
