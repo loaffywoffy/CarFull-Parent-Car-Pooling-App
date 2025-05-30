@@ -142,7 +142,38 @@ export default function GoogleMap({
     };
 
     initMap();
-  }, []); // Only run once on mount
+  }, []);
+
+  // Update map center and markers when eventLocation changes
+  useEffect(() => {
+    if (!map || !eventLocation) return;
+
+    console.log('Updating map with new event location:', eventLocation);
+    
+    // Update map center and zoom
+    map.setCenter({ lat: eventLocation.lat, lng: eventLocation.lng });
+    map.setZoom(15);
+
+    // Add event location marker
+    const eventMarker = new google.maps.Marker({
+      position: { lat: eventLocation.lat, lng: eventLocation.lng },
+      map: map,
+      title: eventLocation.name,
+    });
+
+    const infoWindow = new google.maps.InfoWindow({
+      content: `<div><strong>${eventLocation.name}</strong><br/>Event Location</div>`
+    });
+
+    eventMarker.addListener('click', () => {
+      infoWindow.open(map, eventMarker);
+    });
+
+    // Cleanup function to remove marker when component unmounts or location changes
+    return () => {
+      eventMarker.setMap(null);
+    };
+  }, [map, eventLocation]);
 
   if (error) {
     return (
