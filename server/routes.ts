@@ -19,6 +19,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth system is disabled for MVP
   // setupAuth(app);
   
+  // Short URL redirect endpoint
+  app.get("/s/:shortCode", async (req, res) => {
+    try {
+      const { shortCode } = req.params;
+      const partyGroup = await storage.getPartyGroupByShortCode(shortCode.toUpperCase());
+      
+      if (!partyGroup) {
+        return res.status(404).send("Event not found");
+      }
+      
+      // Redirect to the full event URL
+      res.redirect(`/events/${partyGroup.shareableUrl}`);
+    } catch (error: any) {
+      console.error("Short URL redirect error:", error);
+      res.status(500).send("Server error");
+    }
+  });
+  
   // SMS Verification endpoints
   app.post("/api/verification/send", async (req, res) => {
     try {

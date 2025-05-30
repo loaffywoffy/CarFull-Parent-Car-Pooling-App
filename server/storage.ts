@@ -30,6 +30,7 @@ export interface IStorage {
   getPartyGroupById(id: number): Promise<PartyGroup | undefined>;
   getPartyGroupByAccessCode(accessCode: string): Promise<PartyGroup | undefined>;
   getPartyGroupByShareableUrl(shareableUrl: string): Promise<PartyGroup | undefined>;
+  getPartyGroupByShortCode(shortCode: string): Promise<PartyGroup | undefined>;
   updatePartyGroup(id: number, partyGroup: Partial<InsertPartyGroup>): Promise<PartyGroup | undefined>;
   deletePartyGroup(id: number): Promise<boolean>;
   
@@ -96,13 +97,25 @@ export class DatabaseStorage implements IStorage {
     return `${baseUrl}-${randomSuffix}`;
   }
 
+  private generateShortCode(): string {
+    // Generate a 6-character alphanumeric code for SMS-friendly URLs
+    const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789'; // Exclude O, 0 for clarity
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
   async createPartyGroup(insertPartyGroup: InsertPartyGroup): Promise<PartyGroup> {
     const shareableUrl = this.generateShareableUrl(insertPartyGroup.name);
+    const shortCode = this.generateShortCode();
     
     // Ensure null values for nullable fields
     const partyGroupData = {
       ...insertPartyGroup,
       shareableUrl,
+      shortCode,
       description: insertPartyGroup.description ?? null,
       eventEndDate: insertPartyGroup.eventEndDate ?? null,
       endTime: insertPartyGroup.endTime ?? null,
@@ -133,6 +146,11 @@ export class DatabaseStorage implements IStorage {
 
   async getPartyGroupByShareableUrl(shareableUrl: string): Promise<PartyGroup | undefined> {
     const [partyGroup] = await db.select().from(partyGroups).where(eq(partyGroups.shareableUrl, shareableUrl));
+    return partyGroup || undefined;
+  }
+
+  async getPartyGroupByShortCode(shortCode: string): Promise<PartyGroup | undefined> {
+    const [partyGroup] = await db.select().from(partyGroups).where(eq(partyGroups.shortCode, shortCode));
     return partyGroup || undefined;
   }
   
