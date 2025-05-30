@@ -27,7 +27,7 @@ export const partyGroups = pgTable("party_groups", {
   phoneNumber: text("phone_number"), // Admin phone number for verification
   accessCode: text("access_code"), // Optional access code for parents to join
   shareableUrl: text("shareable_url").notNull().unique(), // Unique URL for sharing the event
-  shortCode: text("short_code").notNull().unique(), // Short code for SMS-friendly URLs
+  // shortCode: text("short_code").notNull().unique(), // Short code for SMS-friendly URLs - temporarily disabled
   additionalInformation: text("additional_information"),
 });
 
