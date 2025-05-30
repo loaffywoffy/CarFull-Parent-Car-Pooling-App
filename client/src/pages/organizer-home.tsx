@@ -7,16 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Calendar, Share2, Users, MapPin, Cake, GraduationCap, Heart, Trophy, School, PartyPopper } from "lucide-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { InsertPartyGroup, insertPartyGroupSchema, type PartyGroup } from "@shared/schema";
+import { InsertPartyGroup, insertPartyGroupSchema } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import confetti from "canvas-confetti";
-import { getPartyGroups } from "@/api/partyGroups";
 
 // Form validation schema matching the existing party group form
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
@@ -79,12 +78,6 @@ export default function OrganizerHomePage() {
   const [showForm, setShowForm] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-
-  // Query to fetch all party groups for testing URLs
-  const { data: partyGroups = [] } = useQuery<PartyGroup[]>({
-    queryKey: ['/api/party-groups'],
-    queryFn: getPartyGroups
-  });
 
   const form = useForm<PartyGroupFormValues>({
     resolver: zodResolver(partyGroupFormSchema),
@@ -205,49 +198,6 @@ export default function OrganizerHomePage() {
                 <p className="text-gray-600">Parents can offer rides or request spots without creating accounts</p>
               </CardContent>
             </Card>
-          </div>
-        )}
-
-        {/* Testing URLs Section */}
-        {!showForm && partyGroups.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Test Event URLs
-            </h3>
-            <div className="grid gap-2 text-sm">
-              {partyGroups.map((group) => (
-                <div key={group.id} className="flex items-center justify-between bg-white rounded p-2 border border-amber-100">
-                  <div>
-                    <span className="font-medium text-amber-900">{group.name}</span>
-                    <span className="text-amber-700 ml-2">({group.eventAddress || 'No address set'})</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        const url = `${window.location.origin}/${group.shareableUrl}`;
-                        navigator.clipboard.writeText(url);
-                        toast({
-                          title: "URL Copied",
-                          description: "Event URL copied to clipboard",
-                        });
-                      }}
-                      className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded"
-                    >
-                      Copy URL
-                    </button>
-                    <a
-                      href={`/${group.shareableUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 px-2 py-1 rounded"
-                    >
-                      Open Event
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
