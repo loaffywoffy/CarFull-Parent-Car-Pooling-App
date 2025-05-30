@@ -16,7 +16,7 @@ import { SimpleCaptcha } from "./simple-captcha";
 interface SMSVerificationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onVerified: (verificationCode: string) => void;
+  onVerified: () => void;
   phoneNumber: string;
   action: string;
   title: string;
@@ -89,7 +89,7 @@ export function SMSVerificationDialog({
           title: "Verified",
           description: "Phone number verified successfully!"
         });
-        onVerified(code);
+        onVerified();
         onClose();
       }
     },

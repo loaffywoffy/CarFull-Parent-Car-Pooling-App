@@ -246,8 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/party-groups", async (req, res) => {
     try {
       // Validate phone number first before processing the request
-      const { phoneNumber, verificationCode } = req.body;
-      
+      const { phoneNumber } = req.body;
       if (phoneNumber) {
         const phoneValidation = phoneValidator.validatePhoneNumber(phoneNumber);
         if (!phoneValidation.valid) {
@@ -256,25 +255,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             field: "phoneNumber"
           });
         }
-      }
-
-      // Require phone verification for event creation
-      if (!verificationCode) {
-        return res.status(400).json({ 
-          message: "Phone verification required to create event.",
-          requiresVerification: true,
-          action: 'create_event'
-        });
-      }
-
-      // Verify the phone number with SMS code
-      const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
-      const isVerified = await verificationService.verifyCode(normalizedPhone, verificationCode, 'create_event');
-      
-      if (!isVerified) {
-        return res.status(400).json({ 
-          message: "Invalid verification code. Please try again."
-        });
       }
 
       // Validate request body against schema
@@ -286,22 +266,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const newPartyGroup = await storage.createPartyGroup(validationResult.data);
-      
-      // Send SMS notification to event creator with event details and URL
-      if (newPartyGroup.phoneNumber) {
-        try {
-          const eventUrl = `${req.protocol}://${req.get('host')}/events/${newPartyGroup.shareableUrl}`;
-          
-          const message = `Your ${newPartyGroup.eventType} event "${newPartyGroup.name}" has been created! Share this link with parents: ${eventUrl}\n\nEvent: ${new Date(newPartyGroup.eventDate).toLocaleDateString()} at ${newPartyGroup.targetArrivalTime}`;
-          
-          await messagingService.sendCarpoolUpdate(normalizedPhone, message);
-          console.log(`[INFO] Event creation SMS sent to ${normalizedPhone}`);
-        } catch (smsError) {
-          console.error("Failed to send event creation SMS:", smsError);
-          // Don't fail the entire request if SMS fails
-        }
-      }
-      
       res.status(201).json(newPartyGroup);
     } catch (error) {
       console.error("Error creating party group:", error);
