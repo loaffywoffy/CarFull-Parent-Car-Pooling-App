@@ -25,11 +25,16 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
         }
       } catch (error) {
         console.error('Failed to geocode event address:', error);
+        // Set default London coordinates if geocoding fails
+        setEventCoordinates([51.5074, -0.1276]);
       }
     };
 
     if (fullAddress) {
-      geocodeEventAddress();
+      geocodeEventAddress().catch(error => {
+        console.error('Geocoding promise rejected:', error);
+        setEventCoordinates([51.5074, -0.1276]);
+      });
     }
   }, [fullAddress]);
 
