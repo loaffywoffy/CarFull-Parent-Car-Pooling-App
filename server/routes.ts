@@ -14,6 +14,7 @@ import { messagingService } from "./services/sms";
 import { verificationService } from "./services/verification";
 import { rateLimitService } from "./services/rate-limiter";
 import { phoneValidator } from "./services/phone-validator";
+import { shortUrlService } from "./short-url-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth system is disabled for MVP
@@ -23,17 +24,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/s/:shortCode", async (req, res) => {
     try {
       const { shortCode } = req.params;
-      const partyGroup = await storage.getPartyGroupByShortCode(shortCode.toUpperCase());
+      const shareableUrl = shortUrlService.getShareableUrl(shortCode);
       
-      if (!partyGroup) {
+      if (!shareableUrl) {
         return res.status(404).send("Event not found");
       }
       
       // Redirect to the full event URL
-      res.redirect(`/events/${partyGroup.shareableUrl}`);
+      res.redirect(`/events/${shareableUrl}`);
     } catch (error: any) {
       console.error("Short URL redirect error:", error);
       res.status(500).send("Server error");
+    }
+  });
+
+  // Generate short URL for an event
+  app.post("/api/party-groups/:id/short-url", async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const event = await storage.getPartyGroupById(eventId);
+      
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      const shortCode = shortUrlService.createShortUrl(eventId, event.shareableUrl);
+      res.json({ shortCode, shortUrl: `${req.protocol}://${req.get('host')}/s/${shortCode}` });
+    } catch (error: any) {
+      console.error("Generate short URL error:", error);
+      res.status(500).json({ message: "Failed to generate short URL" });
+    }
+  });
+
+  // Get short URL for an event if it exists
+  app.get("/api/party-groups/:id/short-url", async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const shortCode = shortUrlService.getShortCodeForEvent(eventId);
+      
+      if (!shortCode) {
+        return res.status(404).json({ message: "No short URL found for this event" });
+      }
+      
+      res.json({ shortCode, shortUrl: `${req.protocol}://${req.get('host')}/s/${shortCode}` });
+    } catch (error: any) {
+      console.error("Get short URL error:", error);
+      res.status(500).json({ message: "Failed to get short URL" });
     }
   });
   
