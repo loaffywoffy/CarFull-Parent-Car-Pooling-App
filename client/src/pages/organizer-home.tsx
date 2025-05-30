@@ -505,6 +505,12 @@ export default function OrganizerHomePage() {
                       type="submit" 
                       disabled={createEventMutation.isPending}
                       className="flex-1"
+                      onClick={() => {
+                        console.log("Submit button clicked");
+                        console.log("Form is valid:", form.formState.isValid);
+                        console.log("Form errors:", form.formState.errors);
+                        console.log("Form values:", form.getValues());
+                      }}
                     >
                       {createEventMutation.isPending ? "Creating..." : "Create Event"}
                     </Button>
