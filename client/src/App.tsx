@@ -14,6 +14,7 @@ function Router() {
       <Route path="/" component={OrganizerHomePage} />
       <Route path="/events/:shareableUrl" component={EventPage} />
       <Route path="/events/:shareableUrl/create-carpool" component={CreateCarpoolPage} />
+      <Route path="/create-carpool" component={CreateCarpoolPage} />
       <Route path="/join-carpool" component={JoinCarpoolPage} />
       <Route component={NotFound} />
     </Switch>
