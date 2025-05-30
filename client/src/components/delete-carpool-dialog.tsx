@@ -117,13 +117,10 @@ export default function DeleteCarpoolDialog({
             </div>
 
             <div className="space-y-2">
-              <Label>Phone number for verification</Label>
-              <Input
-                type="tel"
-                value={carpoolPhone}
-                readOnly
-                className="bg-gray-50"
-              />
+              <Label>Verification will be sent to</Label>
+              <div className="p-3 bg-gray-50 rounded-md border">
+                <p className="text-sm font-medium">{carpoolPhone}</p>
+              </div>
               <p className="text-xs text-gray-600">
                 We'll send a verification code to this number to confirm deletion
               </p>
