@@ -173,7 +173,7 @@ export default function JoinCarpoolPage() {
         <CarpoolList 
           partyGroupId={Number(partyGroupId)} 
           onRequestSpot={(id) => setSelectedCarpoolId(id)}
-          onOfferRide={() => setLocation(`/?partyId=${partyGroupId}`)}
+          onOfferRide={() => setLocation(`/create-carpool?shareableUrl=${partyGroup?.shareableUrl}`)}
         />
       )}
     </div>
