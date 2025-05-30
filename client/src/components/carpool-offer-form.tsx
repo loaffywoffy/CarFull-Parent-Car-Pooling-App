@@ -24,7 +24,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import LocationMap from "@/components/location-map";
 import { geocodeAddress } from "@/lib/geocoding";
 import { SMSVerificationDialog } from "@/components/sms-verification-dialog";
-import SuccessDialog from "./success-dialog";
 
 interface CarpoolOfferFormProps {
   onSuccess: () => void;
@@ -90,8 +89,6 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   const { toast } = useToast();
   const [showVerification, setShowVerification] = useState(false);
   const [pendingOfferData, setPendingOfferData] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   // Fetch party group details
   const { data: partyGroup, isLoading: isLoadingPartyGroup } = useQuery({
@@ -194,7 +191,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
       });
 
       form.reset();
-
+      
       // Add small delay before calling onSuccess to show confetti
       setTimeout(() => {
         onSuccess();
@@ -492,11 +489,10 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                 name="parentName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Your Name *</FormLabel>
+                    <FormLabel>Your Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your full name" {...field} />
+                      <Input placeholder="Full Name" {...field} />
                     </FormControl>
-                    <p className="text-sm text-gray-600">Parents will see this name when considering your carpool offer</p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1199,13 +1195,6 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
         action="create_carpool"
         title="Verify Phone Number"
         description="Please verify your phone number to create this carpool offer."
-      />
-
-      <SuccessDialog
-        open={showSuccess}
-        title="🚗 Carpool Offer Created!"
-        message="Your carpool is now available for bookings! Parents can request spots and you'll receive SMS notifications to approve or decline each request."
-        onClose={() => setShowSuccess(false)}
       />
     </div>
   );

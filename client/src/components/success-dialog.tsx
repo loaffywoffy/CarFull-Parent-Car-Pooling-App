@@ -1,7 +1,6 @@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import Confetti from "./confetti";
 
 interface SuccessDialogProps {
   open: boolean;
@@ -12,9 +11,7 @@ interface SuccessDialogProps {
 
 export default function SuccessDialog({ open, title, message, onClose }: SuccessDialogProps) {
   return (
-    <>
-      <Confetti isActive={open} />
-      <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center justify-center mb-4 text-green-500">
@@ -35,6 +32,5 @@ export default function SuccessDialog({ open, title, message, onClose }: Success
         </DialogFooter>
       </DialogContent>
     </Dialog>
-    </>
   );
 }

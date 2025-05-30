@@ -112,12 +112,12 @@ export default function OrganizerHomePage() {
         spread: 70,
         origin: { y: 0.6 }
       });
-
+      
       toast({
-        title: "🎉 Event Created Successfully!",
-        description: "Your event is now live! Share the link with other parents so they can offer carpools or request rides. You'll receive SMS notifications when parents interact with your event.",
+        title: "Event Created Successfully!",
+        description: "Your event has been created and is ready for carpools. Share the link with parents.",
       });
-
+      
       // Redirect to the shareable event URL after a short delay to show confetti
       setTimeout(() => {
         setLocation(`/events/${event.shareableUrl}`);
@@ -151,7 +151,7 @@ export default function OrganizerHomePage() {
           <p className="text-xl text-gray-600 mb-8">
             Set up carpools for your event and share a simple link with parents
           </p>
-
+          
           {!showForm && (
             <Button onClick={() => setShowForm(true)} size="lg" className="bg-blue-600 hover:bg-blue-700">
               <Calendar className="h-5 w-5 mr-2" />
