@@ -83,6 +83,7 @@ export default function OrganizerHomePage() {
     resolver: zodResolver(partyGroupFormSchema),
     defaultValues: {
       name: "",
+      eventType: "",
       description: "",
       eventAddress: "",
       eventCity: "",
