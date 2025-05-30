@@ -16,6 +16,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import confetti from "canvas-confetti";
+import { SMSVerificationDialog } from "@/components/sms-verification-dialog";
+import { PhoneInputWithValidation } from "@/components/phone-input-with-validation";
 
 // Form validation schema matching the existing party group form
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
@@ -76,6 +78,8 @@ const timeOptions = generateTimeOptions();
 
 export default function OrganizerHomePage() {
   const [showForm, setShowForm] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<PartyGroupFormValues | null>(null);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -135,7 +139,15 @@ export default function OrganizerHomePage() {
   const onSubmit = (values: PartyGroupFormValues) => {
     console.log("Form submitted with values:", values);
     console.log("Form errors:", form.formState.errors);
-    createEventMutation.mutate(values);
+    setPendingFormData(values);
+    setShowVerification(true);
+  };
+
+  const handleVerificationSuccess = () => {
+    if (pendingFormData) {
+      createEventMutation.mutate(pendingFormData);
+      setShowVerification(false);
+    }
   };
 
 
@@ -520,6 +532,17 @@ export default function OrganizerHomePage() {
             </CardContent>
           </Card>
         )}
+
+        {/* SMS Verification Dialog */}
+        <SMSVerificationDialog
+          isOpen={showVerification}
+          onClose={() => setShowVerification(false)}
+          onVerified={handleVerificationSuccess}
+          phoneNumber={form.watch("phoneNumber") || ""}
+          action="create_event"
+          title="Verify Phone Number"
+          description="Please verify your phone number to create this event."
+        />
       </div>
     </div>
   );
