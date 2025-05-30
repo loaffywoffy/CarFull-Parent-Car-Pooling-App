@@ -110,6 +110,8 @@ export default function OrganizerHomePage() {
       return await res.json();
     },
     onSuccess: (event) => {
+      console.log("Success callback triggered with event:", event);
+      
       // Trigger confetti animation
       confetti({
         particleCount: 100,
@@ -123,7 +125,9 @@ export default function OrganizerHomePage() {
       });
       
       // Redirect to the shareable event URL after a short delay to show confetti
+      console.log("Setting redirect to:", `/events/${event.shareableUrl}`);
       setTimeout(() => {
+        console.log("Executing redirect to:", `/events/${event.shareableUrl}`);
         setLocation(`/events/${event.shareableUrl}`);
       }, 1500);
     },
@@ -145,8 +149,8 @@ export default function OrganizerHomePage() {
 
   const handleVerificationSuccess = () => {
     if (pendingFormData) {
-      createEventMutation.mutate(pendingFormData);
       setShowVerification(false);
+      createEventMutation.mutate(pendingFormData);
     }
   };
 
