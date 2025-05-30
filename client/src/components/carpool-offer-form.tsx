@@ -429,11 +429,11 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   <ClockIcon className="mr-2 h-4 w-4" />
                   {partyGroup.targetArrivalTime} - {partyGroup.endTime || "TBD"}
                 </div>
+                <div className="flex items-center sm:col-span-2">
+                  <MapPinIcon className="mr-2 h-4 w-4" />
+                  {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
+                </div>
               </div>
-              
-              <p className="text-sm text-gray-700">
-                <span className="font-medium">Location:</span> {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
-              </p>
               
               {partyGroup.additionalInformation && (
                 <p className="text-xs text-gray-600 mt-2">
