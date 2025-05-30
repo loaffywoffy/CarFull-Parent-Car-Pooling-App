@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, ArrowLeft, Users, MapPin, CalendarClock, ChevronLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft, Users, MapPin, CalendarClock, Clock, ChevronLeft } from "lucide-react";
 import { format, isValid, parse } from "date-fns";
 import CarpoolList from "@/components/carpool-list";
 
@@ -113,11 +113,12 @@ export default function JoinCarpoolPage() {
             <Badge variant="outline" className="flex items-center gap-1 px-2 py-1">
               <CalendarClock className="h-3.5 w-3.5 text-muted-foreground" />
               <span>{formatEventDate(partyGroup.eventDate)}</span>
-              {partyGroup.targetArrivalTime && partyGroup.endTime && (
-                <span className="text-muted-foreground ml-1">
-                  {partyGroup.targetArrivalTime} - {partyGroup.endTime}
-                </span>
-              )}
+            </Badge>
+          )}
+          {partyGroup.targetArrivalTime && partyGroup.endTime && (
+            <Badge variant="outline" className="flex items-center gap-1 px-2 py-1">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>{partyGroup.targetArrivalTime} - {partyGroup.endTime}</span>
             </Badge>
           )}
           {partyGroup.eventAddress && (
