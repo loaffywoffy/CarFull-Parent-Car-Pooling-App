@@ -48,10 +48,12 @@ export default function GoogleMap({
         const loader = new Loader({
           apiKey,
           version: 'weekly',
-          libraries: ['maps', 'marker']
+          libraries: ['maps']
         });
 
+        console.log('Loading Google Maps with API key:', apiKey.substring(0, 10) + '...');
         await loader.load();
+        console.log('Google Maps loaded successfully');
 
         if (!mapRef.current) return;
 
