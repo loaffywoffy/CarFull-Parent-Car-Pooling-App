@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MapPin, ExternalLink, Navigation } from 'lucide-react';
+import MapboxMap from './mapbox-map';
+import { geocodeAddress } from '@/lib/geocoding';
 
 interface EventMapProps {
   address: string;
@@ -11,31 +13,38 @@ interface EventMapProps {
 
 export default function EventMap({ address, city, postcode, eventName }: EventMapProps) {
   const fullAddress = `${address}, ${city} ${postcode}`;
-  const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+  const [eventCoordinates, setEventCoordinates] = useState<[number, number] | null>(null);
+
+  // Geocode the event address
+  useEffect(() => {
+    const geocodeEventAddress = async () => {
+      try {
+        const coords = await geocodeAddress(fullAddress);
+        if (coords) {
+          setEventCoordinates(coords);
+        }
+      } catch (error) {
+        console.error('Failed to geocode event address:', error);
+      }
+    };
+
+    if (fullAddress) {
+      geocodeEventAddress();
+    }
+  }, [fullAddress]);
 
   return (
     <div className="space-y-4">
-      {/* Static Map Display */}
+      {/* Interactive Map Display */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="relative h-64 bg-gradient-to-br from-blue-50 to-blue-100">
-          <img
-            src={`https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+3B82F6(${encodeURIComponent(fullAddress)})/auto/600x300@2x?access_token=${mapboxToken}`}
-            alt={`Map showing ${fullAddress}`}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              // Fallback to placeholder if map image fails to load
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling!.style.display = 'flex';
-            }}
-          />
-          <div className="absolute inset-0 bg-gray-100 hidden items-center justify-center">
-            <div className="text-center">
-              <MapPin className="h-12 w-12 mx-auto text-blue-500 mb-2" />
-              <p className="text-gray-600 font-medium">{eventName}</p>
-              <p className="text-sm text-gray-500">{fullAddress}</p>
-            </div>
-          </div>
-        </div>
+        <MapboxMap
+          className="w-full h-64"
+          eventLocation={eventCoordinates ? {
+            lat: eventCoordinates[0],
+            lng: eventCoordinates[1],
+            name: `${eventName} - ${fullAddress}`
+          } : undefined}
+        />
       </div>
 
       {/* Navigation Options */}
