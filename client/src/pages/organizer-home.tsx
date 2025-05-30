@@ -474,9 +474,14 @@ export default function OrganizerHomePage() {
                         name="phoneNumber"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Your Phone Number</FormLabel>
                             <FormControl>
-                              <Input placeholder="+44 7123 456789" type="tel" {...field} />
+                              <PhoneInputWithValidation
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                label="Your Phone Number"
+                                placeholder="Your Phone Number (used to verify event creation)"
+                                required={true}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
