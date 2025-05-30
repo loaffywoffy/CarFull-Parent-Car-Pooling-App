@@ -158,10 +158,22 @@ export default function EventPage() {
                 </CardDescription>
               </div>
               <div className="flex items-center space-x-1 flex-shrink-0">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0"
+                  onClick={() => setShowEditDialog(true)}
+                  title="Edit Event"
+                >
                   <Edit className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => setShowDeleteDialog(true)}
+                  title="Delete Event"
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -399,6 +411,27 @@ export default function EventPage() {
 
 
       </div>
+
+      {/* Event Management Dialogs */}
+      <DeleteEventDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        event={event}
+        onSuccess={() => {
+          // Redirect to home after successful deletion
+          window.location.href = '/';
+        }}
+      />
+
+      <EditEventDialog
+        isOpen={showEditDialog}
+        onClose={() => setShowEditDialog(false)}
+        event={event}
+        onSuccess={() => {
+          // Refresh the page data after successful edit
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }
