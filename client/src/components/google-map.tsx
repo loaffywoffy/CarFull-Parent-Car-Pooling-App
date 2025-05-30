@@ -36,6 +36,8 @@ export default function GoogleMap({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (map) return; // Prevent multiple initializations
+    
     const initMap = async () => {
       try {
         const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -125,7 +127,7 @@ export default function GoogleMap({
     };
 
     initMap();
-  }, [eventLocation, userLocation, carpoolLocations]);
+  }, []); // Only run once on mount
 
   if (error) {
     return (
