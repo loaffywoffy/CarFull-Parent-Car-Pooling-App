@@ -278,6 +278,46 @@ export default function Home() {
           </p>
         </header>
 
+        {/* Testing URLs Section */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Test Event URLs
+          </h3>
+          <div className="grid gap-2 text-sm">
+            {partyGroups.map((group) => (
+              <div key={group.id} className="flex items-center justify-between bg-white rounded p-2 border border-amber-100">
+                <div>
+                  <span className="font-medium text-amber-900">{group.name}</span>
+                  <span className="text-amber-700 ml-2">({group.eventAddress || 'No address set'})</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/${group.shareableUrl}`;
+                      navigator.clipboard.writeText(url);
+                    }}
+                    className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded"
+                  >
+                    Copy URL
+                  </button>
+                  <a
+                    href={`/${group.shareableUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 px-2 py-1 rounded"
+                  >
+                    Open Event
+                  </a>
+                </div>
+              </div>
+            ))}
+            {partyGroups.length === 0 && (
+              <p className="text-amber-700 text-center py-2">No events available. Create one first!</p>
+            )}
+          </div>
+        </div>
+
         {/* Empty section - removed */}
 
         {/* Content based on active tab */}
