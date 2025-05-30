@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import LocationMap from "@/components/location-map";
 import { geocodeAddress } from "@/lib/geocoding";
 import { SMSVerificationDialog } from "@/components/sms-verification-dialog";
+import CarpoolSuccess from "@/components/carpool-success";
 
 interface CarpoolOfferFormProps {
   onSuccess: () => void;
@@ -89,6 +90,8 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   const { toast } = useToast();
   const [showVerification, setShowVerification] = useState(false);
   const [pendingOfferData, setPendingOfferData] = useState<any>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [createdCarpool, setCreatedCarpool] = useState<any>(null);
 
   // Fetch party group details
   const { data: partyGroup, isLoading: isLoadingPartyGroup } = useQuery({
@@ -171,31 +174,17 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   const carpoolMutation = useMutation({
     mutationFn: (values: CarpoolFormValues) => 
       apiRequest("POST", "/api/carpools", values),
-    onSuccess: () => {
+    onSuccess: (response) => {
       // Invalidate the carpools query to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups', partyGroupId, 'carpools'] });
 
       // Also invalidate the parent query in case counts need to be updated
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
 
-      // Trigger confetti animation
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-
-      toast({
-        title: "Carpool Offer Submitted!",
-        description: "Your carpool offer has been submitted successfully. Parents can now request spots.",
-      });
-
+      // Store the created carpool data and show success page
+      setCreatedCarpool(response);
+      setShowSuccess(true);
       form.reset();
-      
-      // Add small delay before calling onSuccess to show confetti
-      setTimeout(() => {
-        onSuccess();
-      }, 1000);
     },
     onError: (error) => {
       toast({
@@ -298,12 +287,10 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
 
       if (response.ok) {
         const newCarpool = await response.json();
-        toast({
-          title: "Success",
-          description: "Carpool offer created successfully!"
-        });
+        // Store the created carpool data and show success page
+        setCreatedCarpool(newCarpool);
+        setShowSuccess(true);
         form.reset();
-        onSuccess();
         setPendingOfferData(null);
       } else {
         const error = await response.json();
@@ -400,6 +387,19 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
     });
   };
 
+  // Show success page if carpool was created
+  if (showSuccess && createdCarpool) {
+    return (
+      <CarpoolSuccess 
+        carpoolData={createdCarpool}
+        onContinue={() => {
+          setShowSuccess(false);
+          onSuccess();
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Event Info Banner */}
@@ -479,31 +479,49 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
               Your Information
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="parentName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Full Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="childName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Parent of (Child's Name)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Child's Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
-                name="parentName"
+                name="phoneNumber"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Your Name</FormLabel>
+                  <FormItem className="md:w-1/2">
+                    <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="Full Name" {...field} />
+                      <Input placeholder="e.g. 07961 318588" type="tel" {...field} />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="childName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Parent of (Child's Name)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Child's Name" {...field} />
-                    </FormControl>
+                    <p className="text-xs text-gray-600 mt-1">
+                      We'll send a verification code to confirm your number before creating the ride offer
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -523,7 +541,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="city"
@@ -546,20 +564,6 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       <FormLabel>Postcode</FormLabel>
                       <FormControl>
                         <Input placeholder="Postcode" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Phone Number" type="tel" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
