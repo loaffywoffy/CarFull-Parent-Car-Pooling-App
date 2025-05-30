@@ -117,7 +117,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   });
 
   // Get event-specific labels
-  const eventLabels = getEventLabels(partyGroup?.eventType || "birthday");
+  const eventLabels = getEventLabels(partyGroup?.eventType ?? "birthday");
 
   // Show preferences based on selected options
   const [showOutboundPreferences, setShowOutboundPreferences] = useState(false);
@@ -643,7 +643,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                           />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          Pick up children FROM the party
+                          Pick up children FROM {eventLabels.fromEvent}
                         </FormLabel>
                       </FormItem>
                     )}
@@ -667,7 +667,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                           />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          BOTH ways (to and from)
+                          BOTH ways (to and from {eventLabels.eventName})
                         </FormLabel>
                       </FormItem>
                     )}
@@ -683,7 +683,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                     name="spacesAvailable"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Spaces Available to take TO party</FormLabel>
+                        <FormLabel>Spaces Available to take TO {eventLabels.toEvent}</FormLabel>
                         <Select
                           value={field.value?.toString()}
                           onValueChange={(value) => field.onChange(parseInt(value))}
@@ -718,7 +718,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                     name="returnSpacesAvailable"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Spaces Available to pick up FROM party</FormLabel>
+                        <FormLabel>Spaces Available to pick up FROM {eventLabels.fromEvent}</FormLabel>
                         <Select
                           value={field.value?.toString()}
                           onValueChange={(value) => field.onChange(parseInt(value))}
@@ -748,9 +748,9 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
               {/* Outbound dropoff preferences (TO party) */}
               {showOutboundPreferences && (
                 <div className="space-y-3 border-t border-gray-100 pt-4 mt-4">
-                  <h4 className="font-medium text-primary-700">Trip Preferences (TO Party)</h4>
+                  <h4 className="font-medium text-primary-700">Trip Preferences (TO {eventLabels.eventName})</h4>
 
-                  <FormLabel>Dropoff Preference when taking TO the party:</FormLabel>
+                  <FormLabel>Dropoff Preference when taking TO {eventLabels.toEvent}:</FormLabel>
                   <FormField
                     control={form.control}
                     name="outboundDropoffPreference"
