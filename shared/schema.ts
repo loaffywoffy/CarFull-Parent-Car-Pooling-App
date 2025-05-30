@@ -78,6 +78,11 @@ export const carpools = pgTable("carpools", {
   emergencyContactName: text("emergency_contact_name"),
   emergencyContactPhone: text("emergency_contact_phone"),
   emergencyContactRelationship: text("emergency_contact_relationship"),
+  // Communication preferences and hints
+  preferredContactMethod: text("preferred_contact_method"), // "phone", "sms", "whatsapp"
+  communicationNotes: text("communication_notes"), // Driver's notes about communication preferences
+  driverPersonality: text("driver_personality"), // "friendly", "professional", "casual"
+  specialRequirements: text("special_requirements"), // Any special needs or requirements
 });
 
 // CarpoolRequest schema for requests to join carpool
