@@ -1207,6 +1207,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
         message="Your carpool is now available for bookings! Parents can request spots and you'll receive SMS notifications to approve or decline each request."
         onClose={() => setShowSuccess(false)}
       />
-    </Form>
+    </div>
+  );
   );
 }
