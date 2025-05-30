@@ -38,6 +38,8 @@ export default function GoogleMap({
   useEffect(() => {
     if (map) return; // Prevent multiple initializations
     
+    console.log('GoogleMap received eventLocation prop:', eventLocation);
+    
     const initMap = async () => {
       try {
         const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -59,17 +61,20 @@ export default function GoogleMap({
 
         if (!mapRef.current) return;
 
-        // Default center to London if no event location
+        // Use event location if available, otherwise default to London
         const center = eventLocation 
           ? { lat: eventLocation.lat, lng: eventLocation.lng }
           : { lat: 51.5074, lng: -0.1276 };
+        
+        // Set appropriate zoom level based on whether we have an event location
+        const zoom = eventLocation ? 15 : 11;
 
         console.log('Creating map with center:', center);
         console.log('Map container element:', mapRef.current);
         
         const mapInstance = new google.maps.Map(mapRef.current, {
           center,
-          zoom: 13,
+          zoom,
           mapTypeControl: true,
           streetViewControl: true,
           fullscreenControl: true,
