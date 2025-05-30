@@ -72,38 +72,16 @@ export default function GoogleMap({
         setMap(mapInstance);
         setIsLoading(false);
 
-        // Add event location marker
+        // Add event location marker (simple version)
         if (eventLocation) {
-          new google.maps.Marker({
-            position: { lat: eventLocation.lat, lng: eventLocation.lng },
-            map: mapInstance,
-            title: eventLocation.name,
-            icon: {
-              url: 'data:image/svg+xml;base64,' + btoa(`
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#ef4444"/>
-                  <circle cx="12" cy="9" r="2.5" fill="white"/>
-                </svg>
-              `),
-              scaledSize: new google.maps.Size(32, 32),
-              anchor: new google.maps.Point(16, 32)
-            },
-            animation: google.maps.Animation.DROP
-          });
-
-          const infoWindow = new google.maps.InfoWindow({
-            content: `
-              <div style="padding: 8px;">
-                <h3 style="margin: 0 0 4px 0; font-weight: 600; font-size: 14px;">${eventLocation.name}</h3>
-                <p style="margin: 0; font-size: 12px; color: #666;">Event Location</p>
-              </div>
-            `
-          });
-
           const eventMarker = new google.maps.Marker({
             position: { lat: eventLocation.lat, lng: eventLocation.lng },
             map: mapInstance,
             title: eventLocation.name,
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<div><strong>${eventLocation.name}</strong><br/>Event Location</div>`
           });
 
           eventMarker.addListener('click', () => {
@@ -111,74 +89,31 @@ export default function GoogleMap({
           });
         }
 
-        // Add user location marker
+        // Add user location marker (simple version)
         if (userLocation) {
           new google.maps.Marker({
             position: { lat: userLocation.lat, lng: userLocation.lng },
             map: mapInstance,
             title: 'Your Location',
-            icon: {
-              url: 'data:image/svg+xml;base64,' + btoa(`
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#3b82f6"/>
-                  <circle cx="12" cy="9" r="2.5" fill="white"/>
-                </svg>
-              `),
-              scaledSize: new google.maps.Size(32, 32),
-              anchor: new google.maps.Point(16, 32)
-            }
           });
         }
 
-        // Add carpool location markers
+        // Add carpool location markers (simple version)
         carpoolLocations.forEach((carpool) => {
           const marker = new google.maps.Marker({
             position: { lat: carpool.lat, lng: carpool.lng },
             map: mapInstance,
             title: carpool.parentName,
-            icon: {
-              url: 'data:image/svg+xml;base64,' + btoa(`
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="${carpool.canPickup && carpool.canDropoff ? '#8b5cf6' : carpool.canPickup ? '#10b981' : '#f59e0b'}"/>
-                  <circle cx="12" cy="9" r="2.5" fill="white"/>
-                </svg>
-              `),
-              scaledSize: new google.maps.Size(28, 28),
-              anchor: new google.maps.Point(14, 28)
-            }
           });
 
           const infoWindow = new google.maps.InfoWindow({
-            content: `
-              <div style="padding: 8px;">
-                <h3 style="margin: 0 0 4px 0; font-weight: 600; font-size: 14px;">${carpool.parentName}</h3>
-                <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">${carpool.address}</p>
-                <p style="margin: 0; font-size: 12px; color: #10b981;">${carpool.spacesAvailable} spaces available</p>
-              </div>
-            `
+            content: `<div><strong>${carpool.parentName}</strong><br/>${carpool.address}<br/>${carpool.spacesAvailable} spaces available</div>`
           });
 
           marker.addListener('click', () => {
             infoWindow.open(mapInstance, marker);
           });
         });
-
-        // Fit bounds to show all markers
-        if (eventLocation || userLocation || carpoolLocations.length > 0) {
-          const bounds = new google.maps.LatLngBounds();
-          
-          if (eventLocation) bounds.extend({ lat: eventLocation.lat, lng: eventLocation.lng });
-          if (userLocation) bounds.extend({ lat: userLocation.lat, lng: userLocation.lng });
-          carpoolLocations.forEach(carpool => bounds.extend({ lat: carpool.lat, lng: carpool.lng }));
-          
-          mapInstance.fitBounds(bounds);
-          
-          // Ensure minimum zoom level
-          const listener = google.maps.event.addListener(mapInstance, 'idle', () => {
-            if (mapInstance.getZoom()! > 15) mapInstance.setZoom(15);
-            google.maps.event.removeListener(listener);
-          });
-        }
 
       } catch (err) {
         console.error('Failed to load Google Maps:', err);
