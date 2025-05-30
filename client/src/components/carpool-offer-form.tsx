@@ -1208,6 +1208,5 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
         onClose={() => setShowSuccess(false)}
       />
     </div>
-
-  
-    }
+  );
+}
