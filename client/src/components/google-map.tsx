@@ -64,6 +64,9 @@ export default function GoogleMap({
           ? { lat: eventLocation.lat, lng: eventLocation.lng }
           : { lat: 51.5074, lng: -0.1276 };
 
+        console.log('Creating map with center:', center);
+        console.log('Map container element:', mapRef.current);
+        
         const mapInstance = new google.maps.Map(mapRef.current, {
           center,
           zoom: 13,
@@ -73,8 +76,15 @@ export default function GoogleMap({
           zoomControl: true,
         });
 
+        console.log('Map instance created:', mapInstance);
         setMap(mapInstance);
         setIsLoading(false);
+        
+        // Force a resize to ensure proper rendering
+        setTimeout(() => {
+          google.maps.event.trigger(mapInstance, 'resize');
+          console.log('Map resize triggered');
+        }, 100);
 
         // Add event location marker (simple version)
         if (eventLocation) {
@@ -149,7 +159,7 @@ export default function GoogleMap({
           </div>
         </div>
       )}
-      <div ref={mapRef} className="w-full h-full" />
+      <div ref={mapRef} className="w-full h-full min-h-[400px]" style={{ height: '100%' }} />
     </div>
   );
 }
