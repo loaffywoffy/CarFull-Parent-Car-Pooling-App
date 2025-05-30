@@ -54,7 +54,7 @@ const carpoolFormSchema = z.object({
   outboundPickupLocation: z.string().optional(),
   outboundPickupLocationCity: z.string().optional(),
   outboundPickupLocationPostcode: z.string().optional(),
-  outboundDepartureTime: z.string().optional(),
+  outboundDepartureTime: z.string().min(1, "Departure time is required"),
 
   // Return dropoff preferences (when picking up FROM the party)
   returnDropoffPreference: z.string().optional(),
@@ -86,6 +86,21 @@ const carpoolFormSchema = z.object({
 
 type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
 
+// Helper function to get event-specific labels
+const getEventLabels = (eventType: string = "birthday") => {
+  const eventMap: Record<string, { eventName: string; toEvent: string; fromEvent: string }> = {
+    birthday: { eventName: "party", toEvent: "the party", fromEvent: "the party" },
+    wedding: { eventName: "wedding", toEvent: "the wedding", fromEvent: "the wedding" },
+    graduation: { eventName: "graduation", toEvent: "the graduation", fromEvent: "the graduation" },
+    barmitzvah: { eventName: "Bar Mitzvah", toEvent: "the Bar Mitzvah", fromEvent: "the Bar Mitzvah" },
+    batmitzvah: { eventName: "Bat Mitzvah", toEvent: "the Bat Mitzvah", fromEvent: "the Bat Mitzvah" },
+    sports: { eventName: "sports event", toEvent: "the event", fromEvent: "the event" },
+    school: { eventName: "school event", toEvent: "the school", fromEvent: "the school" },
+    other: { eventName: "event", toEvent: "the event", fromEvent: "the event" }
+  };
+  return eventMap[eventType] || eventMap.birthday;
+};
+
 export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: CarpoolOfferFormProps) {
   const { toast } = useToast();
   const [showVerification, setShowVerification] = useState(false);
@@ -100,6 +115,9 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
     enabled: !!partyGroupId,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Get event-specific labels
+  const eventLabels = getEventLabels(partyGroup?.eventType || "birthday");
 
   // Show preferences based on selected options
   const [showOutboundPreferences, setShowOutboundPreferences] = useState(false);
@@ -601,7 +619,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                           />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          Take children TO the party
+                          Take children TO {eventLabels.toEvent}
                         </FormLabel>
                       </FormItem>
                     )}

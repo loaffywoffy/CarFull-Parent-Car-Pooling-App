@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Car, Share2 } from "lucide-react";
+import { CheckCircle, Car } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface CarpoolSuccessProps {
@@ -82,32 +82,12 @@ export default function CarpoolSuccess({ carpoolData, onContinue }: CarpoolSucce
           </div>
         </div>
 
-        <div className="space-y-3">
-          <Button 
-            onClick={onContinue}
-            className="w-full bg-green-600 hover:bg-green-700"
-          >
-            Continue to Event Page
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={() => {
-              // Share functionality can be added here
-              if (navigator.share) {
-                navigator.share({
-                  title: 'Carpool Offer',
-                  text: `${carpoolData.parentName} is offering carpool ${getOfferTypeText()} for ${carpoolData.spacesAvailable} children`,
-                  url: window.location.href
-                });
-              }
-            }}
-          >
-            <Share2 className="w-4 h-4 mr-2" />
-            Share with Other Parents
-          </Button>
-        </div>
+        <Button 
+          onClick={onContinue}
+          className="w-full bg-green-600 hover:bg-green-700"
+        >
+          Continue to Event Page
+        </Button>
 
         <p className="text-xs text-gray-500 mt-4">
           Other parents can now see your offer and request spaces for their children.
