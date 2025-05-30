@@ -95,7 +95,7 @@ export default function JoinCarpoolPage() {
   }
 
   return (
-    <div className="container max-w-4xl py-8">
+    <div className="container max-w-4xl mx-auto py-8 px-4">
       <Button 
         variant="ghost" 
         size="sm" 
