@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Calendar, Share2, Users, MapPin } from "lucide-react";
+import { Calendar, Share2, Users, MapPin, Cake, GraduationCap, Heart, Trophy, School, PartyPopper } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -240,14 +240,54 @@ export default function OrganizerHomePage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="birthday">Birthday Party</SelectItem>
-                                <SelectItem value="bar-mitzvah">Bar/Bat Mitzvah</SelectItem>
-                                <SelectItem value="graduation">Graduation</SelectItem>
-                                <SelectItem value="wedding">Wedding</SelectItem>
-                                <SelectItem value="celebration">Celebration</SelectItem>
-                                <SelectItem value="sports">Sports Event</SelectItem>
-                                <SelectItem value="school">School Event</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
+                                <SelectItem value="birthday">
+                                  <div className="flex items-center gap-2">
+                                    <Cake className="h-4 w-4" />
+                                    Birthday Party
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="bar-mitzvah">
+                                  <div className="flex items-center gap-2">
+                                    <School className="h-4 w-4" />
+                                    Bar/Bat Mitzvah
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="graduation">
+                                  <div className="flex items-center gap-2">
+                                    <GraduationCap className="h-4 w-4" />
+                                    Graduation
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="wedding">
+                                  <div className="flex items-center gap-2">
+                                    <Heart className="h-4 w-4" />
+                                    Wedding
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="celebration">
+                                  <div className="flex items-center gap-2">
+                                    <PartyPopper className="h-4 w-4" />
+                                    Celebration
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="sports">
+                                  <div className="flex items-center gap-2">
+                                    <Trophy className="h-4 w-4" />
+                                    Sports Event
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="school">
+                                  <div className="flex items-center gap-2">
+                                    <School className="h-4 w-4" />
+                                    School Event
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="other">
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4" />
+                                    Other
+                                  </div>
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -255,24 +295,7 @@ export default function OrganizerHomePage() {
                         )}
                       />
 
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Event Description</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Brief description of your event..." 
-                                className="min-h-[60px]" 
-                                {...field} 
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+
                     </div>
 
                     {/* Date and Time */}
