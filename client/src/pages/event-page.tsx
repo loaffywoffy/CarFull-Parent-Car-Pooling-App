@@ -245,27 +245,7 @@ export default function EventPage() {
                     </div>
                   </div>
                   
-                  {event.shortCode && (
-                    <div>
-                      <p className="text-xs text-gray-600 mb-2">Short URL (SMS-friendly):</p>
-                      <div className="flex gap-2">
-                        <input 
-                          readOnly 
-                          value={`${window.location.origin}/s/${event.shortCode}`} 
-                          className="flex-1 text-xs bg-white border border-gray-200 rounded px-2 py-1 font-mono" 
-                        />
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => copyToClipboard(`${window.location.origin}/s/${event.shortCode}`)}
-                          className="shrink-0"
-                        >
-                          <Copy className="h-3 w-3 mr-1" />
-                          Copy
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+
                 </div>
 
                 {/* Action Buttons */}
