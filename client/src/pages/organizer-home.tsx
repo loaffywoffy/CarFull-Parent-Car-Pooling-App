@@ -103,8 +103,8 @@ export default function OrganizerHomePage() {
     },
     onSuccess: (event) => {
       toast({
-        title: "Event created!",
-        description: "Redirecting to your event page...",
+        title: "Event Created Successfully!",
+        description: "Your event has been created and is ready for carpools. Share the link with parents.",
       });
       // Redirect to the shareable event URL
       setLocation(`/events/${event.shareableUrl}`);
@@ -211,6 +211,34 @@ export default function OrganizerHomePage() {
                             <FormControl>
                               <Input placeholder="e.g., Sarah's 10th Birthday Party" {...field} />
                             </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="eventType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Event Type</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select event type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="birthday">Birthday Party</SelectItem>
+                                <SelectItem value="bar-mitzvah">Bar/Bat Mitzvah</SelectItem>
+                                <SelectItem value="graduation">Graduation</SelectItem>
+                                <SelectItem value="wedding">Wedding</SelectItem>
+                                <SelectItem value="celebration">Celebration</SelectItem>
+                                <SelectItem value="sports">Sports Event</SelectItem>
+                                <SelectItem value="school">School Event</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}

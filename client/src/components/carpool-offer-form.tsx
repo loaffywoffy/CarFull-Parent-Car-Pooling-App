@@ -362,10 +362,10 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   useEffect(() => {
     if (partyGroup) {
       // Create a complete address from the partyGroup details
-      const fullAddress = `${partyGroup.partyAddress}, ${partyGroup.partyCity}, ${partyGroup.partyPostcode}`;
+      const fullAddress = `${partyGroup.eventAddress}, ${partyGroup.eventCity}, ${partyGroup.eventPostcode}`;
 
       // Geocode the address
-      geocodeAddress(partyGroup.partyAddress, partyGroup.partyCity, partyGroup.partyPostcode)
+      geocodeAddress(partyGroup.eventAddress, partyGroup.eventCity, partyGroup.eventPostcode)
         .then(coordinates => {
           setEventLocation(coordinates);
         })
@@ -415,7 +415,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 mb-3">
               <div className="flex items-center">
                 <CalendarIcon className="mr-2 h-4 w-4 text-primary-600" />
-                {formatDate(partyGroup.partyDate)}
+                {formatDate(partyGroup.eventDate)}
               </div>
               <div className="flex items-center">
                 <ClockIcon className="mr-2 h-4 w-4 text-primary-600" />
