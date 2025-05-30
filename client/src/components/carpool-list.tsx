@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Users, Clock, Car, ArrowRight, ArrowLeft, User, Home, AlertCircle, Timer, Phone, Share2, Copy, Check, Map } from "lucide-react";
 import { geocodeAddress, calculateDistance, calculateDrivingDistance } from "@/lib/geocoding";
-import MapboxMap from './mapbox-map';
+import GoogleMap from './google-map';
 import { compareTimeStrings } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -1438,7 +1438,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
           {showMapView ? (
             // MapBox Map View
             <div className="space-y-4">
-              <MapboxMap
+              <GoogleMap
                 className="w-full h-96"
                 eventLocation={partyGroup ? {
                   lat: partyGroup.eventAddress ? 51.5254268 : 51.5074, // Use geocoded coordinates

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MapPin, ExternalLink, Navigation } from 'lucide-react';
-import MapboxMap from './mapbox-map';
-import LeafletMap from './leaflet-map';
+import GoogleMap from './google-map';
 import { geocodeAddress } from '@/lib/geocoding';
 
 interface EventMapProps {
@@ -43,32 +42,18 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
     }
   }, [fullAddress]);
 
-  // Check if Mapbox token is available
-  const hasMapboxToken = !!import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-
   return (
     <div className="space-y-4">
       {/* Interactive Map Display */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        {hasMapboxToken && !useMapboxFallback ? (
-          <MapboxMap
-            className="w-full h-64"
-            eventLocation={eventCoordinates ? {
-              lat: eventCoordinates[0],
-              lng: eventCoordinates[1],
-              name: `${eventName} - ${fullAddress}`
-            } : undefined}
-          />
-        ) : (
-          <LeafletMap
-            className="w-full h-64"
-            eventLocation={eventCoordinates ? {
-              lat: eventCoordinates[0],
-              lng: eventCoordinates[1],
-              name: `${eventName} - ${fullAddress}`
-            } : undefined}
-          />
-        )}
+        <GoogleMap
+          className="w-full h-64"
+          eventLocation={eventCoordinates ? {
+            lat: eventCoordinates[0],
+            lng: eventCoordinates[1],
+            name: `${eventName} - ${fullAddress}`
+          } : undefined}
+        />
       </div>
 
       {/* Navigation Options */}
