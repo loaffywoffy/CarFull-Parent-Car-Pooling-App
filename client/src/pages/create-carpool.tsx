@@ -9,7 +9,10 @@ import { useLocation } from "wouter";
 export default function CreateCarpoolPage() {
   const [, params] = useRoute("/events/:shareableUrl/create-carpool");
   const [, setLocation] = useLocation();
-  const shareableUrl = params?.shareableUrl;
+  
+  // Get shareableUrl from either route params or query params
+  const urlParams = new URLSearchParams(window.location.search);
+  const shareableUrl = params?.shareableUrl || urlParams.get('shareableUrl');
 
   const { data: partyGroup, isLoading } = useQuery({
     queryKey: [`/api/party-groups/by-url/${shareableUrl}`],
