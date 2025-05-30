@@ -109,13 +109,11 @@ export class DatabaseStorage implements IStorage {
 
   async createPartyGroup(insertPartyGroup: InsertPartyGroup): Promise<PartyGroup> {
     const shareableUrl = this.generateShareableUrl(insertPartyGroup.name);
-    const shortCode = this.generateShortCode();
     
     // Ensure null values for nullable fields
     const partyGroupData = {
       ...insertPartyGroup,
       shareableUrl,
-      shortCode,
       description: insertPartyGroup.description ?? null,
       eventEndDate: insertPartyGroup.eventEndDate ?? null,
       endTime: insertPartyGroup.endTime ?? null,
