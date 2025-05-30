@@ -410,6 +410,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
     return (
       <CarpoolSuccess 
         carpoolData={createdCarpool}
+        eventType={partyGroup?.eventType ?? "birthday"}
         onContinue={() => {
           setShowSuccess(false);
           onSuccess();

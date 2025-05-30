@@ -434,24 +434,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete carpool - removed provider check for MVP
+  // Delete carpool - requires phone verification
   app.delete("/api/carpools/:id", async (req, res) => {
     try {
-      // Check if this action requires phone verification
-      const { phoneNumber, verificationCode } = req.body;
-      if (phoneNumber && verificationCode) {
-        const normalizedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
-        const isVerified = await verificationService.verifyCode(normalizedPhone, verificationCode, 'delete_carpool');
-        
-        if (!isVerified) {
-          return res.status(400).json({ 
-            message: "Phone verification required. Please verify your phone number to delete this carpool.",
-            requiresVerification: true,
-            action: 'delete_carpool'
-          });
-        }
-      }
-
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid carpool ID" });
@@ -461,6 +446,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const carpool = await storage.getCarpoolById(id);
       if (!carpool) {
         return res.status(404).json({ message: "Carpool not found" });
+      }
+
+      // Phone verification is required for deletion
+      const { phoneNumber, verificationCode } = req.body;
+      
+      if (!phoneNumber || !verificationCode) {
+        return res.status(400).json({ 
+          message: "Phone verification required to delete this carpool offer.",
+          requiresVerification: true,
+          action: 'delete_carpool',
+          carpoolPhone: carpool.phoneNumber
+        });
+      }
+
+      // Verify the phone number matches the carpool creator
+      const normalizedSubmittedPhone = phoneValidator.normalizePhoneNumber(phoneNumber);
+      const normalizedCarpoolPhone = phoneValidator.normalizePhoneNumber(carpool.phoneNumber);
+      
+      if (normalizedSubmittedPhone !== normalizedCarpoolPhone) {
+        return res.status(403).json({ 
+          message: "You can only delete your own carpool offers."
+        });
+      }
+
+      // Verify the SMS code
+      const isVerified = await verificationService.verifyCode(normalizedSubmittedPhone, verificationCode, 'delete_carpool');
+      
+      if (!isVerified) {
+        return res.status(400).json({ 
+          message: "Invalid verification code. Please try again."
+        });
       }
       
       const success = await storage.deleteCarpool(id);

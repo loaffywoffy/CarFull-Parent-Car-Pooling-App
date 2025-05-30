@@ -6,9 +6,27 @@ import confetti from "canvas-confetti";
 interface CarpoolSuccessProps {
   carpoolData: any;
   onContinue: () => void;
+  eventType?: string;
 }
 
-export default function CarpoolSuccess({ carpoolData, onContinue }: CarpoolSuccessProps) {
+export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "birthday" }: CarpoolSuccessProps) {
+  // Helper function to get event-specific labels
+  const getEventLabels = (eventType: string = "birthday") => {
+    const eventMap: Record<string, { eventName: string; toEvent: string; fromEvent: string }> = {
+      birthday: { eventName: "party", toEvent: "the party", fromEvent: "the party" },
+      wedding: { eventName: "wedding", toEvent: "the wedding", fromEvent: "the wedding" },
+      graduation: { eventName: "graduation", toEvent: "the graduation", fromEvent: "the graduation" },
+      barmitzvah: { eventName: "Bar Mitzvah", toEvent: "the Bar Mitzvah", fromEvent: "the Bar Mitzvah" },
+      batmitzvah: { eventName: "Bat Mitzvah", toEvent: "the Bat Mitzvah", fromEvent: "the Bat Mitzvah" },
+      sports: { eventName: "sports event", toEvent: "the event", fromEvent: "the event" },
+      school: { eventName: "school event", toEvent: "the school", fromEvent: "the school" },
+      other: { eventName: "event", toEvent: "the event", fromEvent: "the event" }
+    };
+    return eventMap[eventType] || eventMap.birthday;
+  };
+
+  const eventLabels = getEventLabels(eventType);
+
   useEffect(() => {
     // Trigger confetti animation
     const duration = 3000;
@@ -40,13 +58,13 @@ export default function CarpoolSuccess({ carpoolData, onContinue }: CarpoolSucce
 
   const getOfferTypeText = () => {
     if (carpoolData.canPickup && carpoolData.canDropoff) {
-      return "pickup and dropoff";
+      return `pickup and dropoff for ${eventLabels.eventName}`;
     } else if (carpoolData.canPickup) {
-      return "pickup to the party";
+      return `pickup to ${eventLabels.toEvent}`;
     } else if (carpoolData.canDropoff) {
-      return "dropoff from the party";
+      return `dropoff from ${eventLabels.fromEvent}`;
     }
-    return "transportation";
+    return `transportation for ${eventLabels.eventName}`;
   };
 
   return (
