@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MapPin, ExternalLink, Navigation } from 'lucide-react';
 import MapboxMap from './mapbox-map';
+import LeafletMap from './leaflet-map';
 import { geocodeAddress } from '@/lib/geocoding';
 
 interface EventMapProps {
@@ -14,6 +15,7 @@ interface EventMapProps {
 export default function EventMap({ address, city, postcode, eventName }: EventMapProps) {
   const fullAddress = `${address}, ${city} ${postcode}`;
   const [eventCoordinates, setEventCoordinates] = useState<[number, number] | null>(null);
+  const [useMapboxFallback, setUseMapboxFallback] = useState(false);
 
   // Geocode the event address
   useEffect(() => {
@@ -22,6 +24,9 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
         const coords = await geocodeAddress(fullAddress);
         if (coords) {
           setEventCoordinates(coords);
+        } else {
+          // If no geocoding results, set default London coordinates
+          setEventCoordinates([51.5074, -0.1276]);
         }
       } catch (error) {
         console.error('Failed to geocode event address:', error);
@@ -38,18 +43,32 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
     }
   }, [fullAddress]);
 
+  // Check if Mapbox token is available
+  const hasMapboxToken = !!import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+
   return (
     <div className="space-y-4">
       {/* Interactive Map Display */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <MapboxMap
-          className="w-full h-64"
-          eventLocation={eventCoordinates ? {
-            lat: eventCoordinates[0],
-            lng: eventCoordinates[1],
-            name: `${eventName} - ${fullAddress}`
-          } : undefined}
-        />
+        {hasMapboxToken && !useMapboxFallback ? (
+          <MapboxMap
+            className="w-full h-64"
+            eventLocation={eventCoordinates ? {
+              lat: eventCoordinates[0],
+              lng: eventCoordinates[1],
+              name: `${eventName} - ${fullAddress}`
+            } : undefined}
+          />
+        ) : (
+          <LeafletMap
+            className="w-full h-64"
+            eventLocation={eventCoordinates ? {
+              lat: eventCoordinates[0],
+              lng: eventCoordinates[1],
+              name: `${eventName} - ${fullAddress}`
+            } : undefined}
+          />
+        )}
       </div>
 
       {/* Navigation Options */}
