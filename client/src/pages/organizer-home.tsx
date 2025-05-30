@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Calendar, Share2, Users, MapPin, Cake, GraduationCap, Heart, Trophy, School, PartyPopper } from "lucide-react";
+import { Calendar, Share2, Users, MapPin, Cake, GraduationCap, Heart, Trophy, School, PartyPopper, ChevronLeft } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
