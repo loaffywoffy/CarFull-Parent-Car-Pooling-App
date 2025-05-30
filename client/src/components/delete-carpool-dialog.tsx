@@ -13,6 +13,7 @@ interface DeleteCarpoolDialogProps {
   onClose: () => void;
   carpoolId: number;
   carpoolPhone: string;
+  carpoolCreatorName: string;
   onDeleted: () => void;
 }
 
@@ -21,6 +22,7 @@ export default function DeleteCarpoolDialog({
   onClose, 
   carpoolId, 
   carpoolPhone, 
+  carpoolCreatorName, 
   onDeleted 
 }: DeleteCarpoolDialogProps) {
   const [step, setStep] = useState<'confirm' | 'verify'>('confirm');
@@ -117,9 +119,10 @@ export default function DeleteCarpoolDialog({
             </div>
 
             <div className="space-y-2">
-              <Label>Verification will be sent to</Label>
+              <Label>Verification will be sent to carpool offer creator</Label>
               <div className="p-3 bg-gray-50 rounded-md border">
-                <p className="text-sm font-medium">{carpoolPhone}</p>
+                <p className="text-sm font-medium">{carpoolCreatorName}</p>
+                <p className="text-sm text-gray-600">{carpoolPhone}</p>
               </div>
               <p className="text-xs text-gray-600">
                 We'll send a verification code to this number to confirm deletion

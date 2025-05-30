@@ -42,6 +42,7 @@ export default function DeleteCarpoolButton({
           onClose={() => setShowDeleteDialog(false)}
           carpoolId={carpool.id}
           carpoolPhone={carpool.phoneNumber}
+          carpoolCreatorName={carpool.parentName}
           onDeleted={handleDeleted}
         />
       </>
@@ -65,6 +66,7 @@ export default function DeleteCarpoolButton({
         onClose={() => setShowDeleteDialog(false)}
         carpoolId={carpool.id}
         carpoolPhone={carpool.phoneNumber}
+        carpoolCreatorName={carpool.parentName}
         onDeleted={handleDeleted}
       />
     </>
