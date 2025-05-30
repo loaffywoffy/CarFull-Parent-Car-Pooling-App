@@ -46,7 +46,10 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
   endTime: z.string().min(1, "End time is required"),
   eventDate: z.string().min(1, "Event date is required"),
   eventEndDate: z.string().min(1, "End date is required"),
-  phoneNumber: z.string().min(10, "Phone number is required")
+  phoneNumber: z.string().min(10, "Phone number is required"),
+  eventType: z.string().min(1, "Event type is required"),
+  description: z.string().optional(),
+  createdBy: z.string().min(1, "Creator name is required")
 }).refine(
   (data) => {
     // If end date is provided, it must be >= start date
@@ -104,7 +107,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
   });
 
   const partyGroupMutation = useMutation({
-    mutationFn: (values: PartyGroupFormValues & { verificationCode: string }) => 
+    mutationFn: (values: PartyGroupFormValues & { verificationCode?: string }) => 
       createPartyGroup(values),
     onSuccess: (data) => {
       // Invalidate party groups query to refresh the list
@@ -135,10 +138,14 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
     setShowVerification(true);
   };
 
-  const handleVerificationSuccess = () => {
+  const handleVerificationSuccess = (code: string) => {
     if (pendingFormData) {
       setIsLoading(true);
-      partyGroupMutation.mutate(pendingFormData);
+      setVerificationCode(code);
+      partyGroupMutation.mutate({
+        ...pendingFormData,
+        verificationCode: code
+      });
     }
   };
 
