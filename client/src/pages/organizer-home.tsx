@@ -167,6 +167,47 @@ export default function OrganizerHomePage() {
           )}
         </div>
 
+        {/* How it works */}
+        {!showForm && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                  <Calendar className="h-6 w-6 text-blue-600" />
+                </div>
+                <CardTitle className="text-lg">1. Create Event</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">Set up your event details including date, time, and location</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
+                  <Share2 className="h-6 w-6 text-green-600" />
+                </div>
+                <CardTitle className="text-lg">2. Share Link</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">Get a unique URL to share with parents via email, text, or social media</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                  <Users className="h-6 w-6 text-purple-600" />
+                </div>
+                <CardTitle className="text-lg">3. Parents Join</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">Parents can offer rides or request spots without creating accounts</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Testing URLs Section */}
         {!showForm && partyGroups.length > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
@@ -207,47 +248,6 @@ export default function OrganizerHomePage() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* How it works */}
-        {!showForm && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <Card className="text-center">
-              <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-                  <Calendar className="h-6 w-6 text-blue-600" />
-                </div>
-                <CardTitle className="text-lg">1. Create Event</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Set up your event details including date, time, and location</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
-                  <Share2 className="h-6 w-6 text-green-600" />
-                </div>
-                <CardTitle className="text-lg">2. Share Link</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Get a unique URL to share with parents via email, text, or social media</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
-                  <Users className="h-6 w-6 text-purple-600" />
-                </div>
-                <CardTitle className="text-lg">3. Parents Join</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Parents can offer rides or request spots without creating accounts</p>
-              </CardContent>
-            </Card>
           </div>
         )}
 
