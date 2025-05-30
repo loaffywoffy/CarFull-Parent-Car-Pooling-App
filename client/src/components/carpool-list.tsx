@@ -1565,33 +1565,6 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                   spacesAvailable: carpool.spacesAvailable || 0
                 }))}
               />
-              
-              {/* Legend */}
-              <div className="bg-gray-50 p-3 rounded-lg border">
-                <h4 className="font-medium text-sm text-gray-700 mb-2">Map Legend</h4>
-                <div className="flex flex-wrap gap-4 text-xs">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span>Event Location</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span>Your Location</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span>To Event Only</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                    <span>From Event Only</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                    <span>Both Ways</span>
-                  </div>
-                </div>
-              </div>
             </div>
           ) : (
             // List View

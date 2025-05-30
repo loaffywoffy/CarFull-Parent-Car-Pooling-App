@@ -19,7 +19,7 @@ import confetti from "canvas-confetti";
 import { type CheckedState } from "@radix-ui/react-checkbox";
 import { getPartyGroupById } from "@/api/partyGroups";
 import { type PartyGroup } from "@shared/schema";
-import { CalendarIcon, MapPinIcon, ClockIcon, CalculatorIcon } from "lucide-react";
+import { CalendarIcon, MapPinIcon, ClockIcon, CalculatorIcon, User, Car } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import LocationMap from "@/components/location-map";
 import { geocodeAddress } from "@/lib/geocoding";
@@ -401,88 +401,85 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-6 text-neutral-800">Offer a Carpool</h2>
-
-      {/* Party Details Section */}
+    <div className="space-y-6">
+      {/* Event Info Banner */}
       {isLoadingPartyGroup ? (
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <Skeleton className="h-6 w-1/2 mb-3" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+          <Skeleton className="h-6 w-1/2 mb-3" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
       ) : partyGroup ? (
-        <Card className="mb-6 bg-gradient-to-r from-primary-50 to-primary-100">
-          <CardContent className="p-4">
-            <h3 className="font-medium text-lg text-primary-800 mb-2 flex items-center">
-              <MapPinIcon className="mr-2 h-5 w-5 text-primary-600" />
-              {partyGroup.name}
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 mb-3">
-              <div className="flex items-center">
-                <CalendarIcon className="mr-2 h-4 w-4 text-primary-600" />
-                {formatDate(partyGroup.eventDate)}
-              </div>
-              <div className="flex items-center">
-                <ClockIcon className="mr-2 h-4 w-4 text-primary-600" />
-                <span>Time: {partyGroup.targetArrivalTime} - {partyGroup.endTime || "Not specified"}</span>
-              </div>
-            </div>
-
-            <div className="bg-white p-3 rounded-md border border-primary-200 mb-2">
-              <div className="flex justify-between items-center">
-                <p className="text-gray-700">
-                  <strong>Location:</strong> {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                  onClick={() => setShowMap(!showMap)}
-                >
-                  <MapPinIcon className="h-3.5 w-3.5" />
-                  {showMap ? 'Hide Map' : 'Show Map'}
-                </Button>
-              </div>
-
-              {/* Collapsible map section */}
-              {showMap && (
-                <div className="mt-3">
-                  <LocationMap
-                    locations={[{
-                      label: partyGroup.name,
-                      position: eventLocation,
-                      type: 'party'
-                    }]}
-                    height="240px"
-                    initialZoom={14}
-                  />
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg text-blue-900 mb-2 flex items-center">
+                <MapPinIcon className="mr-2 h-5 w-5 text-blue-600" />
+                {partyGroup.name}
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-blue-800 mb-3">
+                <div className="flex items-center">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formatDate(partyGroup.eventDate)}
                 </div>
+                <div className="flex items-center">
+                  <ClockIcon className="mr-2 h-4 w-4" />
+                  {partyGroup.targetArrivalTime} - {partyGroup.endTime || "TBD"}
+                </div>
+              </div>
+              
+              <p className="text-sm text-gray-700">
+                <span className="font-medium">Location:</span> {partyGroup.eventAddress}, {partyGroup.eventCity}, {partyGroup.eventPostcode}
+              </p>
+              
+              {partyGroup.additionalInformation && (
+                <p className="text-xs text-gray-600 mt-2">
+                  <span className="font-medium">Note:</span> {partyGroup.additionalInformation}
+                </p>
               )}
             </div>
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="ml-4 shrink-0"
+              onClick={() => setShowMap(!showMap)}
+            >
+              <MapPinIcon className="h-4 w-4 mr-1" />
+              {showMap ? 'Hide' : 'Map'}
+            </Button>
+          </div>
 
-            {partyGroup.additionalInformation && (
-              <div className="mt-3 text-xs text-gray-600">
-                <strong>Additional Info:</strong> {partyGroup.additionalInformation}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {showMap && (
+            <div className="mt-4 pt-4 border-t border-blue-200">
+              <LocationMap
+                locations={[{
+                  label: partyGroup.name,
+                  position: eventLocation,
+                  type: 'party'
+                }]}
+                height="200px"
+                initialZoom={14}
+              />
+            </div>
+          )}
+        </div>
       ) : null}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Parent Information */}
-            <div className="space-y-4 md:col-span-2">
-              <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Your Information</h3>
+          {/* Your Information Section */}
+          <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+            <h3 className="font-semibold text-gray-900 flex items-center">
+              <User className="h-5 w-5 mr-2 text-gray-600" />
+              Your Information
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
               <FormField
                 control={form.control}
@@ -570,13 +567,17 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                 />
               </div>
             </div>
+          </div>
 
-            {/* Carpool Options */}
-            <div className="space-y-4 md:col-span-2">
-              <h3 className="font-medium text-neutral-700 border-b border-neutral-200 pb-2">Carpool Options</h3>
-
+          {/* Carpool Options Section */}
+          <div className="bg-green-50 rounded-lg p-4 space-y-4">
+            <h3 className="font-semibold text-gray-900 flex items-center">
+              <Car className="h-5 w-5 mr-2 text-green-600" />
+              What can you offer?
+            </h3>
+            
+            <div className="space-y-4">
               <div className="space-y-3">
-                <FormLabel>I can offer:</FormLabel>
                 <div className="flex flex-wrap gap-4">
                   <FormField
                     control={form.control}
