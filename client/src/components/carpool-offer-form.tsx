@@ -178,8 +178,8 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups'] });
 
       toast({
-        title: "Success!",
-        description: "Your carpool offer has been submitted successfully.",
+        title: "Carpool Offer Submitted!",
+        description: "Your carpool offer has been submitted successfully. Parents can now request spots.",
       });
 
       form.reset();
