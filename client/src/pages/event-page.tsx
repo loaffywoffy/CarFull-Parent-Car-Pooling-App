@@ -39,6 +39,14 @@ export default function EventPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Short URL copied!",
+      description: "This SMS-friendly link is perfect for text messages.",
+    });
+  };
+
   const shareViaEmail = () => {
     if (!event) return;
     const subject = encodeURIComponent(`Join carpools for ${event.name}`);
@@ -216,24 +224,48 @@ export default function EventPage() {
                 <Separator className="my-4 sm:my-6" />
                 
                 {/* Event URL Display */}
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-xs text-gray-600 mb-2">Event URL:</p>
-                  <div className="flex gap-2">
-                    <input 
-                      readOnly 
-                      value={window.location.href} 
-                      className="flex-1 text-xs bg-white border border-gray-200 rounded px-2 py-1 font-mono" 
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={copyEventUrl}
-                      className="shrink-0"
-                    >
-                      <Copy className="h-3 w-3 mr-1" />
-                      {copied ? "Copied!" : "Copy"}
-                    </Button>
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg space-y-3">
+                  <div>
+                    <p className="text-xs text-gray-600 mb-2">Event URL:</p>
+                    <div className="flex gap-2">
+                      <input 
+                        readOnly 
+                        value={window.location.href} 
+                        className="flex-1 text-xs bg-white border border-gray-200 rounded px-2 py-1 font-mono" 
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={copyEventUrl}
+                        className="shrink-0"
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        {copied ? "Copied!" : "Copy"}
+                      </Button>
+                    </div>
                   </div>
+                  
+                  {event.shortCode && (
+                    <div>
+                      <p className="text-xs text-gray-600 mb-2">Short URL (SMS-friendly):</p>
+                      <div className="flex gap-2">
+                        <input 
+                          readOnly 
+                          value={`${window.location.origin}/s/${event.shortCode}`} 
+                          className="flex-1 text-xs bg-white border border-gray-200 rounded px-2 py-1 font-mono" 
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => copyToClipboard(`${window.location.origin}/s/${event.shortCode}`)}
+                          className="shrink-0"
+                        >
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copy
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
