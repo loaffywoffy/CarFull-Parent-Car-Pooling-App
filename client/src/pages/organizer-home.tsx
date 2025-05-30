@@ -448,7 +448,7 @@ export default function OrganizerHomePage() {
                         name="createdBy"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Your Name or Email</FormLabel>
+                            <FormLabel>Your Name</FormLabel>
                             <FormControl>
                               <Input placeholder="Jane Smith or jane@example.com" {...field} />
                             </FormControl>
