@@ -62,31 +62,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[DEBUG] Routes - Original phone: "${phoneNumber}"`);
       console.log(`[DEBUG] Routes - Normalized phone: "${normalizedPhone}"`);
 
-      // Check rate limits
-      const phoneLimit = rateLimitService.checkPhoneNumberLimit(normalizedPhone);
-      if (!phoneLimit.allowed) {
-        const minutes = Math.ceil((phoneLimit.timeUntilReset || 0) / (60 * 1000));
-        rateLimitService.logSuspiciousActivity(normalizedPhone, 'phone_rate_limit_exceeded');
+      // Comprehensive bot protection check
+      const botProtection = rateLimitService.performBotProtection(clientIP, normalizedPhone);
+      if (!botProtection.allowed) {
         return res.status(429).json({ 
-          message: `Too many SMS requests for this phone number. Try again in ${minutes} minutes.` 
-        });
-      }
-
-      const ipLimit = rateLimitService.checkIPLimit(clientIP);
-      if (!ipLimit.allowed) {
-        const minutes = Math.ceil((ipLimit.timeUntilReset || 0) / (60 * 1000));
-        rateLimitService.logSuspiciousActivity(clientIP, 'ip_rate_limit_exceeded');
-        return res.status(429).json({ 
-          message: `Too many SMS requests from this location. Try again in ${minutes} minutes.` 
-        });
-      }
-
-      // Check brute force protection
-      const bruteForceCheck = rateLimitService.checkBruteForceProtection(clientIP);
-      if (!bruteForceCheck.allowed) {
-        const minutes = Math.ceil((bruteForceCheck.blockTimeRemaining || 0) / (60 * 1000));
-        return res.status(429).json({ 
-          message: `Account temporarily blocked due to suspicious activity. Try again in ${minutes} minutes.` 
+          message: botProtection.reason || "Request blocked due to security policies." 
         });
       }
 

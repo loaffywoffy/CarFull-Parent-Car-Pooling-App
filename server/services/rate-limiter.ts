@@ -12,17 +12,36 @@ interface BruteForceEntry {
   blockExpiry?: number;
 }
 
+interface RequestTiming {
+  timestamp: number;
+  ip: string;
+  phoneNumber: string;
+}
+
 class RateLimitService {
   private phoneNumberLimits = new Map<string, RateLimitEntry>();
   private ipLimits = new Map<string, RateLimitEntry>();
   private bruteForceProtection = new Map<string, BruteForceEntry>();
+  private requestTimings = new Map<string, RequestTiming[]>();
+  private blockedPhoneNumbers = new Set<string>();
+  private suspiciousIPs = new Map<string, number>();
   
-  // Configuration
-  private readonly SMS_LIMIT_PER_PHONE_PER_HOUR = 3;
-  private readonly SMS_LIMIT_PER_IP_PER_HOUR = 10;
-  private readonly BRUTE_FORCE_THRESHOLD = 5;
-  private readonly BRUTE_FORCE_BLOCK_DURATION = 15 * 60 * 1000; // 15 minutes
+  // Configuration - Much stricter limits to prevent bot attacks
+  private readonly SMS_LIMIT_PER_PHONE_PER_HOUR = 2;
+  private readonly SMS_LIMIT_PER_PHONE_PER_DAY = 5;
+  private readonly SMS_LIMIT_PER_IP_PER_HOUR = 5;
+  private readonly SMS_LIMIT_PER_IP_PER_DAY = 20;
+  private readonly BRUTE_FORCE_THRESHOLD = 3;
+  private readonly BRUTE_FORCE_BLOCK_DURATION = 30 * 60 * 1000; // 30 minutes
   private readonly CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+  
+  // Bot detection patterns
+  private readonly MIN_TIME_BETWEEN_REQUESTS = 5000; // 5 seconds minimum between requests
+  private readonly SUSPICIOUS_PATTERNS = [
+    /^(\d)\1{9,}$/, // Repeated digits like 1111111111
+    /^(01|02|03|07|08|09)\d{8}$/, // Invalid UK formats
+    /^[0-9]{11,}$/, // Too many digits
+  ];
   
   // Development/testing exemptions
   private readonly EXEMPTED_NUMBERS = new Set([
@@ -34,6 +53,45 @@ class RateLimitService {
     setInterval(() => this.cleanup(), this.CLEANUP_INTERVAL);
   }
 
+  // Bot detection methods
+  private isSuspiciousPhoneNumber(phoneNumber: string): boolean {
+    // Check for patterns indicating fake/bot numbers
+    for (const pattern of this.SUSPICIOUS_PATTERNS) {
+      if (pattern.test(phoneNumber.replace(/^\+44/, '0'))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private detectRapidRequests(ip: string, phoneNumber: string): boolean {
+    const now = Date.now();
+    const key = `${ip}:${phoneNumber}`;
+    const timings = this.requestTimings.get(key) || [];
+    
+    // Remove old entries (older than 1 minute)
+    const recentTimings = timings.filter(t => now - t.timestamp < 60000);
+    
+    // Check if there are more than 3 requests in the last minute
+    if (recentTimings.length >= 3) {
+      return true;
+    }
+    
+    // Check minimum time between requests
+    if (recentTimings.length > 0) {
+      const lastRequest = recentTimings[recentTimings.length - 1];
+      if (now - lastRequest.timestamp < this.MIN_TIME_BETWEEN_REQUESTS) {
+        return true;
+      }
+    }
+    
+    // Store this request
+    recentTimings.push({ timestamp: now, ip, phoneNumber });
+    this.requestTimings.set(key, recentTimings);
+    
+    return false;
+  }
+
   checkPhoneNumberLimit(phoneNumber: string): { allowed: boolean; timeUntilReset?: number } {
     // Check if this phone number is exempted for testing
     console.log(`[DEBUG] Checking rate limit for phone: "${phoneNumber}"`);
@@ -43,9 +101,23 @@ class RateLimitService {
       console.log(`[DEBUG] Phone number ${phoneNumber} is exempted from rate limiting`);
       return { allowed: true };
     }
+
+    // Check if phone number is permanently blocked
+    if (this.blockedPhoneNumbers.has(phoneNumber)) {
+      this.logSuspiciousActivity(phoneNumber, 'Attempted to use blocked phone number');
+      return { allowed: false };
+    }
+
+    // Check for suspicious phone number patterns
+    if (this.isSuspiciousPhoneNumber(phoneNumber)) {
+      this.blockedPhoneNumbers.add(phoneNumber);
+      this.logSuspiciousActivity(phoneNumber, 'Suspicious phone number pattern detected');
+      return { allowed: false };
+    }
     
     const now = Date.now();
     const hourAgo = now - (60 * 60 * 1000);
+    const dayAgo = now - (24 * 60 * 60 * 1000);
     
     const entry = this.phoneNumberLimits.get(phoneNumber);
     
@@ -130,6 +202,65 @@ class RateLimitService {
       return { allowed: false, blockTimeRemaining };
     }
     
+    return { allowed: true };
+  }
+
+  // Comprehensive bot protection that combines all checks
+  performBotProtection(ip: string, phoneNumber: string): { allowed: boolean; reason?: string; timeUntilReset?: number } {
+    // 1. Check for suspicious phone number patterns first
+    if (this.isSuspiciousPhoneNumber(phoneNumber)) {
+      this.blockedPhoneNumbers.add(phoneNumber);
+      this.logSuspiciousActivity(phoneNumber, 'Blocked suspicious phone number pattern');
+      return { allowed: false, reason: 'Invalid phone number format detected.' };
+    }
+
+    // 2. Check if phone number is already blocked
+    if (this.blockedPhoneNumbers.has(phoneNumber)) {
+      this.logSuspiciousActivity(phoneNumber, 'Attempted to use blocked phone number');
+      return { allowed: false, reason: 'Phone number is temporarily blocked.' };
+    }
+
+    // 3. Check for rapid requests (bot-like behavior)
+    if (this.detectRapidRequests(ip, phoneNumber)) {
+      this.logSuspiciousActivity(`${ip}:${phoneNumber}`, 'Rapid requests detected - potential bot');
+      return { allowed: false, reason: 'Too many requests. Please wait at least 5 seconds between attempts.' };
+    }
+
+    // 4. Check phone number rate limits
+    const phoneCheck = this.checkPhoneNumberLimit(phoneNumber);
+    if (!phoneCheck.allowed) {
+      return { 
+        allowed: false, 
+        reason: phoneCheck.timeUntilReset 
+          ? `Phone number rate limit exceeded. Try again in ${phoneCheck.timeUntilReset} seconds.`
+          : 'Phone number has exceeded daily verification limit.',
+        timeUntilReset: phoneCheck.timeUntilReset
+      };
+    }
+
+    // 5. Check IP rate limits
+    const ipCheck = this.checkIPLimit(ip);
+    if (!ipCheck.allowed) {
+      return { 
+        allowed: false, 
+        reason: ipCheck.timeUntilReset 
+          ? `Too many verification attempts from this location. Try again in ${ipCheck.timeUntilReset} seconds.`
+          : 'IP address has exceeded verification limits.',
+        timeUntilReset: ipCheck.timeUntilReset
+      };
+    }
+
+    // 6. Check brute force protection
+    const bruteForceCheck = this.checkBruteForceProtection(`${ip}:${phoneNumber}`);
+    if (!bruteForceCheck.allowed) {
+      return { 
+        allowed: false, 
+        reason: bruteForceCheck.blockTimeRemaining 
+          ? `Account temporarily locked for ${Math.ceil(bruteForceCheck.blockTimeRemaining / 60000)} minutes due to suspicious activity.`
+          : 'Account temporarily locked due to too many failed verification attempts.'
+      };
+    }
+
     return { allowed: true };
   }
 
