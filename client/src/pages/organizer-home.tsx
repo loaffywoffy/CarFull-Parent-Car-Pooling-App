@@ -100,7 +100,9 @@ export default function OrganizerHomePage() {
 
   const createEventMutation = useMutation({
     mutationFn: async (eventData: PartyGroupFormValues) => {
+      console.log("Making API request with data:", eventData);
       const res = await apiRequest("POST", "/api/party-groups", eventData);
+      console.log("API response status:", res.status);
       return await res.json();
     },
     onSuccess: (event) => {
@@ -131,6 +133,8 @@ export default function OrganizerHomePage() {
   });
 
   const onSubmit = (values: PartyGroupFormValues) => {
+    console.log("Form submitted with values:", values);
+    console.log("Form errors:", form.formState.errors);
     createEventMutation.mutate(values);
   };
 
