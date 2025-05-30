@@ -93,7 +93,11 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
           <div className="text-sm text-gray-600 space-y-1">
             <p><strong>Driver:</strong> {carpoolData.parentName}</p>
             <p><strong>For:</strong> {carpoolData.childName}</p>
-            <p><strong>From:</strong> {carpoolData.address}, {carpoolData.city}</p>
+            <p><strong>From:</strong> {
+              carpoolData.outboundDropoffPreference === 'pickup-point' && carpoolData.outboundPickupLocation
+                ? `${carpoolData.outboundPickupLocation}, ${carpoolData.outboundPickupLocationCity}`
+                : `${carpoolData.address}, ${carpoolData.city}`
+            }</p>
             {carpoolData.outboundDepartureTime && (
               <p><strong>Departure:</strong> {carpoolData.outboundDepartureTime}</p>
             )}
