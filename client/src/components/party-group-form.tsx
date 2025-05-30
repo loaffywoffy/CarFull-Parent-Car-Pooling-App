@@ -26,14 +26,16 @@ import { Calendar, MapPin } from "lucide-react";
 import { SMSVerificationDialog } from "./sms-verification-dialog";
 import { PhoneInputWithValidation } from "./phone-input-with-validation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createPartyGroup } from "@/api/partyGroups";
+import { createPartyGroup, updatePartyGroup } from "@/api/partyGroups";
 import { queryClient } from "@/lib/queryClient";
 import { eventTypeOptions } from "@/lib/event-colors";
 import { z } from "zod";
 
 interface PartyGroupFormProps {
   onSuccess: (partyGroupId: number) => void;
-  onCancel?: () => void; // Add optional cancel callback
+  onCancel?: () => void;
+  initialData?: any; // Event data for editing
+  mode?: 'create' | 'edit'; // Form mode
 }
 
 // Create the form schema with custom validations
@@ -77,7 +79,7 @@ const partyGroupFormSchema = insertPartyGroupSchema.extend({
 
 type PartyGroupFormValues = z.infer<typeof partyGroupFormSchema>;
 
-export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormProps) {
+export default function PartyGroupForm({ onSuccess, onCancel, initialData, mode = 'create' }: PartyGroupFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<PartyGroupFormValues | null>(null);
@@ -86,31 +88,34 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
   const form = useForm<PartyGroupFormValues>({
     resolver: zodResolver(partyGroupFormSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      eventType: "birthday",
-      eventAddress: "",
-      eventCity: "",
-      eventPostcode: "",
-      eventDate: "",
-      eventEndDate: "",
-      targetArrivalTime: "",
-      endTime: "",
-      createdBy: "",
-      phoneNumber: ""
+      name: initialData?.name || "",
+      description: initialData?.description || "",
+      eventType: initialData?.eventType || "birthday",
+      eventAddress: initialData?.eventAddress || "",
+      eventCity: initialData?.eventCity || "",
+      eventPostcode: initialData?.eventPostcode || "",
+      eventDate: initialData?.eventDate || "",
+      eventEndDate: initialData?.eventEndDate || "",
+      targetArrivalTime: initialData?.targetArrivalTime || "",
+      endTime: initialData?.endTime || "",
+      createdBy: initialData?.createdBy || "",
+      phoneNumber: initialData?.phoneNumber || "",
+      additionalInformation: initialData?.additionalInformation || ""
     },
   });
 
   const partyGroupMutation = useMutation({
     mutationFn: (values: PartyGroupFormValues) => 
-      createPartyGroup(values),
+      mode === 'edit' && initialData?.id 
+        ? updatePartyGroup(initialData.id, values)
+        : createPartyGroup(values),
     onSuccess: (data) => {
       // Invalidate party groups query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['/api/event-groups'] });
 
       toast({
         title: "Success!",
-        description: "Event created successfully.",
+        description: mode === 'edit' ? "Event updated successfully." : "Event created successfully.",
       });
       form.reset();
       onSuccess(data.id);
@@ -118,7 +123,7 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create event. Please try again.",
+        description: error.message || `Failed to ${mode === 'edit' ? 'update' : 'create'} event. Please try again.`,
         variant: "destructive",
       });
     },
@@ -138,8 +143,12 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-2 text-neutral-800">Create a New Event</h2>
-      <p className="text-sm text-neutral-600 mb-6">Enter the event details to share with parents</p>
+      <h2 className="text-xl font-semibold mb-2 text-neutral-800">
+        {mode === 'edit' ? 'Update Event' : 'Create a New Event'}
+      </h2>
+      <p className="text-sm text-neutral-600 mb-6">
+        {mode === 'edit' ? 'Update the event details' : 'Enter the event details to share with parents'}
+      </p>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -559,7 +568,9 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
               className="px-6 py-2 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
               disabled={partyGroupMutation.isPending}
             >
-              {partyGroupMutation.isPending ? "Creating..." : "Create Event"}
+              {partyGroupMutation.isPending 
+                ? (mode === 'edit' ? "Updating..." : "Creating...") 
+                : (mode === 'edit' ? "Update Event" : "Create Event")}
             </Button>
           </div>
         </form>
@@ -569,9 +580,9 @@ export default function PartyGroupForm({ onSuccess, onCancel }: PartyGroupFormPr
         onClose={() => setShowVerification(false)}
         onVerified={handleVerificationSuccess}
         phoneNumber={form.watch("phoneNumber") || ""}
-        action="create_event"
+        action={mode === 'edit' ? "edit_event" : "create_event"}
         title="Verify Phone Number"
-        description="Please verify your phone number to create this event."
+        description={mode === 'edit' ? "Please verify your phone number to update this event." : "Please verify your phone number to create this event."}
       />
     </div>
   );
