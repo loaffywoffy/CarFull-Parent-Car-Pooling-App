@@ -375,25 +375,25 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
 
     return (
       <Card key={carpool.id} className="mb-4 hover:shadow-lg transition-shadow overflow-hidden">
-        <CardContent className="p-4">
+        <CardContent className="p-3 sm:p-4 md:p-6">
           <div 
-            className="flex justify-between items-start cursor-pointer"
+            className="flex flex-col sm:flex-row sm:justify-between sm:items-start cursor-pointer gap-3"
             onClick={() => {
               setShowDetails(!showDetails);
               // If opening details, auto-show map
               if (!showDetails) setMapVisible(true);
             }}
           >
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 bg-primary/10">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Avatar className="h-10 w-10 bg-primary/10 shrink-0">
                 <AvatarFallback className="text-primary font-medium">
                   {getInitialsFromName(carpool.parentName)}
                 </AvatarFallback>
               </Avatar>
 
-              <div>
-                <h3 className="font-semibold text-lg flex items-center gap-2">
-                  {carpool.parentName}
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-base sm:text-lg flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                  <span className="truncate">{carpool.parentName}</span>
                   {carpool.childName && (
                     <span className="text-sm font-normal text-gray-500">
                       with {carpool.childName}
@@ -538,7 +538,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 w-full sm:w-auto">
               <Button 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1405,34 +1405,48 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
       )}
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="w-full">
-          <TabsTrigger value="to-event" className="flex items-center gap-1.5">
-            <div className="bg-green-100 rounded-full w-4 h-4 flex items-center justify-center">
-              <ArrowRight size={10} className="text-green-800" />
-            </div>
-            <span className="text-green-800">To Event <span className="text-slate-600">({carpools?.filter((c: any) => c.canPickup || c.canBoth).length || 0})</span></span>
-          </TabsTrigger>
-          <TabsTrigger value="from-event" className="flex items-center gap-1.5">
-            <div className="bg-blue-100 rounded-full w-4 h-4 flex items-center justify-center">
-              <ArrowLeft size={10} className="text-blue-800" />
-            </div>
-            <span className="text-blue-800">From Event <span className="text-slate-600">({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})</span></span>
-          </TabsTrigger>
-          <TabsTrigger value="round-trip" className="flex items-center gap-1.5">
-            <div className="bg-indigo-100 rounded-full w-4 h-4 flex items-center justify-center">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-indigo-800">
-                <path d="M7 16L3 12M3 12L7 8M3 12H16M13 8L17 12M17 12L13 16M17 12H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <span className="text-indigo-800">To & From <span className="text-slate-600">({carpools?.filter((c: any) => c.canBoth).length || 0})</span></span>
-          </TabsTrigger>
-          <TabsTrigger value="both" className="flex items-center gap-1.5">
-            <div className="bg-gray-100 rounded-full w-4 h-4 flex items-center justify-center">
-              <Car size={10} className="text-gray-800" />
-            </div>
-            <span className="text-gray-800">All <span className="text-slate-600">({carpools?.length || 0})</span></span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto">
+          <TabsList className="w-full min-w-max md:w-full grid grid-cols-4 h-auto">
+            <TabsTrigger value="to-event" className="flex flex-col sm:flex-row items-center gap-1 p-2 text-xs sm:text-sm">
+              <div className="bg-green-100 rounded-full w-4 h-4 flex items-center justify-center shrink-0">
+                <ArrowRight size={10} className="text-green-800" />
+              </div>
+              <span className="text-green-800 text-center">
+                <span className="block sm:inline">To Event</span>
+                <span className="text-slate-600 block sm:inline"> ({carpools?.filter((c: any) => c.canPickup || c.canBoth).length || 0})</span>
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="from-event" className="flex flex-col sm:flex-row items-center gap-1 p-2 text-xs sm:text-sm">
+              <div className="bg-blue-100 rounded-full w-4 h-4 flex items-center justify-center shrink-0">
+                <ArrowLeft size={10} className="text-blue-800" />
+              </div>
+              <span className="text-blue-800 text-center">
+                <span className="block sm:inline">From Event</span>
+                <span className="text-slate-600 block sm:inline"> ({carpools?.filter((c: any) => c.canDropoff || c.canBoth).length || 0})</span>
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="round-trip" className="flex flex-col sm:flex-row items-center gap-1 p-2 text-xs sm:text-sm">
+              <div className="bg-indigo-100 rounded-full w-4 h-4 flex items-center justify-center shrink-0">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-indigo-800">
+                  <path d="M7 16L3 12M3 12L7 8M3 12H16M13 8L17 12M17 12L13 16M17 12H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <span className="text-indigo-800 text-center">
+                <span className="block sm:inline">To & From</span>
+                <span className="text-slate-600 block sm:inline"> ({carpools?.filter((c: any) => c.canBoth).length || 0})</span>
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="both" className="flex flex-col sm:flex-row items-center gap-1 p-2 text-xs sm:text-sm">
+              <div className="bg-gray-100 rounded-full w-4 h-4 flex items-center justify-center shrink-0">
+                <Car size={10} className="text-gray-800" />
+              </div>
+              <span className="text-gray-800 text-center">
+                <span className="block sm:inline">All</span>
+                <span className="text-slate-600 block sm:inline"> ({carpools?.length || 0})</span>
+              </span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <div className="mt-4">
           {showMapView ? (
