@@ -100,46 +100,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
     return () => clearTimeout(debounceTimer);
   }, [userAddress, userCity, userPostcode]);
 
-  // Handle geocoding user postcode when entered using Google Maps API
-  useEffect(() => {
-    async function geocodeWithGoogle() {
-      if (!userPostcode || userPostcode.trim().length < 5) return;
 
-      if (!window.google?.maps?.Geocoder) {
-        // If Google Maps isn't loaded yet, wait and try again
-        const checkGoogle = setInterval(() => {
-          if (window.google?.maps?.Geocoder) {
-            clearInterval(checkGoogle);
-            geocodeWithGoogle();
-          }
-        }, 100);
-        
-        setTimeout(() => clearInterval(checkGoogle), 5000);
-        return;
-      }
-
-      try {
-        const geocoder = new window.google.maps.Geocoder();
-        
-        geocoder.geocode({ address: userPostcode }, (results, status) => {
-          if (status === 'OK' && results && results[0]) {
-            const location = results[0].geometry.location;
-            const coords: [number, number] = [location.lat(), location.lng()];
-            console.log('User postcode geocoded successfully:', coords);
-            setUserCoordinates(coords);
-          } else {
-            console.log('User postcode geocoding failed:', status);
-            setUserCoordinates(null);
-          }
-        });
-      } catch (error) {
-        console.error("Error geocoding user postcode:", error);
-        setUserCoordinates(null);
-      }
-    }
-
-    geocodeWithGoogle();
-  }, [userPostcode]);
 
   // Calculate distances between event location and each carpool
   useEffect(() => {
