@@ -85,18 +85,26 @@ export default function GoogleMap({
         setMap(mapInstance);
         setIsLoading(false);
         
-        // Force a resize to ensure proper rendering
-        setTimeout(() => {
-          google.maps.event.trigger(mapInstance, 'resize');
-          console.log('Map resize triggered');
-        }, 100);
+        // Collect all marker positions for auto-fitting bounds
+        const bounds = new google.maps.LatLngBounds();
+        const markers: google.maps.Marker[] = [];
 
-        // Add event location marker (simple version)
+        // Add event location marker with distinctive red color
         if (eventLocation) {
           const eventMarker = new google.maps.Marker({
             position: { lat: eventLocation.lat, lng: eventLocation.lng },
             map: mapInstance,
             title: eventLocation.name,
+            icon: {
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="16" cy="16" r="12" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+                  <circle cx="16" cy="16" r="4" fill="#ffffff"/>
+                </svg>
+              `),
+              scaledSize: new google.maps.Size(32, 32),
+              anchor: new google.maps.Point(16, 16)
+            }
           });
 
           const infoWindow = new google.maps.InfoWindow({
@@ -106,23 +114,57 @@ export default function GoogleMap({
           eventMarker.addListener('click', () => {
             infoWindow.open(mapInstance, eventMarker);
           });
+
+          markers.push(eventMarker);
+          bounds.extend(eventMarker.getPosition()!);
         }
 
-        // Add user location marker (simple version)
+        // Add user location marker with distinctive blue color
         if (userLocation) {
-          new google.maps.Marker({
+          const userMarker = new google.maps.Marker({
             position: { lat: userLocation.lat, lng: userLocation.lng },
             map: mapInstance,
             title: 'Your Location',
+            icon: {
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="16" cy="16" r="12" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+                  <circle cx="16" cy="16" r="4" fill="#ffffff"/>
+                </svg>
+              `),
+              scaledSize: new google.maps.Size(32, 32),
+              anchor: new google.maps.Point(16, 16)
+            }
           });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<div><strong>Your Location</strong></div>`
+          });
+
+          userMarker.addListener('click', () => {
+            infoWindow.open(mapInstance, userMarker);
+          });
+
+          markers.push(userMarker);
+          bounds.extend(userMarker.getPosition()!);
         }
 
-        // Add carpool location markers (simple version)
+        // Add carpool location markers with green color
         carpoolLocations.forEach((carpool) => {
           const marker = new google.maps.Marker({
             position: { lat: carpool.lat, lng: carpool.lng },
             map: mapInstance,
             title: carpool.parentName,
+            icon: {
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" fill="#16a34a" stroke="#ffffff" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="3" fill="#ffffff"/>
+                </svg>
+              `),
+              scaledSize: new google.maps.Size(24, 24),
+              anchor: new google.maps.Point(12, 12)
+            }
           });
 
           const infoWindow = new google.maps.InfoWindow({
