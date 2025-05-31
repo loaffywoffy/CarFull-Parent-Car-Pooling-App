@@ -107,7 +107,7 @@ function toRad(degrees: number): number {
 const drivingDistanceCache: Record<string, { distance: number; duration: number }> = {};
 
 /**
- * Calculate driving distance and duration using MapBox Directions API
+ * Calculate driving distance and duration using Google Maps Directions API
  */
 export async function calculateDrivingDistance(
   startCoords: [number, number],
@@ -131,20 +131,20 @@ export async function calculateDrivingDistance(
     // Add delay to respect rate limits
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-    if (!mapboxToken) {
-      console.error('MapBox access token not found');
+    const googleApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!googleApiKey) {
+      console.error('Google Maps API key not found');
       return null;
     }
 
-    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}?access_token=${mapboxToken}&geometries=geojson`;
+    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${startCoords[0]},${startCoords[1]}&destination=${endCoords[0]},${endCoords[1]}&key=${googleApiKey}`;
     
     const response = await axios.get(url);
     
-    if (response.data?.routes?.[0]) {
-      const route = response.data.routes[0];
-      const distanceInKm = route.distance / 1000; // Convert meters to kilometers
-      const durationInMinutes = route.duration / 60; // Convert seconds to minutes
+    if (response.data?.routes?.[0]?.legs?.[0]) {
+      const leg = response.data.routes[0].legs[0];
+      const distanceInKm = leg.distance.value / 1000; // Convert meters to kilometers
+      const durationInMinutes = leg.duration.value / 60; // Convert seconds to minutes
       
       const result = {
         distance: distanceInKm,
@@ -154,14 +154,14 @@ export async function calculateDrivingDistance(
       // Cache the result
       drivingDistanceCache[cacheKey] = result;
       
-      console.log(`Calculated driving distance: ${distanceInKm.toFixed(1)} km, ${durationInMinutes.toFixed(0)} minutes`);
+      console.log(`Calculated Google driving distance: ${distanceInKm.toFixed(1)} km, ${durationInMinutes.toFixed(0)} minutes`);
       return result;
     }
     
-    console.error('No route found');
+    console.error('No route found from Google Directions API');
     return null;
   } catch (error) {
-    console.error('MapBox routing error:', error);
+    console.error('Google Directions API routing error:', error);
     return null;
   }
 }
