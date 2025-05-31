@@ -168,22 +168,42 @@ export default function EventPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-3 py-4 sm:px-4 sm:py-8">
         {/* Event Information */}
-        <Card className="mb-6">
-          <CardHeader className="pb-4">
+        <Card className="mb-6 overflow-hidden">
+          <CardHeader className="pb-4 bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 border-b border-gray-100">
             <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 pr-2">
-                  {event.name}
-                </CardTitle>
-                <CardDescription className="text-sm sm:text-base">
-                  Join carpools for this event - no account required
-                </CardDescription>
+              <div className="flex items-start space-x-4 flex-1 min-w-0">
+                {(() => {
+                  const { icon: EventIcon, bgColor, iconColor } = getEventTypeIcon(event.eventType || '');
+                  return (
+                    <div className={`w-12 h-12 sm:w-16 sm:h-16 ${bgColor} rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                      <EventIcon className={`h-6 w-6 sm:h-8 sm:w-8 ${iconColor}`} />
+                    </div>
+                  );
+                })()}
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 pr-2">
+                    {event.name}
+                  </CardTitle>
+                  <div className="flex items-center space-x-4 mb-3">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      {formatDate(event.eventDate)}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {formatTime(event.targetArrivalTime)}
+                    </div>
+                  </div>
+                  <CardDescription className="text-sm sm:text-base text-gray-700 font-medium capitalize">
+                    {event.eventType} • Join carpools - no account required
+                  </CardDescription>
+                </div>
               </div>
               <div className="flex items-center space-x-1 flex-shrink-0">
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 hover:bg-white/70"
                   onClick={() => setShowEditDialog(true)}
                   title="Edit Event"
                 >
@@ -209,23 +229,7 @@ export default function EventPage() {
               </TabsList>
 
               <TabsContent value="details">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                  {/* Event Type */}
-                  {(() => {
-                    const { icon: EventIcon, bgColor, iconColor } = getEventTypeIcon(event.eventType || '');
-                    return (
-                      <div className="flex items-start space-x-3">
-                        <div className={`w-8 h-8 sm:w-10 sm:h-10 ${bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                          <EventIcon className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColor}`} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Event Type</h3>
-                          <p className="text-gray-600 text-sm sm:text-base capitalize">{event.eventType}</p>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {/* Date & Time */}
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
