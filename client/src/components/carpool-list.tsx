@@ -225,21 +225,31 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               let drivingTimeFromUser = null;
               if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
                   carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0) {
-                const drivingResult = await calculateDrivingDistance(
-                  userCoordinates,
-                  carpoolCoordinates
-                );
-                if (drivingResult) {
-                  distanceFromUser = drivingResult.distance;
-                  drivingTimeFromUser = drivingResult.duration;
+                
+                // Check if user and carpool are at the same location
+                const isSameLocation = Math.abs(userCoordinates[0] - carpoolCoordinates[0]) < 0.0001 && 
+                                     Math.abs(userCoordinates[1] - carpoolCoordinates[1]) < 0.0001;
+                
+                if (isSameLocation) {
+                  distanceFromUser = 0;
+                  drivingTimeFromUser = 0;
                 } else {
-                  // Fallback to straight-line distance if driving distance fails
-                  distanceFromUser = calculateDistance(
-                    userCoordinates[0],
-                    userCoordinates[1],
-                    carpoolCoordinates[0],
-                    carpoolCoordinates[1]
+                  const drivingResult = await calculateDrivingDistance(
+                    userCoordinates,
+                    carpoolCoordinates
                   );
+                  if (drivingResult) {
+                    distanceFromUser = drivingResult.distance;
+                    drivingTimeFromUser = drivingResult.duration;
+                  } else {
+                    // Fallback to straight-line distance if driving distance fails
+                    distanceFromUser = calculateDistance(
+                      userCoordinates[0],
+                      userCoordinates[1],
+                      carpoolCoordinates[0],
+                      carpoolCoordinates[1]
+                    );
+                  }
                 }
               }
 
