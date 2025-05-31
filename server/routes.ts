@@ -246,6 +246,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const newPartyGroup = await storage.createPartyGroup(validationResult.data);
+      
+      // Send SMS confirmation to event creator
+      if (newPartyGroup.phoneNumber) {
+        try {
+          const eventUrl = `${req.protocol}://${req.get('host')}/events/${newPartyGroup.shareableUrl}`;
+          const eventDate = new Date(newPartyGroup.eventDate).toLocaleDateString('en-GB', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+          });
+          
+          const confirmationMessage = `Your ${newPartyGroup.eventType} event "${newPartyGroup.name}" has been created successfully! Event details: ${eventDate} at ${newPartyGroup.targetArrivalTime}. Share this link with parents: ${eventUrl}`;
+          
+          await messagingService.sendCarpoolUpdate(
+            newPartyGroup.phoneNumber,
+            confirmationMessage
+          );
+          
+          console.log(`Event creation confirmation SMS sent to ${newPartyGroup.phoneNumber}`);
+        } catch (smsError) {
+          console.error("Failed to send event creation confirmation SMS:", smsError);
+          // Don't fail the request if SMS fails
+        }
+      }
+      
       res.status(201).json(newPartyGroup);
     } catch (error) {
       console.error("Error creating party group:", error);
