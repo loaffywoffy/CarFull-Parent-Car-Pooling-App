@@ -79,18 +79,26 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
     }
   }, [sortBy]);
 
-  // Function to geocode user's full address
-  async function geocodeUserPostcode() {
-    if (!userAddress || !userPostcode) return;
+  // Automatically geocode user's full address when inputs change
+  useEffect(() => {
+    async function geocodeUserAddress() {
+      if (!userAddress || !userPostcode || userPostcode.length < 4) {
+        setUserCoordinates(null);
+        return;
+      }
 
-    try {
-      const coords = await geocodeAddress(userAddress, userCity || "", userPostcode);
-      setUserCoordinates(coords);
-    } catch (error) {
-      console.error("Error geocoding user address:", error);
-      setUserCoordinates(null);
+      try {
+        const coords = await geocodeAddress(userAddress, userCity || "", userPostcode);
+        setUserCoordinates(coords);
+      } catch (error) {
+        console.error("Error geocoding user address:", error);
+        setUserCoordinates(null);
+      }
     }
-  }
+
+    const debounceTimer = setTimeout(geocodeUserAddress, 500); // Debounce for 500ms
+    return () => clearTimeout(debounceTimer);
+  }, [userAddress, userCity, userPostcode]);
 
   // Handle geocoding user postcode when entered using Google Maps API
   useEffect(() => {
@@ -1654,16 +1662,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
             </div>
           </div>
           
-          <div className="flex gap-2 mb-3">
-            <Button 
-              onClick={geocodeUserPostcode}
-              disabled={!userAddress || !userPostcode}
-              size="sm"
-              className="text-xs"
-            >
-              Calculate Distance
-            </Button>
-            {userCoordinates && (
+          {userCoordinates && (
+            <div className="flex gap-2 mb-3">
               <Button 
                 variant="outline" 
                 size="sm"
@@ -1675,10 +1675,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 }}
                 className="text-xs"
               >
-                Clear
+                Clear Location
               </Button>
-            )}
-          </div>
+            </div>
+          )}
           
           {userPostcode && !userCoordinates && userPostcode.length > 4 && (
             <p className="text-xs text-amber-600 mb-2 flex items-center">
