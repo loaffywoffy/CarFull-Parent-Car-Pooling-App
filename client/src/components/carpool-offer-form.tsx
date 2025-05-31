@@ -293,37 +293,12 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
     setShowVerification(true);
   };
 
-  const handleVerificationSuccess = async () => {
+  const handleVerificationSuccess = () => {
     setShowVerification(false);
-
-    try {
-      const response = await fetch("/api/carpools", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pendingOfferData)
-      });
-
-      if (response.ok) {
-        const newCarpool = await response.json();
-        // Store the created carpool data and show success page
-        setCreatedCarpool(newCarpool);
-        setShowSuccess(true);
-        form.reset();
-        setPendingOfferData(null);
-      } else {
-        const error = await response.json();
-        toast({
-          title: "Error",
-          description: error.message || "Failed to create carpool offer",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create carpool offer",
-        variant: "destructive"
-      });
+    
+    if (pendingOfferData) {
+      carpoolMutation.mutate(pendingOfferData);
+      setPendingOfferData(null);
     }
   };
 
