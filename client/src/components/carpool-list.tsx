@@ -89,6 +89,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
 
       try {
         const coords = await geocodeAddress(userAddress, userCity || "", userPostcode);
+        console.log("User address geocoded successfully, setting coordinates:", coords);
         setUserCoordinates(coords);
       } catch (error) {
         console.error("Error geocoding user address:", error);
@@ -257,6 +258,13 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               }
 
 
+
+              console.log(`Carpool ${carpool.id} distances calculated:`, {
+                distance,
+                distanceFromUser,
+                distanceToEventFromUser,
+                userCoordinates: userCoordinates
+              });
 
               return { 
                 ...carpool, 
