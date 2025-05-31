@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Link } from "wouter";
 import CarpoolList from "@/components/carpool-list";
 import CalendarIntegration from "@/components/calendar-integration";
-import EventMap from "@/components/event-map";
+import EventLocationMap from "@/components/event-location-map";
 import { useState } from "react";
 import { getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -369,12 +369,46 @@ export default function EventPage() {
               </TabsContent>
 
               <TabsContent value="location">
-                <EventMap 
-                  address={event.eventAddress}
-                  city={event.eventCity}
-                  postcode={event.eventPostcode}
-                  eventName={event.name}
-                />
+                <div className="space-y-4">
+                  {/* Interactive Map Display */}
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <EventLocationMap 
+                      address={event.eventAddress}
+                      city={event.eventCity}
+                      postcode={event.eventPostcode}
+                      className="w-full h-64"
+                    />
+                  </div>
+
+                  {/* Navigation Options */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Navigation className="h-4 w-4 text-gray-600" />
+                      <span className="text-sm font-medium text-gray-700">Get Directions</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
+                        <a href={`https://maps.google.com/maps?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3 w-3" />
+                          Google Maps
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
+                        <a href={`https://maps.apple.com/?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3 w-3" />
+                          Apple Maps
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
+                        <a href={`https://waze.com/ul?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3 w-3" />
+                          Waze
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
