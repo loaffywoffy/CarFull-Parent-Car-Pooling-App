@@ -208,35 +208,13 @@ export default function GoogleMap({
     initMap();
   }, []);
 
-  // Update map center and markers when eventLocation changes
+  // Update map center when eventLocation changes (markers are already handled in the initial setup)
   useEffect(() => {
     if (!map || !eventLocation) return;
 
-    console.log('Updating map with new event location:', eventLocation);
-    
-    // Update map center and zoom with higher zoom level for better detail
+    // Only update center and zoom, don't create duplicate markers
     map.setCenter({ lat: eventLocation.lat, lng: eventLocation.lng });
-    map.setZoom(17);
-
-    // Add event location marker
-    const eventMarker = new google.maps.Marker({
-      position: { lat: eventLocation.lat, lng: eventLocation.lng },
-      map: map,
-      title: eventLocation.name,
-    });
-
-    const infoWindow = new google.maps.InfoWindow({
-      content: `<div><strong>${eventLocation.name}</strong><br/>Event Location</div>`
-    });
-
-    eventMarker.addListener('click', () => {
-      infoWindow.open(map, eventMarker);
-    });
-
-    // Cleanup function to remove marker when component unmounts or location changes
-    return () => {
-      eventMarker.setMap(null);
-    };
+    map.setZoom(16);
   }, [map, eventLocation]);
 
   if (error) {
