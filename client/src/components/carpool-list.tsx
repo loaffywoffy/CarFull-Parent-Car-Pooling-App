@@ -27,6 +27,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import DeleteCarpoolRequestButton from "@/components/delete-carpool-request-button";
 import DeleteCarpoolButton from "@/components/delete-carpool-button";
+import LocationMapWrapper from "@/components/location-map-wrapper";
 
 // Using MapBox component instead of old OpenStreetMap component
 
