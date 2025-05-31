@@ -10,9 +10,6 @@ interface CarpoolSuccessProps {
 }
 
 export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "birthday" }: CarpoolSuccessProps) {
-  // Debug logging
-  console.log("CarpoolSuccess - received carpoolData:", carpoolData);
-  
   // Helper function to get event-specific labels
   const getEventLabels = (eventType: string = "birthday") => {
     const eventMap: Record<string, { eventName: string; toEvent: string; fromEvent: string }> = {
@@ -96,11 +93,6 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
             <div className="bg-white rounded-md p-3 border border-gray-200">
               <p className="font-medium text-gray-800 mb-2">What you're offering:</p>
               
-              {/* Debug info - remove this later */}
-              <div className="text-xs text-gray-400 mb-2">
-                Debug: canPickup={String(carpoolData.canPickup)}, canDropoff={String(carpoolData.canDropoff)}, canBoth={String(carpoolData.canBoth)}
-              </div>
-              
               {/* Both Ways - check this first */}
               {carpoolData.canBoth === true && (
                 <div className="space-y-1">
@@ -116,7 +108,7 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
               
               {/* TO Event only */}
               {carpoolData.canPickup === true && carpoolData.canBoth !== true && (
-                <div className="space-y-1 mb-3">
+                <div className="space-y-1">
                   <p className="text-green-700">✓ Drive TO {eventLabels.toEvent}</p>
                   <p className="text-sm">• {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''} available</p>
                   {carpoolData.outboundDepartureTime && (
@@ -128,7 +120,7 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
               
               {/* FROM Event only */}
               {carpoolData.canDropoff === true && carpoolData.canBoth !== true && (
-                <div className="space-y-1 mb-3">
+                <div className="space-y-1">
                   <p className="text-orange-700">✓ Pick up FROM {eventLabels.fromEvent}</p>
                   <p className="text-sm">• {carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''} available</p>
                   <p className="text-sm">• To: {carpoolData.address}, {carpoolData.city}</p>
@@ -153,11 +145,73 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
           </div>
         </div>
 
-        <div className="bg-blue-50 rounded-lg p-4 mb-6">
-          <h3 className="font-medium text-blue-900 mb-2">What happens next?</h3>
-          <div className="text-sm text-blue-800 space-y-1">
-            <p>• Other parents can now see your offer and request spaces</p>
-            <p>• You'll receive requests via the event page</p>
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-6">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+            <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+            What happens next?
+          </h3>
+          
+          <div className="space-y-4">
+            {/* Step 1: Share your offer */}
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600 font-semibold text-sm">1</span>
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 mb-2">Parents can find your offer</p>
+                <p className="text-sm text-gray-600 mb-3">Share this event with specific parents:</p>
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const eventUrl = `${window.location.origin}/events/${carpoolData.shareableUrl || 'event'}`;
+                      const message = `Hi! I'm offering car spaces for ${eventLabels.eventName}. Check out the details: ${eventUrl}`;
+                      window.open(`sms:?body=${encodeURIComponent(message)}`, '_blank');
+                    }}
+                    className="text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    📱 SMS
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const eventUrl = `${window.location.origin}/events/${carpoolData.shareableUrl || 'event'}`;
+                      const message = `Hi! I'm offering car spaces for ${eventLabels.eventName}. Check out the details: ${eventUrl}`;
+                      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+                    }}
+                    className="text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    💬 WhatsApp
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const eventUrl = `${window.location.origin}/events/${carpoolData.shareableUrl || 'event'}`;
+                      const subject = `Car space available for ${eventLabels.eventName}`;
+                      const body = `Hi!\n\nI'm offering car spaces for ${eventLabels.eventName}. You can view the details and request a space here:\n\n${eventUrl}`;
+                      window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+                    }}
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    ✉️ Email
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2: SMS notifications */}
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 font-semibold text-sm">2</span>
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 mb-1">You'll be notified via SMS</p>
+                <p className="text-sm text-gray-600">We'll send you a text message when parents request spaces, and you can accept or decline each request.</p>
+              </div>
+            </div>
           </div>
         </div>
 

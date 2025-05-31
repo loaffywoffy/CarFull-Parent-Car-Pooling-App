@@ -193,12 +193,10 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   const carpoolMutation = useMutation({
     mutationFn: async (values: CarpoolFormValues) => {
       const response = await apiRequest("POST", "/api/carpools", values);
-      console.log("Carpool API response:", response);
-      return response;
+      const data = await response.json();
+      return data;
     },
     onSuccess: (response) => {
-      console.log("Mutation onSuccess - response:", response);
-      
       // Invalidate the carpools query to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['/api/party-groups', partyGroupId, 'carpools'] });
 
