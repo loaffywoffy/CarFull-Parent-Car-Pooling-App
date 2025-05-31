@@ -28,67 +28,46 @@ export async function geocodeAddress(
   }
 
   try {
-    // Add a delay to respect rate limits
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    const response = await axios.get(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`,
-      {
-        headers: {
-          'User-Agent': 'ParentPoolingApp/1.0',
-          'Accept-Language': 'en-US,en;q=0.9'
-        }
-      }
+    const googleApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!googleApiKey) {
+      console.error('Google Maps API key not found');
+      return [0, 0];
+    }
+
+    // Try Google Geocoding API first - more reliable for UK addresses
+    console.log(`Geocoding with Google: ${fullAddress}`);
+    const googleResponse = await axios.get(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${googleApiKey}`,
+      { timeout: 5000 }
     );
 
-    if (response.data?.[0]) {
-      const coordinates: [number, number] = [
-        parseFloat(response.data[0].lat),
-        parseFloat(response.data[0].lon)
-      ];
-      
-      // Validate coordinates
-      if (isNaN(coordinates[0]) || isNaN(coordinates[1])) {
-        console.error('Invalid coordinates returned from geocoding service');
-        return [0, 0];
-      }
+    if (googleResponse.data?.results?.[0]) {
+      const location = googleResponse.data.results[0].geometry.location;
+      const coordinates: [number, number] = [location.lat, location.lng];
       
       // Cache the result
       geocodeCache[fullAddress] = coordinates;
       
-      console.log(`Geocoded ${fullAddress} to [${coordinates}]`);
+      console.log(`Google geocoded ${fullAddress} to [${coordinates}]`);
       return coordinates;
     }
-    
-    // Try again with just the postcode if we have it
+
+    // Fallback to postcode only if full address fails
     if (postcode.trim()) {
-      console.log('Trying to geocode with just postcode:', postcode);
+      console.log(`Trying Google geocoding with postcode only: ${postcode}`);
       const postcodeResponse = await axios.get(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(postcode)}`,
-        {
-          headers: {
-            'User-Agent': 'ParentPoolingApp/1.0',
-            'Accept-Language': 'en-US,en;q=0.9'
-          }
-        }
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(postcode)}&key=${googleApiKey}`,
+        { timeout: 5000 }
       );
 
-      if (postcodeResponse.data?.[0]) {
-        const coordinates: [number, number] = [
-          parseFloat(postcodeResponse.data[0].lat),
-          parseFloat(postcodeResponse.data[0].lon)
-        ];
-        
-        // Validate coordinates
-        if (isNaN(coordinates[0]) || isNaN(coordinates[1])) {
-          console.error('Invalid coordinates returned from postcode geocoding');
-          return [0, 0];
-        }
+      if (postcodeResponse.data?.results?.[0]) {
+        const location = postcodeResponse.data.results[0].geometry.location;
+        const coordinates: [number, number] = [location.lat, location.lng];
         
         // Cache the result
         geocodeCache[fullAddress] = coordinates;
         
-        console.log(`Geocoded ${postcode} to [${coordinates}]`);
+        console.log(`Google geocoded postcode ${postcode} to [${coordinates}]`);
         return coordinates;
       }
     }

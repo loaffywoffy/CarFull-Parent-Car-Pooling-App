@@ -16,39 +16,52 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
   const [eventCoordinates, setEventCoordinates] = useState<[number, number] | null>(null);
   const [useMapboxFallback, setUseMapboxFallback] = useState(false);
 
-  // Geocode the event address
+  // Set coordinates using Google Maps geocoding service when available
   useEffect(() => {
-    const geocodeEventAddress = async () => {
-      try {
-        console.log('EventMap geocoding address:', address, city, postcode);
-        
-        // Try geocoding with full address first
-        let coords = await geocodeAddress(address, city, postcode);
-        console.log('EventMap full address geocoding result:', coords);
-        
-        // If that fails, try just the postcode which often works better
-        if (!coords || coords[0] === 0 || coords[1] === 0) {
-          console.log('EventMap: Trying postcode-only geocoding');
-          coords = await geocodeAddress("", "", postcode);
-          console.log('EventMap postcode geocoding result:', coords);
+    if (!window.google?.maps?.Geocoder) {
+      // If Google Maps isn't loaded yet, wait and try again
+      const checkGoogle = setInterval(() => {
+        if (window.google?.maps?.Geocoder) {
+          clearInterval(checkGoogle);
+          geocodeWithGoogle();
         }
-        
-        if (coords && coords[0] !== 0 && coords[1] !== 0) {
+      }, 100);
+      
+      // Clear interval after 5 seconds to avoid infinite loop
+      setTimeout(() => clearInterval(checkGoogle), 5000);
+      return;
+    }
+    
+    geocodeWithGoogle();
+
+    function geocodeWithGoogle() {
+      const geocoder = new window.google.maps.Geocoder();
+      const fullAddress = `${address}, ${city} ${postcode}`;
+      
+      console.log('EventMap geocoding with Google Maps API:', fullAddress);
+      
+      geocoder.geocode({ address: fullAddress }, (results, status) => {
+        if (status === 'OK' && results && results[0]) {
+          const location = results[0].geometry.location;
+          const coords: [number, number] = [location.lat(), location.lng()];
+          console.log('EventMap Google geocoding success:', coords);
           setEventCoordinates(coords);
         } else {
-          // If geocoding completely fails, use a more central London location
-          console.log('EventMap: Using fallback coordinates');
-          setEventCoordinates([51.5154, -0.1426]); // Oxford Street area
+          // Try with just postcode if full address fails
+          console.log('EventMap: Trying postcode only geocoding');
+          geocoder.geocode({ address: postcode }, (postcodeResults, postcodeStatus) => {
+            if (postcodeStatus === 'OK' && postcodeResults && postcodeResults[0]) {
+              const location = postcodeResults[0].geometry.location;
+              const coords: [number, number] = [location.lat(), location.lng()];
+              console.log('EventMap Google postcode geocoding success:', coords);
+              setEventCoordinates(coords);
+            } else {
+              console.log('EventMap: Geocoding failed, using London center');
+              setEventCoordinates([51.5154, -0.1426]);
+            }
+          });
         }
-      } catch (error) {
-        console.error('EventMap geocoding error:', error);
-        // Use central London coordinates if geocoding fails
-        setEventCoordinates([51.5154, -0.1426]);
-      }
-    };
-
-    if (address || postcode) {
-      geocodeEventAddress();
+      });
     }
   }, [address, city, postcode]);
 
