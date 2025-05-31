@@ -298,7 +298,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               };
             } catch (error) {
               console.error(`Error calculating distance for carpool ${carpool.id}:`, error);
-              return { ...carpool, distance: null, distanceFromUser: null };
+              console.error('Carpool address:', `${carpool.address}, ${carpool.city} ${carpool.postcode}`);
+              console.error('User coordinates:', userCoordinates);
+              return { ...carpool, distance: null, distanceFromUser: null, distanceToEventFromUser: null };
             }
           })
         );
