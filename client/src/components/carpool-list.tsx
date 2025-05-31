@@ -286,13 +286,16 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               }
 
               // Debug logging
-              console.log(`Carpool ${carpool.id} distances:`, {
-                distanceFromUser,
-                distanceToEventFromUser,
-                userCoordinates,
-                sortBy,
-                hasUserCoords: userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0
-              });
+              if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0) {
+                console.log(`DEBUG - Carpool ${carpool.id} badge check:`, {
+                  sortBy,
+                  distanceFromUser,
+                  distanceToEventFromUser,
+                  userCoordinates,
+                  shouldShowPurpleBadge: sortBy === 'distance' && distanceFromUser !== null && distanceFromUser !== undefined,
+                  shouldShowBlueBadge: sortBy === 'distance-to-event' && distanceToEventFromUser !== null && distanceToEventFromUser !== undefined
+                });
+              }
 
               return { 
                 ...carpool, 
