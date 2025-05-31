@@ -10,17 +10,23 @@ interface EventLocationMapProps {
 export default function EventLocationMap({ address, city, postcode, className = "w-full h-64" }: EventLocationMapProps) {
   const fullAddress = `${address}, ${city ? city + ' ' : ''}${postcode}`;
   
+  // Create static map URL with custom styling
+  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?` +
+    `center=${encodeURIComponent(fullAddress)}&` +
+    `zoom=16&` +
+    `size=600x400&` +
+    `maptype=roadmap&` +
+    `markers=color:red%7C${encodeURIComponent(fullAddress)}&` +
+    `key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`;
+  
   return (
     <div className={`${className} bg-gray-50 border border-gray-200 rounded-lg overflow-hidden`}>
-      <iframe
-        src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(fullAddress)}`}
-        width="100%"
-        height="100%"
-        style={{ border: 0, minHeight: '400px' }}
-        allowFullScreen
+      <img
+        src={staticMapUrl}
+        alt={`Map showing ${fullAddress}`}
+        className="w-full h-full object-cover"
+        style={{ minHeight: '400px' }}
         loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        title={`Map showing ${fullAddress}`}
       />
     </div>
   );
