@@ -287,23 +287,21 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               console.error('Carpool address:', `${carpool.address}, ${carpool.city} ${carpool.postcode}`);
               console.error('User coordinates:', userCoordinates);
               
-              // Calculate basic straight-line distances as fallback
+              // Calculate basic straight-line distances as fallback using already geocoded coordinates
               let fallbackDistance = null;
               let fallbackDistanceFromUser = null;
               let fallbackDistanceToEvent = null;
               
               try {
-                if (carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0 && 
-                    partyGroup?.eventAddress && partyGroup?.eventPostcode) {
-                  const eventCoords = await geocodeAddress(partyGroup.eventAddress, partyGroup.eventCity || "", partyGroup.eventPostcode);
-                  if (eventCoords[0] !== 0 && eventCoords[1] !== 0) {
-                    fallbackDistance = calculateDistance(
-                      carpoolCoordinates[0], carpoolCoordinates[1],
-                      eventCoords[0], eventCoords[1]
-                    );
-                  }
+                // Use the event coordinates that were already geocoded
+                if (carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0 && eventCoordinates) {
+                  fallbackDistance = calculateDistance(
+                    carpoolCoordinates[0], carpoolCoordinates[1],
+                    eventCoordinates[0], eventCoordinates[1]
+                  );
                 }
                 
+                // Calculate user to carpool distance using straight-line
                 if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
                     carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0) {
                   fallbackDistanceFromUser = calculateDistance(
@@ -312,16 +310,19 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                   );
                 }
                 
-                if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
-                    partyGroup?.eventAddress && partyGroup?.eventPostcode) {
-                  const eventCoords = await geocodeAddress(partyGroup.eventAddress, partyGroup.eventCity || "", partyGroup.eventPostcode);
-                  if (eventCoords[0] !== 0 && eventCoords[1] !== 0) {
-                    fallbackDistanceToEvent = calculateDistance(
-                      userCoordinates[0], userCoordinates[1],
-                      eventCoords[0], eventCoords[1]
-                    );
-                  }
+                // Calculate user to event distance using straight-line
+                if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && eventCoordinates) {
+                  fallbackDistanceToEvent = calculateDistance(
+                    userCoordinates[0], userCoordinates[1],
+                    eventCoordinates[0], eventCoordinates[1]
+                  );
                 }
+                
+                console.log(`Fallback distances for carpool ${carpool.id}:`, {
+                  fallbackDistance,
+                  fallbackDistanceFromUser, 
+                  fallbackDistanceToEvent
+                });
               } catch (fallbackError) {
                 console.error('Fallback distance calculation failed:', fallbackError);
               }
