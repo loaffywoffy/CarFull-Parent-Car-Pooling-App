@@ -77,6 +77,12 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
             name: `${eventName} - ${fullAddress}`
           } : undefined}
         />
+        {/* Debug info */}
+        {eventCoordinates && (
+          <div className="text-xs text-gray-500 p-2">
+            Event coordinates: {eventCoordinates[0]}, {eventCoordinates[1]}
+          </div>
+        )}
       </div>
 
       {/* Navigation Options */}
