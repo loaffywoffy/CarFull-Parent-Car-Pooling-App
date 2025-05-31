@@ -515,7 +515,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                         value={field.value || ""}
                         onChange={field.onChange}
                         label="Phone Number"
-                        placeholder="e.g. 07961 318588"
+                        placeholder="e.g. 07700 900123"
                         required={true}
                       />
                     </FormControl>

@@ -78,10 +78,6 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Ride Offer Created!
           </h1>
-          
-          <p className="text-gray-600 leading-relaxed">
-            Your offer to provide <strong>{getOfferTypeText()}</strong> for <strong>{carpoolData.spacesAvailable} {carpoolData.spacesAvailable === 1 ? 'child' : 'children'}</strong> has been successfully posted.
-          </p>
         </div>
 
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
@@ -91,25 +87,46 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
           </div>
           
           <div className="text-sm text-gray-600 space-y-2">
-            <p><strong>Driver:</strong> {carpoolData.parentName}</p>
-            <p><strong>Parent of:</strong> {carpoolData.childName}</p>
-            <p><strong>Phone:</strong> {carpoolData.phoneNumber}</p>
-            <p><strong>Location:</strong> {carpoolData.address}, {carpoolData.city}, {carpoolData.postcode}</p>
+            <p><strong>Your Name:</strong> {carpoolData.parentName}</p>
             
-            {/* Service details */}
-            <div className="border-t pt-2 mt-3">
-              <p><strong>Service offering:</strong></p>
-              {(carpoolData.canPickup || carpoolData.canBoth) && (
-                <p className="ml-2">• Transportation TO {eventLabels.toEvent} ({carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''})</p>
+            {/* Service Summary */}
+            <div className="bg-white rounded-md p-3 border border-gray-200">
+              <p className="font-medium text-gray-800 mb-2">What you're offering:</p>
+              {carpoolData.canPickup && !carpoolData.canDropoff && !carpoolData.canBoth && (
+                <div className="space-y-1">
+                  <p className="text-green-700">✓ Drive TO {eventLabels.toEvent}</p>
+                  <p className="text-sm">• {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''} available</p>
+                  {carpoolData.outboundDepartureTime && (
+                    <p className="text-sm">• Departure time: {carpoolData.outboundDepartureTime}</p>
+                  )}
+                  <p className="text-sm">• From: {carpoolData.address}, {carpoolData.city}</p>
+                </div>
               )}
-              {(carpoolData.canDropoff || carpoolData.canBoth) && (
-                <p className="ml-2">• Transportation FROM {eventLabels.fromEvent} ({carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''})</p>
+              
+              {carpoolData.canDropoff && !carpoolData.canPickup && !carpoolData.canBoth && (
+                <div className="space-y-1">
+                  <p className="text-orange-700">✓ Pick up FROM {eventLabels.fromEvent}</p>
+                  <p className="text-sm">• {carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''} available</p>
+                  <p className="text-sm">• To: {carpoolData.address}, {carpoolData.city}</p>
+                </div>
+              )}
+              
+              {carpoolData.canBoth && (
+                <div className="space-y-1">
+                  <p className="text-purple-700">✓ Both ways (TO and FROM {eventLabels.eventName})</p>
+                  <p className="text-sm">• TO event: {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''}</p>
+                  <p className="text-sm">• FROM event: {carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''}</p>
+                  {carpoolData.outboundDepartureTime && (
+                    <p className="text-sm">• Departure time: {carpoolData.outboundDepartureTime}</p>
+                  )}
+                  <p className="text-sm">• Location: {carpoolData.address}, {carpoolData.city}</p>
+                </div>
               )}
             </div>
             
-            {carpoolData.additionalNotes && (
+            {carpoolData.additionalNotes && carpoolData.additionalNotes.trim() && (
               <div className="border-t pt-2 mt-3">
-                <p><strong>Notes:</strong> {carpoolData.additionalNotes}</p>
+                <p><strong>Your notes:</strong> {carpoolData.additionalNotes}</p>
               </div>
             )}
           </div>
