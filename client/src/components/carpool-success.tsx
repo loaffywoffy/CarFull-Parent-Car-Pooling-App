@@ -92,8 +92,10 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
             {/* Service Summary */}
             <div className="bg-white rounded-md p-3 border border-gray-200">
               <p className="font-medium text-gray-800 mb-2">What you're offering:</p>
-              {carpoolData.canPickup && !carpoolData.canDropoff && !carpoolData.canBoth && (
-                <div className="space-y-1">
+              
+              {/* TO Event (Pickup) */}
+              {carpoolData.canPickup && (
+                <div className="space-y-1 mb-3">
                   <p className="text-green-700">✓ Drive TO {eventLabels.toEvent}</p>
                   <p className="text-sm">• {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''} available</p>
                   {carpoolData.outboundDepartureTime && (
@@ -103,14 +105,16 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
                 </div>
               )}
               
-              {carpoolData.canDropoff && !carpoolData.canPickup && !carpoolData.canBoth && (
-                <div className="space-y-1">
+              {/* FROM Event (Dropoff) */}
+              {carpoolData.canDropoff && (
+                <div className="space-y-1 mb-3">
                   <p className="text-orange-700">✓ Pick up FROM {eventLabels.fromEvent}</p>
                   <p className="text-sm">• {carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''} available</p>
                   <p className="text-sm">• To: {carpoolData.address}, {carpoolData.city}</p>
                 </div>
               )}
               
+              {/* Both Ways */}
               {carpoolData.canBoth && (
                 <div className="space-y-1">
                   <p className="text-purple-700">✓ Both ways (TO and FROM {eventLabels.eventName})</p>
@@ -119,6 +123,15 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
                   {carpoolData.outboundDepartureTime && (
                     <p className="text-sm">• Departure time: {carpoolData.outboundDepartureTime}</p>
                   )}
+                  <p className="text-sm">• Location: {carpoolData.address}, {carpoolData.city}</p>
+                </div>
+              )}
+              
+              {/* Fallback if no service type is detected */}
+              {!carpoolData.canPickup && !carpoolData.canDropoff && !carpoolData.canBoth && (
+                <div className="space-y-1">
+                  <p className="text-gray-700">Transportation service</p>
+                  <p className="text-sm">• {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''} available</p>
                   <p className="text-sm">• Location: {carpoolData.address}, {carpoolData.city}</p>
                 </div>
               )}
