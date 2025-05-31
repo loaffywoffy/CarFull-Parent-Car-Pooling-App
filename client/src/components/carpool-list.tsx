@@ -593,16 +593,6 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                       )}
                     </>
                   )}
-                  {sortBy === "distance" && (
-                    <Badge className="bg-gray-100 text-gray-800">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      {userCoordinates && carpool.distanceFromUser !== null && carpool.distanceFromUser !== undefined
-                        ? `${carpool.distanceFromUser.toFixed(1)} miles to driver${carpool.drivingTimeFromUser ? ` (${Math.round(carpool.drivingTimeFromUser)} min)` : ''}` 
-                        : carpool.distance !== null && carpool.distance !== undefined
-                          ? `${carpool.distance.toFixed(1)} miles driver-to-event${carpool.drivingTime ? ` (${Math.round(carpool.drivingTime)} min)` : ''}`
-                          : "Distance unknown"}
-                    </Badge>
-                  )}
                   
                   {/* Summary of booked and pending kids with status indicators */}
                   {carpoolRequests && carpoolRequests.length > 0 && (

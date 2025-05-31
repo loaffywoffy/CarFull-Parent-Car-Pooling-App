@@ -174,7 +174,29 @@ export default function GoogleMap({
           marker.addListener('click', () => {
             infoWindow.open(mapInstance, marker);
           });
+
+          markers.push(marker);
+          bounds.extend(marker.getPosition()!);
         });
+
+        // Auto-fit the map to show all markers with appropriate zoom
+        if (markers.length > 0) {
+          mapInstance.fitBounds(bounds);
+          
+          // Add some padding and set a maximum zoom level
+          setTimeout(() => {
+            const currentZoom = mapInstance.getZoom();
+            if (currentZoom && currentZoom > 15) {
+              mapInstance.setZoom(15); // Don't zoom in too much
+            }
+          }, 100);
+        }
+
+        // Force a resize to ensure proper rendering
+        setTimeout(() => {
+          google.maps.event.trigger(mapInstance, 'resize');
+          console.log('Map resize triggered with bounds fitting');
+        }, 200);
 
       } catch (err) {
         console.error('Failed to load Google Maps:', err);
