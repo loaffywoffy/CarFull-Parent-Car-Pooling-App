@@ -93,29 +93,13 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
             <div className="bg-white rounded-md p-3 border border-gray-200">
               <p className="font-medium text-gray-800 mb-2">What you're offering:</p>
               
-              {/* TO Event (Pickup) */}
-              {carpoolData.canPickup && (
-                <div className="space-y-1 mb-3">
-                  <p className="text-green-700">✓ Drive TO {eventLabels.toEvent}</p>
-                  <p className="text-sm">• {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''} available</p>
-                  {carpoolData.outboundDepartureTime && (
-                    <p className="text-sm">• Departure time: {carpoolData.outboundDepartureTime}</p>
-                  )}
-                  <p className="text-sm">• From: {carpoolData.address}, {carpoolData.city}</p>
-                </div>
-              )}
+              {/* Debug info - remove this later */}
+              <div className="text-xs text-gray-400 mb-2">
+                Debug: canPickup={String(carpoolData.canPickup)}, canDropoff={String(carpoolData.canDropoff)}, canBoth={String(carpoolData.canBoth)}
+              </div>
               
-              {/* FROM Event (Dropoff) */}
-              {carpoolData.canDropoff && (
-                <div className="space-y-1 mb-3">
-                  <p className="text-orange-700">✓ Pick up FROM {eventLabels.fromEvent}</p>
-                  <p className="text-sm">• {carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''} available</p>
-                  <p className="text-sm">• To: {carpoolData.address}, {carpoolData.city}</p>
-                </div>
-              )}
-              
-              {/* Both Ways */}
-              {carpoolData.canBoth && (
+              {/* Both Ways - check this first */}
+              {carpoolData.canBoth === true && (
                 <div className="space-y-1">
                   <p className="text-purple-700">✓ Both ways (TO and FROM {eventLabels.eventName})</p>
                   <p className="text-sm">• TO event: {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''}</p>
@@ -127,8 +111,29 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
                 </div>
               )}
               
-              {/* Fallback if no service type is detected */}
-              {!carpoolData.canPickup && !carpoolData.canDropoff && !carpoolData.canBoth && (
+              {/* TO Event only */}
+              {carpoolData.canPickup === true && carpoolData.canBoth !== true && (
+                <div className="space-y-1 mb-3">
+                  <p className="text-green-700">✓ Drive TO {eventLabels.toEvent}</p>
+                  <p className="text-sm">• {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''} available</p>
+                  {carpoolData.outboundDepartureTime && (
+                    <p className="text-sm">• Departure time: {carpoolData.outboundDepartureTime}</p>
+                  )}
+                  <p className="text-sm">• From: {carpoolData.address}, {carpoolData.city}</p>
+                </div>
+              )}
+              
+              {/* FROM Event only */}
+              {carpoolData.canDropoff === true && carpoolData.canBoth !== true && (
+                <div className="space-y-1 mb-3">
+                  <p className="text-orange-700">✓ Pick up FROM {eventLabels.fromEvent}</p>
+                  <p className="text-sm">• {carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''} available</p>
+                  <p className="text-sm">• To: {carpoolData.address}, {carpoolData.city}</p>
+                </div>
+              )}
+              
+              {/* Fallback with all data */}
+              {carpoolData.canPickup !== true && carpoolData.canDropoff !== true && carpoolData.canBoth !== true && (
                 <div className="space-y-1">
                   <p className="text-gray-700">Transportation service</p>
                   <p className="text-sm">• {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''} available</p>
