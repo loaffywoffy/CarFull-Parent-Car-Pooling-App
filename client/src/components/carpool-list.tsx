@@ -92,21 +92,45 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
     }
   }
 
-  // Handle geocoding user postcode when entered
+  // Handle geocoding user postcode when entered using Google Maps API
   useEffect(() => {
-    async function autoGeocodePostcode() {
+    async function geocodeWithGoogle() {
       if (!userPostcode || userPostcode.trim().length < 5) return;
 
+      if (!window.google?.maps?.Geocoder) {
+        // If Google Maps isn't loaded yet, wait and try again
+        const checkGoogle = setInterval(() => {
+          if (window.google?.maps?.Geocoder) {
+            clearInterval(checkGoogle);
+            geocodeWithGoogle();
+          }
+        }, 100);
+        
+        setTimeout(() => clearInterval(checkGoogle), 5000);
+        return;
+      }
+
       try {
-        const coords = await geocodeAddress("", "", userPostcode);
-        setUserCoordinates(coords);
+        const geocoder = new window.google.maps.Geocoder();
+        
+        geocoder.geocode({ address: userPostcode }, (results, status) => {
+          if (status === 'OK' && results && results[0]) {
+            const location = results[0].geometry.location;
+            const coords: [number, number] = [location.lat(), location.lng()];
+            console.log('User postcode geocoded successfully:', coords);
+            setUserCoordinates(coords);
+          } else {
+            console.log('User postcode geocoding failed:', status);
+            setUserCoordinates(null);
+          }
+        });
       } catch (error) {
         console.error("Error geocoding user postcode:", error);
         setUserCoordinates(null);
       }
     }
 
-    autoGeocodePostcode();
+    geocodeWithGoogle();
   }, [userPostcode]);
 
   // Calculate distances between event location and each carpool
@@ -123,21 +147,48 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
             }
 
             try {
-              const carpoolCoordinates = await geocodeAddress(
-                carpool.address,
-                carpool.city || '',
-                carpool.postcode
-              );
+              // Use Google Maps geocoding for carpool coordinates
+              const carpoolCoordinates = await new Promise<[number, number]>((resolve, reject) => {
+                if (!window.google?.maps?.Geocoder) {
+                  reject(new Error('Google Maps not loaded'));
+                  return;
+                }
+                
+                const geocoder = new window.google.maps.Geocoder();
+                const fullAddress = `${carpool.address}, ${carpool.city} ${carpool.postcode}`;
+                
+                geocoder.geocode({ address: fullAddress }, (results, status) => {
+                  if (status === 'OK' && results && results[0]) {
+                    const location = results[0].geometry.location;
+                    resolve([location.lat(), location.lng()]);
+                  } else {
+                    reject(new Error(`Geocoding failed: ${status}`));
+                  }
+                });
+              });
 
               // Calculate driving distance from event (if event location is available)
               let distance = null;
               let drivingTime = null;
               if (partyGroup?.eventAddress && partyGroup?.eventPostcode) {
-                const partyCoordinates = await geocodeAddress(
-                  partyGroup.eventAddress,
-                  partyGroup.eventCity || '',
-                  partyGroup.eventPostcode
-                );
+                const partyCoordinates = await new Promise<[number, number]>((resolve, reject) => {
+                  if (!window.google?.maps?.Geocoder) {
+                    reject(new Error('Google Maps not loaded'));
+                    return;
+                  }
+                  
+                  const geocoder = new window.google.maps.Geocoder();
+                  const eventAddress = `${partyGroup.eventAddress}, ${partyGroup.eventCity} ${partyGroup.eventPostcode}`;
+                  
+                  geocoder.geocode({ address: eventAddress }, (results, status) => {
+                    if (status === 'OK' && results && results[0]) {
+                      const location = results[0].geometry.location;
+                      resolve([location.lat(), location.lng()]);
+                    } else {
+                      reject(new Error(`Event geocoding failed: ${status}`));
+                    }
+                  });
+                });
 
                 // Only calculate distance if both coordinates are valid (not [0,0])
                 if (partyCoordinates[0] !== 0 && partyCoordinates[1] !== 0 && 
@@ -457,6 +508,24 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 </h3>
 
                 <div className="flex flex-wrap gap-2 mt-1">
+                  {/* Show distance badges when sorting by distance */}
+                  {sortBy === 'distance' && (
+                    <div className="flex gap-1 flex-wrap">
+                      {userCoordinates && carpool.distanceFromUser && (
+                        <Badge className="bg-purple-100 text-purple-800">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {carpool.distanceFromUser.toFixed(1)} km from you
+                        </Badge>
+                      )}
+                      {carpool.distance && (
+                        <Badge className="bg-orange-100 text-orange-800">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {carpool.distance.toFixed(1)} km to event
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  
                   {carpool.canBoth ? (
                     // For carpools that offer both directions, group direction badges with their corresponding spaces badges
                     <div className="flex gap-1 flex-wrap w-full">
