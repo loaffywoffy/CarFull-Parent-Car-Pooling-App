@@ -184,16 +184,6 @@ export default function EventPage() {
                   <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 pr-2">
                     {event.name}
                   </CardTitle>
-                  <div className="flex items-center space-x-4 mb-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {formatDate(event.eventDate)}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {formatTime(event.targetArrivalTime)}
-                    </div>
-                  </div>
                 </div>
               </div>
               <div className="flex items-center space-x-1 flex-shrink-0">
