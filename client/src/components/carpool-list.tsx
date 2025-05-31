@@ -39,7 +39,7 @@ interface CarpoolListProps {
 }
 
 // Map functionality has been removed
-type SortOption = "distance" | "spaces" | "name";
+type SortOption = "distance" | "distance-to-event" | "spaces" | "name";
 
 export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, selectedCarpoolId }: CarpoolListProps) {
   // States for filtering and sorting
@@ -72,7 +72,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
 
   // Handle sorting by distance and postcode input visibility
   useEffect(() => {
-    if (sortBy === 'distance') {
+    if (sortBy === 'distance' || sortBy === 'distance-to-event') {
       setShowPostcodeInput(true);
     } else {
       setShowPostcodeInput(false);
@@ -235,10 +235,53 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 }
               }
 
+              // Calculate driving distance from user to event (if user location is available)
+              let distanceToEventFromUser = null;
+              if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
+                  partyGroup?.eventAddress && partyGroup?.eventPostcode) {
+                const partyCoordinates = await new Promise<[number, number]>((resolve, reject) => {
+                  if (!window.google?.maps?.Geocoder) {
+                    reject(new Error('Google Maps not loaded'));
+                    return;
+                  }
+                  
+                  const geocoder = new window.google.maps.Geocoder();
+                  const eventAddress = `${partyGroup.eventAddress}, ${partyGroup.eventCity} ${partyGroup.eventPostcode}`;
+                  
+                  geocoder.geocode({ address: eventAddress }, (results, status) => {
+                    if (status === 'OK' && results && results[0]) {
+                      const location = results[0].geometry.location;
+                      resolve([location.lat(), location.lng()]);
+                    } else {
+                      reject(new Error(`Event geocoding failed: ${status}`));
+                    }
+                  });
+                });
+
+                if (partyCoordinates[0] !== 0 && partyCoordinates[1] !== 0) {
+                  const drivingResult = await calculateDrivingDistance(
+                    userCoordinates,
+                    partyCoordinates
+                  );
+                  if (drivingResult) {
+                    distanceToEventFromUser = drivingResult.distance;
+                  } else {
+                    // Fallback to straight-line distance if driving distance fails
+                    distanceToEventFromUser = calculateDistance(
+                      userCoordinates[0],
+                      userCoordinates[1],
+                      partyCoordinates[0],
+                      partyCoordinates[1]
+                    );
+                  }
+                }
+              }
+
               return { 
                 ...carpool, 
                 distance, 
                 distanceFromUser,
+                distanceToEventFromUser,
                 drivingTime,
                 drivingTimeFromUser,
                 carpoolCoordinates
@@ -1545,13 +1588,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
           value={sortBy} 
           onValueChange={(value: SortOption) => setSortBy(value)}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[220px]">
             <SelectValue placeholder="Sort by..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="distance">Sort by Distance</SelectItem>
-            <SelectItem value="spaces">Sort by Available Spaces</SelectItem>
-            <SelectItem value="name">Sort by Name</SelectItem>
+            <SelectItem value="distance">Distance to Carpool Pickup/Dropoff</SelectItem>
+            <SelectItem value="distance-to-event">Distance to Event</SelectItem>
+            <SelectItem value="spaces">Available Spaces</SelectItem>
+            <SelectItem value="name">Name</SelectItem>
           </SelectContent>
         </Select>
 
@@ -1563,10 +1607,10 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
         <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mt-4">
           <div className="flex items-center mb-2">
             <MapPin className="h-4 w-4 text-blue-500 mr-2" />
-            <h3 className="text-sm font-medium text-blue-700">Your Location & Map View</h3>
+            <h3 className="text-sm font-medium text-blue-700">Distance Calculation</h3>
           </div>
           <p className="text-xs text-blue-600 mb-3">
-            Enter your address to see your location and all carpools on the map
+            Enter your address to calculate distances to carpool locations and the event
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
@@ -1603,7 +1647,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               size="sm"
               className="text-xs"
             >
-              Show on Map
+              Calculate Distance
             </Button>
             {userCoordinates && (
               <Button 
