@@ -150,8 +150,6 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
           <div className="text-sm text-blue-800 space-y-1">
             <p>• Other parents can now see your offer and request spaces</p>
             <p>• You'll receive requests via the event page</p>
-            <p>• To edit your offer, return to the event page and select "Edit Offer"</p>
-            <p>• You can delete your offer anytime using SMS verification</p>
           </div>
         </div>
 
