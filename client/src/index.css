@@ -11,36 +11,3 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
-
-@layer utilities {
-  @keyframes drive-around {
-    0% {
-      transform: translateX(-120%) translateY(0%) rotate(0deg);
-      opacity: 0;
-    }
-    10% {
-      opacity: 1;
-    }
-    25% {
-      transform: translateX(50%) translateY(-80%) rotate(15deg);
-    }
-    50% {
-      transform: translateX(120%) translateY(-40%) rotate(-10deg);
-    }
-    75% {
-      transform: translateX(50%) translateY(80%) rotate(25deg);
-    }
-    90% {
-      opacity: 1;
-    }
-    100% {
-      transform: translateX(-120%) translateY(0%) rotate(0deg);
-      opacity: 0;
-    }
-  }
-
-  .animate-drive-around {
-    animation: drive-around 8s ease-in-out infinite;
-    animation-delay: 2s;
-  }
-}
