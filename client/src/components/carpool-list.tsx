@@ -48,6 +48,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
   const [selectedTab, setSelectedTab] = useState("to-event");
   const [showPostcodeInput, setShowPostcodeInput] = useState(false);
   const [userPostcode, setUserPostcode] = useState("");
+  const [userAddress, setUserAddress] = useState("");
+  const [userCity, setUserCity] = useState("");
   const [userCoordinates, setUserCoordinates] = useState<[number, number] | null>(null);
   const [showMapView, setShowMapView] = useState(false);
   const [eventCoordinates, setEventCoordinates] = useState<[number, number] | null>(null);
@@ -77,9 +79,22 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
     }
   }, [sortBy]);
 
+  // Function to geocode user's full address
+  async function geocodeUserPostcode() {
+    if (!userAddress || !userPostcode) return;
+
+    try {
+      const coords = await geocodeAddress(userAddress, userCity || "", userPostcode);
+      setUserCoordinates(coords);
+    } catch (error) {
+      console.error("Error geocoding user address:", error);
+      setUserCoordinates(null);
+    }
+  }
+
   // Handle geocoding user postcode when entered
   useEffect(() => {
-    async function geocodeUserPostcode() {
+    async function autoGeocodePostcode() {
       if (!userPostcode || userPostcode.trim().length < 5) return;
 
       try {
@@ -91,7 +106,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
       }
     }
 
-    geocodeUserPostcode();
+    autoGeocodePostcode();
   }, [userPostcode]);
 
   // Calculate distances between event location and each carpool
@@ -655,24 +670,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                     </div>
                   </div>
 
-                  {/* Route Map Section */}
-                  <div className="mt-4">
-                    <h4 className="font-medium text-sm text-gray-700 mb-2">Route Map</h4>
-                    <LocationMapWrapper
-                      id={carpool.id}
-                      parentName={carpool.parentName}
-                      address={carpool.address}
-                      city={carpool.city}
-                      postcode={carpool.postcode}
-                      height="200px"
-                      type={carpool.canPickup || carpool.canBoth ? "pickup" : "dropoff"}
-                      eventLocation={partyGroup ? {
-                        lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
-                        lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
-                        name: `${partyGroup.name} - ${partyGroup.eventAddress || 'Event Location'}`
-                      } : undefined}
-                    />
-                  </div>
+
 
                   <h4 className="font-medium text-sm text-gray-700 mt-4">Ride Details</h4>
 
@@ -1464,26 +1462,60 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
 
       {/* Postcode Input for distance calculation */}
       {showPostcodeInput && (
+        <div>
+          {/* Enhanced User Location and Map View */}
         <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mt-4">
           <div className="flex items-center mb-2">
             <MapPin className="h-4 w-4 text-blue-500 mr-2" />
-            <h3 className="text-sm font-medium text-blue-700">Your Location</h3>
+            <h3 className="text-sm font-medium text-blue-700">Your Location & Map View</h3>
           </div>
           <p className="text-xs text-blue-600 mb-3">
-            Enter your postcode to see how far you are from each carpool pickup point
+            Enter your address to see your location and all carpools on the map
           </p>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Enter your postcode..."
-              value={userPostcode}
-              onChange={(e) => setUserPostcode(e.target.value)}
-              className="max-w-xs"
-            />
-            {userPostcode && userCoordinates && (
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            <div>
+              <Input
+                placeholder="Street address"
+                value={userAddress}
+                onChange={(e) => setUserAddress(e.target.value)}
+                className="bg-white text-sm"
+              />
+            </div>
+            <div>
+              <Input
+                placeholder="City"
+                value={userCity}
+                onChange={(e) => setUserCity(e.target.value)}
+                className="bg-white text-sm"
+              />
+            </div>
+            <div>
+              <Input
+                placeholder="Postcode"
+                value={userPostcode}
+                onChange={(e) => setUserPostcode(e.target.value)}
+                className="bg-white text-sm"
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-2 mb-3">
+            <Button 
+              onClick={geocodeUserPostcode}
+              disabled={!userAddress || !userPostcode}
+              size="sm"
+              className="text-xs"
+            >
+              Show on Map
+            </Button>
+            {userCoordinates && (
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => {
+                  setUserAddress("");
+                  setUserCity("");
                   setUserPostcode("");
                   setUserCoordinates(null);
                 }}
@@ -1493,17 +1525,36 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               </Button>
             )}
           </div>
+          
           {userPostcode && !userCoordinates && userPostcode.length > 4 && (
-            <p className="text-xs text-amber-600 mt-2 flex items-center">
+            <p className="text-xs text-amber-600 mb-2 flex items-center">
               <div className="mr-1 h-3 w-3 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
               Looking up your location...
             </p>
           )}
           {userCoordinates && userPostcode.trim() !== "" && (
-            <p className="text-xs text-green-600 mt-2">
-              ✓ Location found! Carpools are now sorted by distance from you.
+            <p className="text-xs text-green-600 mb-3">
+              ✓ Location found! Your location is shown on the map below.
             </p>
           )}
+          
+          {/* Map Display */}
+          <div className="mt-4">
+            <GoogleMap
+              className="w-full h-80 rounded-md"
+              eventLocation={partyGroup ? {
+                lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
+                lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
+                name: `${partyGroup.name} - ${partyGroup.eventAddress || 'Event Location'}`
+              } : undefined}
+              userLocation={userCoordinates ? {
+                lat: userCoordinates[0],
+                lng: userCoordinates[1]
+              } : undefined}
+              carpoolLocations={getFilteredCarpoolLocations()}
+            />
+          </div>
+        </div>
         </div>
       )}
 
