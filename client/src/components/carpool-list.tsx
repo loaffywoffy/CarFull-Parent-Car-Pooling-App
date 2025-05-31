@@ -574,15 +574,21 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
 
                 <div className="flex flex-wrap gap-2 mt-1">
                   {/* Show distance badges when sorting by distance */}
-                  {sortBy === 'distance' && (
+                  {(sortBy === 'distance' || sortBy === 'distance-to-event') && (
                     <div className="flex gap-1 flex-wrap">
-                      {userCoordinates && carpool.distanceFromUser && (
+                      {sortBy === 'distance' && userCoordinates && carpool.distanceFromUser && (
                         <Badge className="bg-purple-100 text-purple-800">
                           <MapPin className="h-3 w-3 mr-1" />
                           {carpool.distanceFromUser.toFixed(1)} km from you
                         </Badge>
                       )}
-                      {carpool.distance && (
+                      {sortBy === 'distance-to-event' && userCoordinates && carpool.distanceToEventFromUser && (
+                        <Badge className="bg-blue-100 text-blue-800">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {carpool.distanceToEventFromUser.toFixed(1)} km to event from you
+                        </Badge>
+                      )}
+                      {sortBy === 'distance' && carpool.distance && (
                         <Badge className="bg-orange-100 text-orange-800">
                           <MapPin className="h-3 w-3 mr-1" />
                           {carpool.distance.toFixed(1)} km to event
