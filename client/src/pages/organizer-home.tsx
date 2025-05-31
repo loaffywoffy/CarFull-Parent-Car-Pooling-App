@@ -219,23 +219,28 @@ export default function OrganizerHomePage() {
         {showForm && (
           <Card className="max-w-4xl mx-auto">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl">Create New Event</CardTitle>
-                  <CardDescription>
+              {/* Back button positioned at top for mobile, right for desktop */}
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-xl sm:text-2xl font-bold leading-tight">
+                    Create New Event
+                  </CardTitle>
+                  <CardDescription className="mt-1 text-sm sm:text-base text-gray-600">
                     Fill in your event details to create a shareable carpool page
                   </CardDescription>
                 </div>
-                <Button 
-                  type="button" 
-                  onClick={() => setShowForm(false)} 
-                  variant="ghost" 
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Back to Home
-                </Button>
+                <div className="flex-shrink-0 self-start">
+                  <Button 
+                    type="button" 
+                    onClick={() => setShowForm(false)} 
+                    variant="ghost" 
+                    size="sm"
+                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Back to Home
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
