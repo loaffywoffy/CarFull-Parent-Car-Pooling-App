@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { geocodeAddress } from '@/lib/geocoding';
-import GoogleMap from './google-map';
+import EventMap from './event-map';
 import { MapPin } from 'lucide-react';
 
 interface EventLocationMapProps {
@@ -49,18 +49,18 @@ export default function EventLocationMap({ address, city, postcode, className = 
     );
   }
 
-  if (error) {
+  if (error || !eventLocation) {
     return (
       <div className={`${className} bg-gray-50 border border-gray-200 rounded-lg flex flex-col items-center justify-center text-gray-500`}>
         <MapPin className="h-8 w-8 mb-2" />
-        <p className="text-sm text-center mb-2">{error}</p>
+        <p className="text-sm text-center mb-2">{error || 'Unable to load event location'}</p>
         <p className="text-xs text-center">{address}, {city ? city + ' ' : ''}{postcode}</p>
       </div>
     );
   }
 
   return (
-    <GoogleMap
+    <EventMap
       className={className}
       eventLocation={eventLocation}
     />

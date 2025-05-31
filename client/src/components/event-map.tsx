@@ -1,133 +1,133 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { MapPin, ExternalLink, Navigation } from 'lucide-react';
-import GoogleMap from './google-map';
-import { geocodeAddress } from '@/lib/geocoding';
+import { useRef, useEffect, useState } from 'react';
+import { Loader } from '@googlemaps/js-api-loader';
 
 interface EventMapProps {
-  address: string;
-  city: string;
-  postcode: string;
-  eventName: string;
+  className?: string;
+  eventLocation: {
+    lat: number;
+    lng: number;
+    name: string;
+  };
 }
 
-export default function EventMap({ address, city, postcode, eventName }: EventMapProps) {
-  const fullAddress = `${address}, ${city} ${postcode}`;
-  const [eventCoordinates, setEventCoordinates] = useState<[number, number] | null>(null);
-  const [useMapboxFallback, setUseMapboxFallback] = useState(false);
-  const [mapKey, setMapKey] = useState(0); // Force remount when needed
+export default function EventMap({ 
+  className = "w-full h-64", 
+  eventLocation
+}: EventMapProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
 
-  // Set coordinates using Google Maps geocoding service when available
+  // Initialize map only once
   useEffect(() => {
-    if (!window.google?.maps?.Geocoder) {
-      // If Google Maps isn't loaded yet, wait and try again
-      const checkGoogle = setInterval(() => {
-        if (window.google?.maps?.Geocoder) {
-          clearInterval(checkGoogle);
-          geocodeWithGoogle();
-        }
-      }, 100);
-      
-      // Clear interval after 5 seconds to avoid infinite loop
-      setTimeout(() => clearInterval(checkGoogle), 5000);
-      return;
-    }
+    if (map || !mapRef.current) return;
     
-    geocodeWithGoogle();
-
-    function geocodeWithGoogle() {
-      const geocoder = new window.google.maps.Geocoder();
-      const fullAddress = `${address}, ${city} ${postcode}`;
-      
-      console.log('EventMap geocoding with Google Maps API:', fullAddress);
-      
-      geocoder.geocode({ address: fullAddress }, (results, status) => {
-        if (status === 'OK' && results && results[0]) {
-          const location = results[0].geometry.location;
-          const coords: [number, number] = [location.lat(), location.lng()];
-          console.log('EventMap Google geocoding success:', coords);
-          setEventCoordinates(coords);
-          // Force map remount after coordinates are set
-          setMapKey(prev => prev + 1);
-        } else {
-          // Try with just postcode if full address fails
-          console.log('EventMap: Trying postcode only geocoding');
-          geocoder.geocode({ address: postcode }, (postcodeResults, postcodeStatus) => {
-            if (postcodeStatus === 'OK' && postcodeResults && postcodeResults[0]) {
-              const location = postcodeResults[0].geometry.location;
-              const coords: [number, number] = [location.lat(), location.lng()];
-              console.log('EventMap Google postcode geocoding success:', coords);
-              setEventCoordinates(coords);
-              setMapKey(prev => prev + 1);
-            } else {
-              console.log('EventMap: Geocoding failed, using London center');
-              setEventCoordinates([51.5154, -0.1426]);
-              setMapKey(prev => prev + 1);
-            }
-          });
+    const initMap = async () => {
+      try {
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+          setError('Google Maps API key not found');
+          setIsLoading(false);
+          return;
         }
-      });
-    }
-  }, [address, city, postcode]);
 
-  // Add visibility change handler to remount map when tab becomes visible
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && eventCoordinates) {
-        // Force map remount when tab becomes visible again
-        setTimeout(() => {
-          setMapKey(prev => prev + 1);
-        }, 100);
+        const loader = new Loader({
+          apiKey,
+          version: 'weekly',
+          libraries: ['maps'],
+          id: `event-map-${Date.now()}-${Math.random()}` // Unique ID for event maps
+        });
+
+        await loader.load();
+
+        if (!mapRef.current) return;
+
+        const mapInstance = new google.maps.Map(mapRef.current, {
+          center: { lat: eventLocation.lat, lng: eventLocation.lng },
+          zoom: 16,
+          mapTypeControl: true,
+          streetViewControl: true,
+          fullscreenControl: true,
+          zoomControl: true,
+        });
+
+        setMap(mapInstance);
+        setIsLoading(false);
+
+      } catch (err) {
+        console.error('Failed to load Event Google Maps:', err);
+        setError('Failed to load event map');
+        setIsLoading(false);
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [eventCoordinates]);
+    initMap();
+  }, [eventLocation.lat, eventLocation.lng]);
+
+  // Update marker when event location changes
+  useEffect(() => {
+    if (!map) return;
+
+    // Clear existing marker
+    if (markerRef.current) {
+      markerRef.current.setMap(null);
+    }
+
+    // Add event location marker with distinctive red color
+    const eventMarker = new google.maps.Marker({
+      position: { lat: eventLocation.lat, lng: eventLocation.lng },
+      map: map,
+      title: eventLocation.name,
+      icon: {
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+          <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="16" cy="16" r="12" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+            <circle cx="16" cy="16" r="4" fill="#ffffff"/>
+          </svg>
+        `),
+        scaledSize: new google.maps.Size(32, 32),
+        anchor: new google.maps.Point(16, 16)
+      }
+    });
+
+    const infoWindow = new google.maps.InfoWindow({
+      content: `<div><strong>${eventLocation.name}</strong><br/>Event Location</div>`
+    });
+
+    eventMarker.addListener('click', () => {
+      infoWindow.open(map, eventMarker);
+    });
+
+    markerRef.current = eventMarker;
+
+    // Center map on event location
+    map.setCenter({ lat: eventLocation.lat, lng: eventLocation.lng });
+
+  }, [map, eventLocation]);
+
+  if (error) {
+    return (
+      <div className={`${className} bg-gray-100 flex items-center justify-center rounded-lg border border-gray-200`}>
+        <div className="text-center p-4">
+          <p className="text-gray-600 text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      {/* Interactive Map Display */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <GoogleMap
-          key={`event-map-${mapKey}-${eventCoordinates ? eventCoordinates.join(',') : 'no-coords'}`}
-          className="w-full h-64"
-          eventLocation={eventCoordinates ? {
-            lat: eventCoordinates[0],
-            lng: eventCoordinates[1],
-            name: `${eventName} - ${fullAddress}`
-          } : undefined}
-        />
-      </div>
-
-      {/* Navigation Options */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 mb-3">
-          <Navigation className="h-4 w-4 text-gray-600" />
-          <span className="text-sm font-medium text-gray-700">Get Directions</span>
+    <div className={`${className} rounded-lg overflow-hidden border border-gray-200 relative`}>
+      {isLoading && (
+        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            <p className="text-gray-600 text-sm">Loading event map...</p>
+          </div>
         </div>
-        
-        <div className="grid grid-cols-3 gap-2">
-          <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
-            <a href={`https://maps.google.com/maps?q=${encodeURIComponent(fullAddress)}`} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-3 w-3" />
-              Google Maps
-            </a>
-          </Button>
-          <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
-            <a href={`https://maps.apple.com/?q=${encodeURIComponent(fullAddress)}`} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-3 w-3" />
-              Apple Maps
-            </a>
-          </Button>
-          <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
-            <a href={`https://waze.com/ul?q=${encodeURIComponent(fullAddress)}`} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-3 w-3" />
-              Waze
-            </a>
-          </Button>
-        </div>
-      </div>
+      )}
+      <div ref={mapRef} className="w-full h-full min-h-[200px]" style={{ height: '100%' }} />
     </div>
   );
 }
