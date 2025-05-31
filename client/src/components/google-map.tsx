@@ -34,11 +34,11 @@ export default function GoogleMap({
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const markersRef = useRef<google.maps.Marker[]>([]);
 
+  // Initialize map only once
   useEffect(() => {
     if (map) return; // Prevent multiple initializations
-    
-    console.log('GoogleMap received eventLocation prop:', eventLocation);
     
     const initMap = async () => {
       try {
@@ -52,151 +52,28 @@ export default function GoogleMap({
         const loader = new Loader({
           apiKey,
           version: 'weekly',
-          libraries: ['maps']
+          libraries: ['maps'],
+          id: `map-${Math.random()}` // Unique ID for each map instance
         });
 
-        console.log('Loading Google Maps with API key:', apiKey.substring(0, 10) + '...');
         await loader.load();
-        console.log('Google Maps loaded successfully');
 
         if (!mapRef.current) return;
 
-        // Use event location if available, otherwise default to London
-        const center = eventLocation 
-          ? { lat: eventLocation.lat, lng: eventLocation.lng }
-          : { lat: 51.5074, lng: -0.1276 };
-        
-        // Set appropriate zoom level - always use 15 for street-level detail
-        const zoom = eventLocation ? 16 : 11;
-
-        console.log('Creating map with center:', center);
-        console.log('Map container element:', mapRef.current);
+        // Default center to London
+        const center = { lat: 51.5074, lng: -0.1276 };
         
         const mapInstance = new google.maps.Map(mapRef.current, {
           center,
-          zoom,
+          zoom: 11,
           mapTypeControl: true,
           streetViewControl: true,
           fullscreenControl: true,
           zoomControl: true,
         });
 
-        console.log('Map instance created:', mapInstance);
         setMap(mapInstance);
         setIsLoading(false);
-        
-        // Collect all marker positions for auto-fitting bounds
-        const bounds = new google.maps.LatLngBounds();
-        const markers: google.maps.Marker[] = [];
-
-        // Add event location marker with distinctive red color
-        if (eventLocation) {
-          const eventMarker = new google.maps.Marker({
-            position: { lat: eventLocation.lat, lng: eventLocation.lng },
-            map: mapInstance,
-            title: eventLocation.name,
-            icon: {
-              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="16" cy="16" r="12" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
-                  <circle cx="16" cy="16" r="4" fill="#ffffff"/>
-                </svg>
-              `),
-              scaledSize: new google.maps.Size(32, 32),
-              anchor: new google.maps.Point(16, 16)
-            }
-          });
-
-          const infoWindow = new google.maps.InfoWindow({
-            content: `<div><strong>${eventLocation.name}</strong><br/>Event Location</div>`
-          });
-
-          eventMarker.addListener('click', () => {
-            infoWindow.open(mapInstance, eventMarker);
-          });
-
-          markers.push(eventMarker);
-          bounds.extend(eventMarker.getPosition()!);
-        }
-
-        // Add user location marker with distinctive blue color
-        if (userLocation) {
-          const userMarker = new google.maps.Marker({
-            position: { lat: userLocation.lat, lng: userLocation.lng },
-            map: mapInstance,
-            title: 'Your Location',
-            icon: {
-              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="16" cy="16" r="12" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
-                  <circle cx="16" cy="16" r="4" fill="#ffffff"/>
-                </svg>
-              `),
-              scaledSize: new google.maps.Size(32, 32),
-              anchor: new google.maps.Point(16, 16)
-            }
-          });
-
-          const infoWindow = new google.maps.InfoWindow({
-            content: `<div><strong>Your Location</strong></div>`
-          });
-
-          userMarker.addListener('click', () => {
-            infoWindow.open(mapInstance, userMarker);
-          });
-
-          markers.push(userMarker);
-          bounds.extend(userMarker.getPosition()!);
-        }
-
-        // Add carpool location markers with green color
-        carpoolLocations.forEach((carpool) => {
-          const marker = new google.maps.Marker({
-            position: { lat: carpool.lat, lng: carpool.lng },
-            map: mapInstance,
-            title: carpool.parentName,
-            icon: {
-              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="#16a34a" stroke="#ffffff" stroke-width="2"/>
-                  <circle cx="12" cy="12" r="3" fill="#ffffff"/>
-                </svg>
-              `),
-              scaledSize: new google.maps.Size(24, 24),
-              anchor: new google.maps.Point(12, 12)
-            }
-          });
-
-          const infoWindow = new google.maps.InfoWindow({
-            content: `<div><strong>${carpool.parentName}</strong><br/>${carpool.address}<br/>${carpool.spacesAvailable} spaces available</div>`
-          });
-
-          marker.addListener('click', () => {
-            infoWindow.open(mapInstance, marker);
-          });
-
-          markers.push(marker);
-          bounds.extend(marker.getPosition()!);
-        });
-
-        // Auto-fit the map to show all markers with appropriate zoom
-        if (markers.length > 0) {
-          mapInstance.fitBounds(bounds);
-          
-          // Add some padding and set a maximum zoom level
-          setTimeout(() => {
-            const currentZoom = mapInstance.getZoom();
-            if (currentZoom && currentZoom > 15) {
-              mapInstance.setZoom(15); // Don't zoom in too much
-            }
-          }, 100);
-        }
-
-        // Force a resize to ensure proper rendering
-        setTimeout(() => {
-          google.maps.event.trigger(mapInstance, 'resize');
-          console.log('Map resize triggered with bounds fitting');
-        }, 200);
 
       } catch (err) {
         console.error('Failed to load Google Maps:', err);
@@ -208,14 +85,134 @@ export default function GoogleMap({
     initMap();
   }, []);
 
-  // Update map center when eventLocation changes (markers are already handled in the initial setup)
-  useEffect(() => {
-    if (!map || !eventLocation) return;
+  // Create a function to clear all existing markers
+  const clearMarkers = () => {
+    markersRef.current.forEach(marker => marker.setMap(null));
+    markersRef.current = [];
+  };
 
-    // Only update center and zoom, don't create duplicate markers
-    map.setCenter({ lat: eventLocation.lat, lng: eventLocation.lng });
-    map.setZoom(16);
-  }, [map, eventLocation]);
+  // Update markers whenever props change
+  useEffect(() => {
+    if (!map) return;
+
+    // Clear existing markers
+    clearMarkers();
+
+    // Collect all marker positions for auto-fitting bounds
+    const bounds = new google.maps.LatLngBounds();
+    const markers: google.maps.Marker[] = [];
+
+    // Add event location marker with distinctive red color
+    if (eventLocation) {
+      const eventMarker = new google.maps.Marker({
+        position: { lat: eventLocation.lat, lng: eventLocation.lng },
+        map: map,
+        title: eventLocation.name,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="16" cy="16" r="12" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+              <circle cx="16" cy="16" r="4" fill="#ffffff"/>
+            </svg>
+          `),
+          scaledSize: new google.maps.Size(32, 32),
+          anchor: new google.maps.Point(16, 16)
+        }
+      });
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: `<div><strong>${eventLocation.name}</strong><br/>Event Location</div>`
+      });
+
+      eventMarker.addListener('click', () => {
+        infoWindow.open(map, eventMarker);
+      });
+
+      markers.push(eventMarker);
+      bounds.extend(eventMarker.getPosition()!);
+    }
+
+    // Add user location marker with distinctive blue color
+    if (userLocation) {
+      const userMarker = new google.maps.Marker({
+        position: { lat: userLocation.lat, lng: userLocation.lng },
+        map: map,
+        title: 'Your Location',
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="16" cy="16" r="12" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+              <circle cx="16" cy="16" r="4" fill="#ffffff"/>
+            </svg>
+          `),
+          scaledSize: new google.maps.Size(32, 32),
+          anchor: new google.maps.Point(16, 16)
+        }
+      });
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: `<div><strong>Your Location</strong></div>`
+      });
+
+      userMarker.addListener('click', () => {
+        infoWindow.open(map, userMarker);
+      });
+
+      markers.push(userMarker);
+      bounds.extend(userMarker.getPosition()!);
+    }
+
+    // Add carpool location markers with green color
+    carpoolLocations.forEach((carpool) => {
+      const marker = new google.maps.Marker({
+        position: { lat: carpool.lat, lng: carpool.lng },
+        map: map,
+        title: carpool.parentName,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" fill="#16a34a" stroke="#ffffff" stroke-width="2"/>
+              <circle cx="12" cy="12" r="3" fill="#ffffff"/>
+            </svg>
+          `),
+          scaledSize: new google.maps.Size(24, 24),
+          anchor: new google.maps.Point(12, 12)
+        }
+      });
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: `<div><strong>${carpool.parentName}</strong><br/>${carpool.address}<br/>${carpool.spacesAvailable} spaces available</div>`
+      });
+
+      marker.addListener('click', () => {
+        infoWindow.open(map, marker);
+      });
+
+      markers.push(marker);
+      bounds.extend(marker.getPosition()!);
+    });
+
+    // Store markers for cleanup
+    markersRef.current = markers;
+
+    // Auto-fit the map to show all markers or center on event/default location
+    if (markers.length > 0) {
+      map.fitBounds(bounds);
+      
+      // Add some padding and set a maximum zoom level for single markers
+      setTimeout(() => {
+        const currentZoom = map.getZoom();
+        if (currentZoom && currentZoom > 16) {
+          map.setZoom(16); // Don't zoom in too much for single markers
+        }
+      }, 100);
+    } else if (eventLocation) {
+      // If no markers but we have event location, center on that
+      map.setCenter({ lat: eventLocation.lat, lng: eventLocation.lng });
+      map.setZoom(16);
+    }
+
+  }, [map, eventLocation, userLocation, carpoolLocations]);
 
   if (error) {
     return (
