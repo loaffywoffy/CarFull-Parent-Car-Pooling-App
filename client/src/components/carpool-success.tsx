@@ -87,7 +87,7 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
           </div>
           
           <div className="text-sm text-gray-600 space-y-2">
-            <p><strong>Your Name:</strong> {carpoolData.parentName}</p>
+
             
             {/* Service Summary */}
             <div className="bg-white rounded-md p-3 border border-gray-200">
