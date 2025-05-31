@@ -694,11 +694,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           addressInfo = `Address: ${validationResult.data.address}, ${validationResult.data.city}, ${validationResult.data.postcode}\n`;
         }
 
+        // Include special requirements if provided
+        let requirementsInfo = '';
+        if (validationResult.data.specialRequirements && validationResult.data.specialRequirements.trim()) {
+          requirementsInfo = `Special requirements: ${validationResult.data.specialRequirements.trim()}\n`;
+        }
+
         const message = `New ride request for ${eventName}:\n\n` +
           `Child: ${childName}\n` +
           `Parent: ${parentName}\n` +
           `${addressInfo}` +
-          `Direction: ${direction}\n\n` +
+          `Direction: ${direction}\n` +
+          `${requirementsInfo}\n` +
           `Approve: ${approveUrl}\n` +
           `Reject: ${rejectUrl}`;
         
