@@ -1240,6 +1240,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Driving distance calculation endpoint
+  app.post("/api/calculate-driving-distance", async (req, res) => {
+    try {
+      const { startCoords, endCoords } = req.body;
+      
+      if (!startCoords || !endCoords || 
+          !Array.isArray(startCoords) || !Array.isArray(endCoords) ||
+          startCoords.length !== 2 || endCoords.length !== 2) {
+        return res.status(400).json({ error: "Invalid coordinates provided" });
+      }
+
+      const { calculateDrivingDistance } = await import("./services/directions");
+      const result = await calculateDrivingDistance(startCoords, endCoords);
+      
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(404).json({ error: "No route found" });
+      }
+    } catch (error) {
+      console.error("Driving distance calculation error:", error);
+      res.status(500).json({ error: "Failed to calculate driving distance" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -107,7 +107,7 @@ function toRad(degrees: number): number {
 const drivingDistanceCache: Record<string, { distance: number; duration: number }> = {};
 
 /**
- * Calculate driving distance and duration using Google Maps Directions API
+ * Calculate driving distance and duration using server-side Google Maps Directions API
  */
 export async function calculateDrivingDistance(
   startCoords: [number, number],
@@ -131,38 +131,28 @@ export async function calculateDrivingDistance(
     // Add delay to respect rate limits
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    const googleApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    if (!googleApiKey) {
-      console.error('Google Maps API key not found');
-      return null;
-    }
-
-    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${startCoords[0]},${startCoords[1]}&destination=${endCoords[0]},${endCoords[1]}&key=${googleApiKey}`;
+    const response = await axios.post('/api/calculate-driving-distance', {
+      startCoords,
+      endCoords
+    });
     
-    const response = await axios.get(url);
-    
-    if (response.data?.routes?.[0]?.legs?.[0]) {
-      const leg = response.data.routes[0].legs[0];
-      const distanceInKm = leg.distance.value / 1000; // Convert meters to kilometers
-      const durationInMinutes = leg.duration.value / 60; // Convert seconds to minutes
-      
+    if (response.data?.distance && response.data?.duration) {
       const result = {
-        distance: distanceInKm,
-        duration: durationInMinutes
+        distance: response.data.distance,
+        duration: response.data.duration
       };
       
       // Cache the result
       drivingDistanceCache[cacheKey] = result;
       
-      console.log(`Calculated Google driving distance: ${distanceInKm.toFixed(1)} km, ${durationInMinutes.toFixed(0)} minutes`);
+      console.log(`Calculated server driving distance: ${result.distance.toFixed(1)} km, ${result.duration.toFixed(0)} minutes`);
       return result;
     }
     
-    console.error('No route found from Google Directions API');
+    console.error('Invalid response from driving distance API');
     return null;
   } catch (error) {
-    console.error('Google Directions API routing error:', error);
-    console.error('Full error details:', JSON.stringify(error, null, 2));
+    console.error('Server driving distance API error:', error);
     return null;
   }
 }
