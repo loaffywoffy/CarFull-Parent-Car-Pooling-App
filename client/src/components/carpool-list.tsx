@@ -1659,18 +1659,21 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 lat: userCoordinates[0],
                 lng: userCoordinates[1]
               } : undefined}
-              carpoolLocations={carpools ? carpools.map((carpool: any) => ({
-                id: carpool.id,
-                lat: carpool.lat || 51.5074,
-                lng: carpool.lng || -0.1276,
-                parentName: carpool.parentName,
-                address: `${carpool.address}, ${carpool.city}, ${carpool.postcode}`,
-                canPickup: carpool.canPickup,
-                canDropoff: carpool.canDropoff,
-                canBoth: carpool.canBoth,
-                spacesAvailable: carpool.spacesAvailable,
-                returnSpacesAvailable: carpool.returnSpacesAvailable
-              })) : []}
+              carpoolLocations={(() => {
+                const dataToUse = carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || [];
+                return dataToUse.map((carpool: any) => ({
+                  id: carpool.id,
+                  lat: carpool.carpoolCoordinates ? carpool.carpoolCoordinates[0] : 51.5074,
+                  lng: carpool.carpoolCoordinates ? carpool.carpoolCoordinates[1] : -0.1276,
+                  parentName: carpool.parentName,
+                  address: `${carpool.address}, ${carpool.city}, ${carpool.postcode}`,
+                  canPickup: carpool.canPickup,
+                  canDropoff: carpool.canDropoff,
+                  canBoth: carpool.canBoth,
+                  spacesAvailable: carpool.spacesAvailable,
+                  returnSpacesAvailable: carpool.returnSpacesAvailable
+                }));
+              })()}
             />
           </div>
         </div>
@@ -1722,50 +1725,50 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
         </div>
 
         <TabsContent value="to-event" className="mt-4">
-          {carpools?.filter((c: any) => c.canPickup || c.canBoth).length === 0 ? (
+          {filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []).filter((c: any) => c.canPickup || c.canBoth).length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center text-gray-500">
                 No carpools found for rides to the event
               </CardContent>
             </Card>
           ) : (
-            carpools?.filter((c: any) => c.canPickup || c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
+            filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []).filter((c: any) => c.canPickup || c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
           )}
         </TabsContent>
 
         <TabsContent value="from-event" className="mt-4">
-          {carpools?.filter((c: any) => c.canDropoff || c.canBoth).length === 0 ? (
+          {filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []).filter((c: any) => c.canDropoff || c.canBoth).length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center text-gray-500">
                 No carpools found for rides from the event
               </CardContent>
             </Card>
           ) : (
-            carpools?.filter((c: any) => c.canDropoff || c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
+            filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []).filter((c: any) => c.canDropoff || c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
           )}
         </TabsContent>
 
         <TabsContent value="round-trip" className="mt-4">
-          {carpools?.filter((c: any) => c.canBoth).length === 0 ? (
+          {filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []).filter((c: any) => c.canBoth).length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center text-gray-500">
                 No round-trip carpools found
               </CardContent>
             </Card>
           ) : (
-            carpools?.filter((c: any) => c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
+            filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []).filter((c: any) => c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
           )}
         </TabsContent>
 
         <TabsContent value="both" className="mt-4">
-          {carpools?.length === 0 ? (
+          {filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []).length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center text-gray-500">
                 No carpools found matching your criteria
               </CardContent>
             </Card>
           ) : (
-            carpools?.map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
+            filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
           )}
         </TabsContent>
       </Tabs>
