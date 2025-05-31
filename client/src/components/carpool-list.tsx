@@ -654,6 +654,25 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                     </div>
                   </div>
 
+                  {/* Route Map Section */}
+                  <div className="mt-4">
+                    <h4 className="font-medium text-sm text-gray-700 mb-2">Route Map</h4>
+                    <LocationMapWrapper
+                      id={carpool.id}
+                      parentName={carpool.parentName}
+                      address={carpool.address}
+                      city={carpool.city}
+                      postcode={carpool.postcode}
+                      height="200px"
+                      type={carpool.canPickup || carpool.canBoth ? "pickup" : "dropoff"}
+                      eventLocation={partyGroup ? {
+                        lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
+                        lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
+                        name: `${partyGroup.name} - ${partyGroup.eventAddress || 'Event Location'}`
+                      } : undefined}
+                    />
+                  </div>
+
                   <h4 className="font-medium text-sm text-gray-700 mt-4">Ride Details</h4>
 
                   <div className="space-y-3">

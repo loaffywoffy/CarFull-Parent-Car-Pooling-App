@@ -89,7 +89,7 @@ export default function LocationMapWrapper({
     locations.push({
       label: eventLocation.name,
       position: [eventLocation.lat, eventLocation.lng] as [number, number],
-      type: 'event' as const
+      type: 'event' as any
     });
   }
 
