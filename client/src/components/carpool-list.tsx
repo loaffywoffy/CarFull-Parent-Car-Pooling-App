@@ -285,6 +285,15 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 }
               }
 
+              // Debug logging
+              console.log(`Carpool ${carpool.id} distances:`, {
+                distanceFromUser,
+                distanceToEventFromUser,
+                userCoordinates,
+                sortBy,
+                hasUserCoords: userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0
+              });
+
               return { 
                 ...carpool, 
                 distance, 
