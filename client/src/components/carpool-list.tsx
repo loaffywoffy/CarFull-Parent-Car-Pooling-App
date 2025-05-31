@@ -386,13 +386,13 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
 
 
 
-    // Format coordinates for map display
-    const [carpoolCoordinates, setCarpoolCoordinates] = useState<[number, number] | null>(null);
-    const [partyCoordinates, setPartyCoordinates] = useState<[number, number] | null>(null);
+  // Format coordinates for map display
+  const [carpoolCoordinates, setCarpoolCoordinates] = useState<[number, number] | null>(null);
+  const [partyCoordinates, setPartyCoordinates] = useState<[number, number] | null>(null);
 
-    // Effect to respond to the selectedCarpoolId prop changes
-    useEffect(() => {
-      if (selectedCarpoolId === carpool.id) {
+  // Effect to respond to the selectedCarpoolId prop changes
+  useEffect(() => {
+    if (selectedCarpoolId) {
         setShowDetails(true);
         setMapVisible(true);
       }
@@ -1590,7 +1590,18 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 lat: userCoordinates[0],
                 lng: userCoordinates[1]
               } : undefined}
-              carpoolLocations={getFilteredCarpoolLocations()}
+              carpoolLocations={carpools ? carpools.map((carpool: any) => ({
+                id: carpool.id,
+                lat: carpool.lat || 51.5074,
+                lng: carpool.lng || -0.1276,
+                parentName: carpool.parentName,
+                address: `${carpool.address}, ${carpool.city}, ${carpool.postcode}`,
+                canPickup: carpool.canPickup,
+                canDropoff: carpool.canDropoff,
+                canBoth: carpool.canBoth,
+                spacesAvailable: carpool.spacesAvailable,
+                returnSpacesAvailable: carpool.returnSpacesAvailable
+              })) : []}
             />
           </div>
         </div>
