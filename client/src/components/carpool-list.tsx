@@ -309,7 +309,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
     }
 
     calculateDistances();
-  }, [carpools, partyGroup, userCoordinates]);
+  }, [carpools, partyGroup, userCoordinates, sortBy]);
 
 
 
