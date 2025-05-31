@@ -792,9 +792,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
+          // Add departure time information
+          let departureInfo = '';
+          if (carpool.estimatedDepartureTime) {
+            departureInfo = `Departure: ${carpool.estimatedDepartureTime}\n`;
+          }
+          
+          // Create link to view carpool details
+          const carpoolLink = `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000'}/events/${partyGroup.shareableUrl}`;
+          
           const message = `Great news! ${request.parentName} has approved your ride request for ${request.childName} to ${eventName}.\n\n` +
-            `${pickupDetails}${pickupDetails && dropoffDetails ? '\n' : ''}${dropoffDetails}\n\n` +
-            `Driver contact: ${carpool.phoneNumber}`;
+            `${departureInfo}${pickupDetails}${pickupDetails && dropoffDetails ? '\n' : ''}${dropoffDetails}\n\n` +
+            `Driver contact: ${carpool.phoneNumber}\n\n` +
+            `View event details: ${carpoolLink}`;
           
           await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
         } catch (smsError) {
