@@ -337,15 +337,54 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
       },
     });
 
-    // Function to get initials from a name
-    const getInitialsFromName = (name: string) => {
-      if (!name) return "?";
-      return name
-        .split(' ')
-        .map(part => part[0])
-        .join('')
-        .toUpperCase();
-    };
+  // Function to get initials from a name
+  const getInitialsFromName = (name: string) => {
+    if (!name) return "?";
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase();
+  };
+
+  // Function to get filtered carpool locations based on selected tab
+  const getFilteredCarpoolLocations = () => {
+    if (!carpools || !Array.isArray(carpools)) return [];
+    
+    let filteredCarpools = carpools;
+    
+    // Filter based on selected tab
+    switch (selectedTab) {
+      case "to-event":
+        filteredCarpools = carpools.filter((c: any) => c.canPickup || c.canBoth);
+        break;
+      case "from-event":
+        filteredCarpools = carpools.filter((c: any) => c.canDropoff || c.canBoth);
+        break;
+      case "round-trip":
+        filteredCarpools = carpools.filter((c: any) => c.canBoth);
+        break;
+      case "all":
+      default:
+        filteredCarpools = carpools;
+        break;
+    }
+    
+    return filteredCarpools.map((carpool: any) => ({
+      id: carpool.id,
+      lat: carpool.lat || 51.5074,
+      lng: carpool.lng || -0.1276,
+      parentName: carpool.parentName,
+      address: `${carpool.address}, ${carpool.city}, ${carpool.postcode}`,
+      canPickup: carpool.canPickup,
+      canDropoff: carpool.canDropoff,
+      canBoth: carpool.canBoth,
+      spacesAvailable: carpool.spacesAvailable,
+      returnSpacesAvailable: carpool.returnSpacesAvailable
+    }));
+  };
+
+
 
     // Format coordinates for map display
     const [carpoolCoordinates, setCarpoolCoordinates] = useState<[number, number] | null>(null);
