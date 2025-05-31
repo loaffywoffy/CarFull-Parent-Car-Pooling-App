@@ -20,7 +20,11 @@ export default function EventLocationMap({ address, city, postcode, className = 
         setIsLoading(true);
         setError(null);
 
-        if (!mapRef.current) return;
+        if (!mapRef.current) {
+          console.log('Map container not ready, retrying...');
+          setTimeout(initializeMap, 100);
+          return;
+        }
 
         const fullAddress = `${address}, ${city ? city + ' ' : ''}${postcode}`;
         console.log('Initializing event location map for:', fullAddress);
