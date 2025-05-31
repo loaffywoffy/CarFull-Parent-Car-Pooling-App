@@ -194,9 +194,6 @@ export default function EventPage() {
                       {formatTime(event.targetArrivalTime)}
                     </div>
                   </div>
-                  <CardDescription className="text-sm sm:text-base text-gray-700 font-medium capitalize">
-                    {event.eventType} • Join carpools - no account required
-                  </CardDescription>
                 </div>
               </div>
               <div className="flex items-center space-x-1 flex-shrink-0">
@@ -221,7 +218,7 @@ export default function EventPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-8">
             <Tabs defaultValue="details" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="details">Event Details</TabsTrigger>
