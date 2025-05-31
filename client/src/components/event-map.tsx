@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import { loadGoogleMaps } from '@/lib/google-maps-loader';
 
 interface EventMapProps {
   className?: string;
@@ -26,21 +26,7 @@ export default function EventMap({
     
     const initMap = async () => {
       try {
-        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-        if (!apiKey) {
-          setError('Google Maps API key not found');
-          setIsLoading(false);
-          return;
-        }
-
-        const loader = new Loader({
-          apiKey,
-          version: 'weekly',
-          libraries: ['maps'],
-          id: `event-map-${Date.now()}-${Math.random()}` // Unique ID for event maps
-        });
-
-        await loader.load();
+        await loadGoogleMaps();
 
         if (!mapRef.current) return;
 

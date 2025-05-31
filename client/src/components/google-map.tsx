@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import { loadGoogleMaps } from '@/lib/google-maps-loader';
 
 interface GoogleMapProps {
   className?: string;
@@ -42,21 +42,7 @@ export default function GoogleMap({
     
     const initMap = async () => {
       try {
-        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-        if (!apiKey) {
-          setError('Google Maps API key not found');
-          setIsLoading(false);
-          return;
-        }
-
-        const loader = new Loader({
-          apiKey,
-          version: 'weekly',
-          libraries: ['maps'],
-          id: `map-${Math.random()}` // Unique ID for each map instance
-        });
-
-        await loader.load();
+        await loadGoogleMaps();
 
         if (!mapRef.current) return;
 
