@@ -38,7 +38,7 @@ export default function GoogleMap({
 
   // Initialize map only once
   useEffect(() => {
-    if (map) return; // Prevent multiple initializations
+    if (map || !mapRef.current) return; // Prevent multiple initializations or if no container
     
     const initMap = async () => {
       try {

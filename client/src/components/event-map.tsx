@@ -15,6 +15,7 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
   const fullAddress = `${address}, ${city} ${postcode}`;
   const [eventCoordinates, setEventCoordinates] = useState<[number, number] | null>(null);
   const [useMapboxFallback, setUseMapboxFallback] = useState(false);
+  const [mapKey, setMapKey] = useState(0); // Force remount when needed
 
   // Set coordinates using Google Maps geocoding service when available
   useEffect(() => {
@@ -46,6 +47,8 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
           const coords: [number, number] = [location.lat(), location.lng()];
           console.log('EventMap Google geocoding success:', coords);
           setEventCoordinates(coords);
+          // Force map remount after coordinates are set
+          setMapKey(prev => prev + 1);
         } else {
           // Try with just postcode if full address fails
           console.log('EventMap: Trying postcode only geocoding');
@@ -55,9 +58,11 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
               const coords: [number, number] = [location.lat(), location.lng()];
               console.log('EventMap Google postcode geocoding success:', coords);
               setEventCoordinates(coords);
+              setMapKey(prev => prev + 1);
             } else {
               console.log('EventMap: Geocoding failed, using London center');
               setEventCoordinates([51.5154, -0.1426]);
+              setMapKey(prev => prev + 1);
             }
           });
         }
@@ -65,11 +70,27 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
     }
   }, [address, city, postcode]);
 
+  // Add visibility change handler to remount map when tab becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && eventCoordinates) {
+        // Force map remount when tab becomes visible again
+        setTimeout(() => {
+          setMapKey(prev => prev + 1);
+        }, 100);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [eventCoordinates]);
+
   return (
     <div className="space-y-4">
       {/* Interactive Map Display */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <GoogleMap
+          key={`event-map-${mapKey}-${eventCoordinates ? eventCoordinates.join(',') : 'no-coords'}`}
           className="w-full h-64"
           eventLocation={eventCoordinates ? {
             lat: eventCoordinates[0],
