@@ -679,11 +679,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Include parent's address if driver offers home pickup/dropoff
         let addressInfo = '';
+        console.log(`[DEBUG] Checking address inclusion - needsPickup: ${needsPickup}, needsDropoff: ${needsDropoff}, needsBoth: ${needsBoth}`);
+        console.log(`[DEBUG] Carpool preferences - outboundDropoffPreference: ${carpool.outboundDropoffPreference}, returnDropoffPreference: ${carpool.returnDropoffPreference}`);
+        
         const includeAddress = (
           (needsPickup && (carpool.outboundDropoffPreference === 'direct-home')) ||
           (needsDropoff && (carpool.returnDropoffPreference === 'direct-home')) ||
           (needsBoth && (carpool.outboundDropoffPreference === 'direct-home' || carpool.returnDropoffPreference === 'direct-home'))
         );
+        
+        console.log(`[DEBUG] Include address decision: ${includeAddress}`);
         
         if (includeAddress) {
           addressInfo = `Address: ${validationResult.data.address}, ${validationResult.data.city}, ${validationResult.data.postcode}\n`;
