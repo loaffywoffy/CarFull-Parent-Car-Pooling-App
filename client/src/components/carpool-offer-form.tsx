@@ -354,55 +354,26 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
   // State for event location coordinates
   const [eventLocation, setEventLocation] = useState<[number, number]>([51.5074, -0.1278]);
 
-  // Geocode the event address when partyGroup data is loaded using Google Maps API
+  // Geocode the event address when partyGroup data is loaded using our geocoding utility
   useEffect(() => {
     if (!partyGroup) return;
 
-    const geocodeWithGoogle = () => {
-      if (!window.google?.maps?.Geocoder) {
-        // If Google Maps isn't loaded yet, wait and try again
-        const checkGoogle = setInterval(() => {
-          if (window.google?.maps?.Geocoder) {
-            clearInterval(checkGoogle);
-            geocodeWithGoogle();
-          }
-        }, 100);
-        
-        // Clear interval after 5 seconds to avoid infinite loop
-        setTimeout(() => clearInterval(checkGoogle), 5000);
-        return;
+    const geocodeEventLocation = async () => {
+      try {
+        const coordinates = await geocodeAddress(
+          partyGroup.eventAddress,
+          partyGroup.eventCity,
+          partyGroup.eventPostcode
+        );
+        setEventLocation(coordinates);
+      } catch (error) {
+        console.error('Failed to geocode event location in carpool form:', error);
+        // Use London center as fallback
+        setEventLocation([51.5154, -0.1426]);
       }
-
-      const geocoder = new window.google.maps.Geocoder();
-      const fullAddress = `${partyGroup.eventAddress}, ${partyGroup.eventCity} ${partyGroup.eventPostcode}`;
-      
-      console.log('CarpoolForm geocoding with Google Maps API:', fullAddress);
-      
-      geocoder.geocode({ address: fullAddress }, (results, status) => {
-        if (status === 'OK' && results && results[0]) {
-          const location = results[0].geometry.location;
-          const coords: [number, number] = [location.lat(), location.lng()];
-          console.log('CarpoolForm Google geocoding success:', coords);
-          setEventLocation(coords);
-        } else {
-          // Try with just postcode if full address fails
-          console.log('CarpoolForm: Trying postcode only geocoding');
-          geocoder.geocode({ address: partyGroup.eventPostcode }, (postcodeResults, postcodeStatus) => {
-            if (postcodeStatus === 'OK' && postcodeResults && postcodeResults[0]) {
-              const location = postcodeResults[0].geometry.location;
-              const coords: [number, number] = [location.lat(), location.lng()];
-              console.log('CarpoolForm Google postcode geocoding success:', coords);
-              setEventLocation(coords);
-            } else {
-              console.log('CarpoolForm: Geocoding failed, using London center');
-              setEventLocation([51.5154, -0.1426]);
-            }
-          });
-        }
-      });
     };
 
-    geocodeWithGoogle();
+    geocodeEventLocation();
   }, [partyGroup]);
 
   // Format date for display
