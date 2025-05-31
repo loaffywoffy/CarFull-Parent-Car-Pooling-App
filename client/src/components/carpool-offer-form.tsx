@@ -935,10 +935,13 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                             const newTime = partyGroup.endTime;
                             form.setValue("returnCollectionTime", newTime);
                             setReturnCollectionTime(newTime);
+                            setShowCustomReturnTime(false);
+                          } else if (value === "custom") {
+                            // Clear the form value and show custom time selectors
+                            form.setValue("returnCollectionTime", "");
+                            setReturnCollectionTime("");
+                            setShowCustomReturnTime(true);
                           }
-
-                          // Set state to show/hide time selectors
-                          setShowCustomReturnTime(value === "custom");
                         }}
                       >
                         <div className="flex items-center space-x-2">
