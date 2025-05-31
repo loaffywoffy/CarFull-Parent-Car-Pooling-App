@@ -716,7 +716,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 w-full sm:w-auto">
+            <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+              {/* Request Button - takes available space */}
               <Button 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -741,6 +742,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 }}
                 variant="default"
                 size="sm"
+                className="flex-1 sm:flex-none"
                 disabled={
                   carpoolRequests?.length && (
                     // If both canPickup and canDropoff are true, both directions must be full to disable
@@ -776,31 +778,34 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                   : "Request Spot"}
               </Button>
               
-              {/* Share Carpool Button */}
-              <div onClick={(e) => e.stopPropagation()} className="ml-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setShowShareDialog(true)}
-                  className="h-8 w-8 text-blue-600 hover:text-blue-800"
-                >
-                  <Share2 size={16} />
-                </Button>
-              </div>
-              
-              {/* Delete Carpool Button */}
-              <div onClick={(e) => e.stopPropagation()} className="ml-1">
-                <DeleteCarpoolButton 
-                  carpool={carpool} 
-                  partyGroupId={partyGroupId}
-                  variant="icon"
-                  onDelete={() => {
-                    // After successful deletion, refresh the carpools list
-                    queryClient.invalidateQueries({
-                      queryKey: ["/api/party-groups", partyGroupId, "carpools"]
-                    });
-                  }}
-                />
+              {/* Action buttons group - stays on same line */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {/* Share Carpool Button */}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setShowShareDialog(true)}
+                    className="h-8 w-8 text-blue-600 hover:text-blue-800"
+                  >
+                    <Share2 size={16} />
+                  </Button>
+                </div>
+                
+                {/* Delete Carpool Button */}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <DeleteCarpoolButton 
+                    carpool={carpool} 
+                    partyGroupId={partyGroupId}
+                    variant="icon"
+                    onDelete={() => {
+                      // After successful deletion, refresh the carpools list
+                      queryClient.invalidateQueries({
+                        queryKey: ["/api/party-groups", partyGroupId, "carpools"]
+                      });
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
