@@ -287,51 +287,14 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               console.error('Carpool address:', `${carpool.address}, ${carpool.city} ${carpool.postcode}`);
               console.error('User coordinates:', userCoordinates);
               
-              // Calculate basic straight-line distances as fallback using already geocoded coordinates
-              let fallbackDistance = null;
-              let fallbackDistanceFromUser = null;
-              let fallbackDistanceToEvent = null;
-              
-              try {
-                // Use the event coordinates that were already geocoded
-                if (carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0 && eventCoordinates) {
-                  fallbackDistance = calculateDistance(
-                    carpoolCoordinates[0], carpoolCoordinates[1],
-                    eventCoordinates[0], eventCoordinates[1]
-                  );
-                }
-                
-                // Calculate user to carpool distance using straight-line
-                if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
-                    carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0) {
-                  fallbackDistanceFromUser = calculateDistance(
-                    userCoordinates[0], userCoordinates[1],
-                    carpoolCoordinates[0], carpoolCoordinates[1]
-                  );
-                }
-                
-                // Calculate user to event distance using straight-line
-                if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && eventCoordinates) {
-                  fallbackDistanceToEvent = calculateDistance(
-                    userCoordinates[0], userCoordinates[1],
-                    eventCoordinates[0], eventCoordinates[1]
-                  );
-                }
-                
-                console.log(`Fallback distances for carpool ${carpool.id}:`, {
-                  fallbackDistance,
-                  fallbackDistanceFromUser, 
-                  fallbackDistanceToEvent
-                });
-              } catch (fallbackError) {
-                console.error('Fallback distance calculation failed:', fallbackError);
-              }
+              // Return carpool with null distances when calculation fails
+              console.log('Returning carpool with null distances due to calculation error');
               
               return { 
                 ...carpool, 
-                distance: fallbackDistance, 
-                distanceFromUser: fallbackDistanceFromUser, 
-                distanceToEventFromUser: fallbackDistanceToEvent 
+                distance: null, 
+                distanceFromUser: null, 
+                distanceToEventFromUser: null 
               };
             }
           })

@@ -162,6 +162,7 @@ export async function calculateDrivingDistance(
     return null;
   } catch (error) {
     console.error('Google Directions API routing error:', error);
+    console.error('Full error details:', JSON.stringify(error, null, 2));
     return null;
   }
 }
