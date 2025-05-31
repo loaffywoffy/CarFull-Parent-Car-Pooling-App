@@ -80,70 +80,7 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
           </h1>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-center mb-3">
-            <Car className="w-5 h-5 text-gray-600 mr-2" />
-            <span className="font-medium text-gray-900">Your Offer Details</span>
-          </div>
-          
-          <div className="text-sm text-gray-600 space-y-2">
 
-            
-            {/* Service Summary */}
-            <div className="bg-white rounded-md p-3 border border-gray-200">
-              <p className="font-medium text-gray-800 mb-2">What you're offering:</p>
-              
-              {/* Both Ways - check this first */}
-              {carpoolData.canBoth === true && (
-                <div className="space-y-1">
-                  <p className="text-purple-700">✓ Both ways (TO and FROM {eventLabels.eventName})</p>
-                  <p className="text-sm">• TO event: {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''}</p>
-                  <p className="text-sm">• FROM event: {carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''}</p>
-                  {carpoolData.outboundDepartureTime && (
-                    <p className="text-sm">• Departure time: {carpoolData.outboundDepartureTime}</p>
-                  )}
-                  <p className="text-sm">• Location: {carpoolData.address}, {carpoolData.city}</p>
-                </div>
-              )}
-              
-              {/* TO Event only */}
-              {carpoolData.canPickup === true && carpoolData.canBoth !== true && (
-                <div className="space-y-1">
-                  <p className="text-green-700">✓ Drive TO {eventLabels.toEvent}</p>
-                  <p className="text-sm">• {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''} available</p>
-                  {carpoolData.outboundDepartureTime && (
-                    <p className="text-sm">• Departure time: {carpoolData.outboundDepartureTime}</p>
-                  )}
-                  <p className="text-sm">• From: {carpoolData.address}, {carpoolData.city}</p>
-                </div>
-              )}
-              
-              {/* FROM Event only */}
-              {carpoolData.canDropoff === true && carpoolData.canBoth !== true && (
-                <div className="space-y-1">
-                  <p className="text-orange-700">✓ Pick up FROM {eventLabels.fromEvent}</p>
-                  <p className="text-sm">• {carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''} available</p>
-                  <p className="text-sm">• To: {carpoolData.address}, {carpoolData.city}</p>
-                </div>
-              )}
-              
-              {/* Fallback with all data */}
-              {carpoolData.canPickup !== true && carpoolData.canDropoff !== true && carpoolData.canBoth !== true && (
-                <div className="space-y-1">
-                  <p className="text-gray-700">Transportation service</p>
-                  <p className="text-sm">• {carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''} available</p>
-                  <p className="text-sm">• Location: {carpoolData.address}, {carpoolData.city}</p>
-                </div>
-              )}
-            </div>
-            
-            {carpoolData.additionalNotes && carpoolData.additionalNotes.trim() && (
-              <div className="border-t pt-2 mt-3">
-                <p><strong>Your notes:</strong> {carpoolData.additionalNotes}</p>
-              </div>
-            )}
-          </div>
-        </div>
 
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-6">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
