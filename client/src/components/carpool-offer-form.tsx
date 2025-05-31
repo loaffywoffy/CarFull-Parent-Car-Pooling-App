@@ -954,18 +954,14 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                       </RadioGroup>
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="returnCollectionTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          {/* Display the currently selected time */}
-                          <div className="mb-2">
-                            <p className="text-sm font-medium">Selected time: {field.value || "Not set"}</p>
-                          </div>
-
-                          {/* Only show time selectors when custom time is selected */}
-                          {showCustomReturnTime && (
+                    {/* Collection Time - only show when custom time is selected */}
+                    {showCustomReturnTime && (
+                      <FormField
+                        control={form.control}
+                        name="returnCollectionTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Collection Time</FormLabel>
                             <div className="flex space-x-2">
                               {/* Hour Select */}
                               <div className="w-1/2">
@@ -1021,14 +1017,14 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                                 </Select>
                               </div>
                             </div>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            When you'll be picking up children from the event
-                          </p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <p className="text-xs text-muted-foreground">
+                              When you'll be picking up children from the event
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
                   </div>
 
                   <FormLabel>Dropoff Preference when picking up FROM the party:</FormLabel>
