@@ -171,7 +171,7 @@ export default function EventPage() {
         <Card className="mb-6 overflow-hidden">
           <CardHeader className="pb-4 bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 border-b border-gray-100">
             <div className="flex items-start justify-between">
-              <div className="flex items-start space-x-4 flex-1 min-w-0">
+              <div className="flex flex-col items-center space-y-4 flex-1 min-w-0">
                 {(() => {
                   const { icon: EventIcon, bgColor, iconColor } = getEventTypeIcon(event.eventType || '');
                   return (
@@ -180,8 +180,8 @@ export default function EventPage() {
                     </div>
                   );
                 })()}
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 pr-2">
+                <div className="text-center">
+                  <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
                     {event.name}
                   </CardTitle>
                 </div>
