@@ -86,7 +86,7 @@ export function calculateDistance(
   lat2: number,
   lon2: number
 ): number {
-  const R = 3959; // Earth's radius in miles
+  const R = 6371; // Earth's radius in kilometers
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
   
@@ -143,18 +143,18 @@ export async function calculateDrivingDistance(
     
     if (response.data?.routes?.[0]) {
       const route = response.data.routes[0];
-      const distanceInMiles = route.distance * 0.000621371; // Convert meters to miles
+      const distanceInKm = route.distance / 1000; // Convert meters to kilometers
       const durationInMinutes = route.duration / 60; // Convert seconds to minutes
       
       const result = {
-        distance: distanceInMiles,
+        distance: distanceInKm,
         duration: durationInMinutes
       };
       
       // Cache the result
       drivingDistanceCache[cacheKey] = result;
       
-      console.log(`Calculated driving distance: ${distanceInMiles.toFixed(1)} miles, ${durationInMinutes.toFixed(0)} minutes`);
+      console.log(`Calculated driving distance: ${distanceInKm.toFixed(1)} km, ${durationInMinutes.toFixed(0)} minutes`);
       return result;
     }
     
