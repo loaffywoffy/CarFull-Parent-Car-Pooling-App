@@ -82,22 +82,18 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
 
 
 
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-6">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            What happens next?
-          </h3>
+        <div className="space-y-4 mb-6">
+          <h3 className="font-semibold text-gray-900 text-center mb-6">What happens next?</h3>
           
-          <div className="space-y-4">
-            {/* Step 1: Share your offer */}
-            <div className="flex items-start space-x-3">
+          {/* Step 1: Browse and Share */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5">
+            <div className="flex items-start space-x-4">
               <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                 <span className="text-green-600 font-semibold text-sm">1</span>
               </div>
-              <div>
-                <p className="font-medium text-gray-900 mb-2">Parents can find your offer</p>
-                <p className="text-sm text-gray-600 mb-3">Share this event with specific parents:</p>
-                <div className="flex space-x-2">
+              <div className="flex-1">
+                <p className="font-medium text-gray-900 mb-3">Parents can browse all available carpools or you can share yours directly</p>
+                <div className="flex flex-wrap gap-2">
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -138,17 +134,26 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Step 2: SMS notifications */}
-            <div className="flex items-start space-x-3">
+          {/* Step 2: SMS Notifications */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5">
+            <div className="flex items-start space-x-4">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                 <span className="text-blue-600 font-semibold text-sm">2</span>
               </div>
-              <div>
-                <p className="font-medium text-gray-900 mb-1">You'll be notified via SMS</p>
+              <div className="flex-1">
+                <p className="font-medium text-gray-900 mb-2">You'll be notified via SMS</p>
                 <p className="text-sm text-gray-600">We'll send you a text message when parents request spaces, and you can accept or decline each request.</p>
               </div>
             </div>
+          </div>
+
+          {/* Discrete note about editing */}
+          <div className="bg-gray-50 rounded-lg p-3 mt-4">
+            <p className="text-xs text-gray-500 text-center">
+              To edit or delete your carpool offer, navigate to the event page, find your carpool and select the edit or delete icon.
+            </p>
           </div>
         </div>
 
