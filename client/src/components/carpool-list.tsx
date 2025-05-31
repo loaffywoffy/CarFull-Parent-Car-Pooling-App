@@ -1531,168 +1531,52 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
           </TabsList>
         </div>
 
-        <TabsContent value="to-event" className="mt-4 space-y-6">
-          {/* Map View */}
-          <div className="space-y-4">
-            <GoogleMap
-              className="w-full h-96"
-              eventLocation={partyGroup ? {
-                lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
-                lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
-                name: `${partyGroup.name} - ${partyGroup.eventAddress || 'London'}`
-              } : undefined}
-              userLocation={userCoordinates ? {
-                lat: userCoordinates[0],
-                lng: userCoordinates[1]
-              } : undefined}
-              carpoolLocations={carpools?.filter((c: any) => c.canPickup || c.canBoth).map(carpool => ({
-                id: carpool.id,
-                lat: carpool.coordinates?.[0] || 51.5074,
-                lng: carpool.coordinates?.[1] || -0.1276,
-                parentName: carpool.parentName,
-                address: `${carpool.address}, ${carpool.city || ''} ${carpool.postcode}`.trim(),
-                canPickup: carpool.canPickup || carpool.canBoth,
-                canDropoff: carpool.canDropoff || carpool.canBoth,
-                spacesAvailable: carpool.spacesAvailable || 0
-              })) || []}
-            />
-          </div>
-          
-          {/* List View */}
-          <div>
-            {carpools?.filter((c: any) => c.canPickup || c.canBoth).length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center text-gray-500">
-                  No carpools found for rides to the event
-                </CardContent>
-              </Card>
-            ) : (
-              carpools?.filter((c: any) => c.canPickup || c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
-            )}
-          </div>
+        <TabsContent value="to-event" className="mt-4">
+          {carpools?.filter((c: any) => c.canPickup || c.canBoth).length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center text-gray-500">
+                No carpools found for rides to the event
+              </CardContent>
+            </Card>
+          ) : (
+            carpools?.filter((c: any) => c.canPickup || c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
+          )}
         </TabsContent>
 
-        <TabsContent value="from-event" className="mt-4 space-y-6">
-          {/* Map View */}
-          <div className="space-y-4">
-            <GoogleMap
-              className="w-full h-96"
-              eventLocation={partyGroup ? {
-                lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
-                lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
-                name: `${partyGroup.name} - ${partyGroup.eventAddress || 'London'}`
-              } : undefined}
-              userLocation={userCoordinates ? {
-                lat: userCoordinates[0],
-                lng: userCoordinates[1]
-              } : undefined}
-              carpoolLocations={carpools?.filter((c: any) => c.canDropoff || c.canBoth).map(carpool => ({
-                id: carpool.id,
-                lat: carpool.coordinates?.[0] || 51.5074,
-                lng: carpool.coordinates?.[1] || -0.1276,
-                parentName: carpool.parentName,
-                address: `${carpool.address}, ${carpool.city || ''} ${carpool.postcode}`.trim(),
-                canPickup: carpool.canPickup || carpool.canBoth,
-                canDropoff: carpool.canDropoff || carpool.canBoth,
-                spacesAvailable: carpool.spacesAvailable || 0
-              })) || []}
-            />
-          </div>
-          
-          {/* List View */}
-          <div>
-            {carpools?.filter((c: any) => c.canDropoff || c.canBoth).length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center text-gray-500">
-                  No carpools found for rides from the event
-                </CardContent>
-              </Card>
-            ) : (
-              carpools?.filter((c: any) => c.canDropoff || c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
-            )}
-          </div>
+        <TabsContent value="from-event" className="mt-4">
+          {carpools?.filter((c: any) => c.canDropoff || c.canBoth).length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center text-gray-500">
+                No carpools found for rides from the event
+              </CardContent>
+            </Card>
+          ) : (
+            carpools?.filter((c: any) => c.canDropoff || c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
+          )}
         </TabsContent>
 
-        <TabsContent value="round-trip" className="mt-4 space-y-6">
-          {/* Map View */}
-          <div className="space-y-4">
-            <GoogleMap
-              className="w-full h-96"
-              eventLocation={partyGroup ? {
-                lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
-                lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
-                name: `${partyGroup.name} - ${partyGroup.eventAddress || 'London'}`
-              } : undefined}
-              userLocation={userCoordinates ? {
-                lat: userCoordinates[0],
-                lng: userCoordinates[1]
-              } : undefined}
-              carpoolLocations={carpools?.filter((c: any) => c.canBoth).map(carpool => ({
-                id: carpool.id,
-                lat: carpool.coordinates?.[0] || 51.5074,
-                lng: carpool.coordinates?.[1] || -0.1276,
-                parentName: carpool.parentName,
-                address: `${carpool.address}, ${carpool.city || ''} ${carpool.postcode}`.trim(),
-                canPickup: carpool.canPickup || carpool.canBoth,
-                canDropoff: carpool.canDropoff || carpool.canBoth,
-                spacesAvailable: carpool.spacesAvailable || 0
-              })) || []}
-            />
-          </div>
-          
-          {/* List View */}
-          <div>
-            {carpools?.filter((c: any) => c.canBoth).length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center text-gray-500">
-                  No round-trip carpools found
-                </CardContent>
-              </Card>
-            ) : (
-              carpools?.filter((c: any) => c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
-            )}
-          </div>
+        <TabsContent value="round-trip" className="mt-4">
+          {carpools?.filter((c: any) => c.canBoth).length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center text-gray-500">
+                No round-trip carpools found
+              </CardContent>
+            </Card>
+          ) : (
+            carpools?.filter((c: any) => c.canBoth).map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
+          )}
         </TabsContent>
 
-        <TabsContent value="both" className="mt-4 space-y-6">
-          {/* Map View */}
-          <div className="space-y-4">
-            <GoogleMap
-              className="w-full h-96"
-              eventLocation={partyGroup ? {
-                lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
-                lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
-                name: `${partyGroup.name} - ${partyGroup.eventAddress || 'London'}`
-              } : undefined}
-              userLocation={userCoordinates ? {
-                lat: userCoordinates[0],
-                lng: userCoordinates[1]
-              } : undefined}
-              carpoolLocations={carpools?.map(carpool => ({
-                id: carpool.id,
-                lat: carpool.coordinates?.[0] || 51.5074,
-                lng: carpool.coordinates?.[1] || -0.1276,
-                parentName: carpool.parentName,
-                address: `${carpool.address}, ${carpool.city || ''} ${carpool.postcode}`.trim(),
-                canPickup: carpool.canPickup || carpool.canBoth,
-                canDropoff: carpool.canDropoff || carpool.canBoth,
-                spacesAvailable: carpool.spacesAvailable || 0
-              })) || []}
-            />
-          </div>
-          
-          {/* List View */}
-          <div>
-            {carpools?.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center text-gray-500">
-                  No carpools found matching your criteria
-                </CardContent>
-              </Card>
-            ) : (
-              carpools?.map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
-            )}
-          </div>
+        <TabsContent value="both" className="mt-4">
+          {carpools?.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center text-gray-500">
+                No carpools found matching your criteria
+              </CardContent>
+            </Card>
+          ) : (
+            carpools?.map((carpool: any) => <CarpoolCard key={carpool.id} carpool={carpool} />)
+          )}
         </TabsContent>
       </Tabs>
     </div>

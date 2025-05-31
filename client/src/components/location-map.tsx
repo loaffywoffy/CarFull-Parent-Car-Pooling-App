@@ -12,9 +12,10 @@ interface LocationMapProps {
   locations: Location[];
   height?: string;
   initialZoom?: number;
+  showRoute?: boolean;
 }
 
-export default function LocationMap({ locations, height = '400px', initialZoom = 14 }: LocationMapProps) {
+export default function LocationMap({ locations, height = '400px', initialZoom = 14, showRoute = false }: LocationMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoading, setIsLoading] = useState(true);

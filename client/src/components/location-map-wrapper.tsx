@@ -11,6 +11,11 @@ interface LocationMapWrapperProps {
   postcode: string;
   height?: string;
   type: 'pickup' | 'dropoff';
+  eventLocation?: {
+    lat: number;
+    lng: number;
+    name: string;
+  };
 }
 
 export default function LocationMapWrapper({
@@ -20,7 +25,8 @@ export default function LocationMapWrapper({
   city,
   postcode,
   height = '200px',
-  type
+  type,
+  eventLocation
 }: LocationMapWrapperProps) {
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
   const [error, setError] = useState<boolean>(false);
@@ -71,15 +77,28 @@ export default function LocationMapWrapper({
     );
   }
 
+  // Create locations array with pickup/dropoff and event location
+  const locations = [{
+    label: `${parentName}'s ${type === 'pickup' ? 'Pickup' : 'Dropoff'} Location`,
+    position: coordinates,
+    type
+  }];
+
+  // Add event location if provided
+  if (eventLocation) {
+    locations.push({
+      label: eventLocation.name,
+      position: [eventLocation.lat, eventLocation.lng] as [number, number],
+      type: 'event' as const
+    });
+  }
+
   return (
     <LocationMap
-      locations={[{
-        label: `${parentName}'s ${type === 'pickup' ? 'Pickup' : 'Dropoff'} Location`,
-        position: coordinates,
-        type
-      }]}
+      locations={locations}
       height={height}
-      initialZoom={14}
+      initialZoom={12}
+      showRoute={!!eventLocation}
     />
   );
 }
