@@ -1560,8 +1560,6 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
 
       {/* Postcode Input for distance calculation */}
       {showPostcodeInput && (
-        <div>
-          {/* Enhanced User Location and Map View */}
         <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mt-4">
           <div className="flex items-center mb-2">
             <MapPin className="h-4 w-4 text-blue-500 mr-2" />
@@ -1632,41 +1630,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
           )}
           {userCoordinates && userPostcode.trim() !== "" && (
             <p className="text-xs text-green-600 mb-3">
-              ✓ Location found! Your location is shown on the map below.
+              ✓ Location found! Distance calculations enabled.
             </p>
           )}
-          
-          {/* Map Display */}
-          <div className="mt-4">
-            <GoogleMap
-              className="w-full h-80 rounded-md"
-              eventLocation={partyGroup ? {
-                lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
-                lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
-                name: `${partyGroup.name} - ${partyGroup.eventAddress || 'Event Location'}`
-              } : undefined}
-              userLocation={userCoordinates ? {
-                lat: userCoordinates[0],
-                lng: userCoordinates[1]
-              } : undefined}
-              carpoolLocations={(() => {
-                const dataToUse = carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || [];
-                return dataToUse.map((carpool: any) => ({
-                  id: carpool.id,
-                  lat: carpool.carpoolCoordinates ? carpool.carpoolCoordinates[0] : 51.5074,
-                  lng: carpool.carpoolCoordinates ? carpool.carpoolCoordinates[1] : -0.1276,
-                  parentName: carpool.parentName,
-                  address: `${carpool.address}, ${carpool.city}, ${carpool.postcode}`,
-                  canPickup: carpool.canPickup,
-                  canDropoff: carpool.canDropoff,
-                  canBoth: carpool.canBoth,
-                  spacesAvailable: carpool.spacesAvailable,
-                  returnSpacesAvailable: carpool.returnSpacesAvailable
-                }));
-              })()}
-            />
-          </div>
-        </div>
         </div>
       )}
 
