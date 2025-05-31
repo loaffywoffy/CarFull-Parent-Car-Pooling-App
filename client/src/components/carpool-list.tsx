@@ -1539,9 +1539,9 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
           </TabsList>
         </div>
 
-        <div className="mt-4">
+        <TabsContent value="to-event" className="mt-4">
           {showMapView ? (
-            // MapBox Map View
+            // Map View
             <div className="space-y-4">
               <GoogleMap
                 className="w-full h-96"
@@ -1554,7 +1554,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                   lat: userCoordinates[0],
                   lng: userCoordinates[1]
                 } : undefined}
-                carpoolLocations={filteredCarpools.map(carpool => ({
+                carpoolLocations={filteredCarpools.filter((c: any) => c.canPickup || c.canBoth).map(carpool => ({
                   id: carpool.id,
                   lat: carpool.coordinates?.[0] || 51.5074,
                   lng: carpool.coordinates?.[1] || -0.1276,
@@ -1569,18 +1569,147 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
           ) : (
             // List View
             <>
-              {filteredCarpools.length === 0 ? (
+              {carpools?.filter((c: any) => c.canPickup || c.canBoth).length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center text-gray-500">
+                    No carpools found for rides to the event
+                  </CardContent>
+                </Card>
+              ) : (
+                carpools?.filter((c: any) => c.canPickup || c.canBoth).map(carpool => <CarpoolCard key={carpool.id} carpool={carpool} />)
+              )}
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="from-event" className="mt-4">
+          {showMapView ? (
+            // Map View
+            <div className="space-y-4">
+              <GoogleMap
+                className="w-full h-96"
+                eventLocation={partyGroup ? {
+                  lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
+                  lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
+                  name: `${partyGroup.name} - ${partyGroup.eventAddress || 'London'}`
+                } : undefined}
+                userLocation={userCoordinates ? {
+                  lat: userCoordinates[0],
+                  lng: userCoordinates[1]
+                } : undefined}
+                carpoolLocations={carpools?.filter((c: any) => c.canDropoff || c.canBoth).map(carpool => ({
+                  id: carpool.id,
+                  lat: carpool.coordinates?.[0] || 51.5074,
+                  lng: carpool.coordinates?.[1] || -0.1276,
+                  parentName: carpool.parentName,
+                  address: `${carpool.address}, ${carpool.city || ''} ${carpool.postcode}`.trim(),
+                  canPickup: carpool.canPickup || carpool.canBoth,
+                  canDropoff: carpool.canDropoff || carpool.canBoth,
+                  spacesAvailable: carpool.spacesAvailable || 0
+                })) || []}
+              />
+            </div>
+          ) : (
+            // List View
+            <>
+              {carpools?.filter((c: any) => c.canDropoff || c.canBoth).length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center text-gray-500">
+                    No carpools found for rides from the event
+                  </CardContent>
+                </Card>
+              ) : (
+                carpools?.filter((c: any) => c.canDropoff || c.canBoth).map(carpool => <CarpoolCard key={carpool.id} carpool={carpool} />)
+              )}
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="round-trip" className="mt-4">
+          {showMapView ? (
+            // Map View
+            <div className="space-y-4">
+              <GoogleMap
+                className="w-full h-96"
+                eventLocation={partyGroup ? {
+                  lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
+                  lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
+                  name: `${partyGroup.name} - ${partyGroup.eventAddress || 'London'}`
+                } : undefined}
+                userLocation={userCoordinates ? {
+                  lat: userCoordinates[0],
+                  lng: userCoordinates[1]
+                } : undefined}
+                carpoolLocations={carpools?.filter((c: any) => c.canBoth).map(carpool => ({
+                  id: carpool.id,
+                  lat: carpool.coordinates?.[0] || 51.5074,
+                  lng: carpool.coordinates?.[1] || -0.1276,
+                  parentName: carpool.parentName,
+                  address: `${carpool.address}, ${carpool.city || ''} ${carpool.postcode}`.trim(),
+                  canPickup: carpool.canPickup || carpool.canBoth,
+                  canDropoff: carpool.canDropoff || carpool.canBoth,
+                  spacesAvailable: carpool.spacesAvailable || 0
+                })) || []}
+              />
+            </div>
+          ) : (
+            // List View
+            <>
+              {carpools?.filter((c: any) => c.canBoth).length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center text-gray-500">
+                    No round-trip carpools found
+                  </CardContent>
+                </Card>
+              ) : (
+                carpools?.filter((c: any) => c.canBoth).map(carpool => <CarpoolCard key={carpool.id} carpool={carpool} />)
+              )}
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="both" className="mt-4">
+          {showMapView ? (
+            // Map View
+            <div className="space-y-4">
+              <GoogleMap
+                className="w-full h-96"
+                eventLocation={partyGroup ? {
+                  lat: partyGroup.eventAddress ? 51.5254268 : 51.5074,
+                  lng: partyGroup.eventAddress ? -0.1401543 : -0.1276,
+                  name: `${partyGroup.name} - ${partyGroup.eventAddress || 'London'}`
+                } : undefined}
+                userLocation={userCoordinates ? {
+                  lat: userCoordinates[0],
+                  lng: userCoordinates[1]
+                } : undefined}
+                carpoolLocations={carpools?.map(carpool => ({
+                  id: carpool.id,
+                  lat: carpool.coordinates?.[0] || 51.5074,
+                  lng: carpool.coordinates?.[1] || -0.1276,
+                  parentName: carpool.parentName,
+                  address: `${carpool.address}, ${carpool.city || ''} ${carpool.postcode}`.trim(),
+                  canPickup: carpool.canPickup || carpool.canBoth,
+                  canDropoff: carpool.canDropoff || carpool.canBoth,
+                  spacesAvailable: carpool.spacesAvailable || 0
+                })) || []}
+              />
+            </div>
+          ) : (
+            // List View
+            <>
+              {carpools?.length === 0 ? (
                 <Card>
                   <CardContent className="p-8 text-center text-gray-500">
                     No carpools found matching your criteria
                   </CardContent>
                 </Card>
               ) : (
-                filteredCarpools.map(carpool => <CarpoolCard key={carpool.id} carpool={carpool} />)
+                carpools?.map(carpool => <CarpoolCard key={carpool.id} carpool={carpool} />)
               )}
             </>
           )}
-        </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
