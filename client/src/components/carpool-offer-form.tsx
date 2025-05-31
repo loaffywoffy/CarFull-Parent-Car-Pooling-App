@@ -484,12 +484,15 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
             </Button>
           </div>
 
-          {showMap && (
+          {showMap && eventLocation && eventLocation[0] && eventLocation[1] && (
             <div className="mt-4 pt-4 border-t border-blue-200">
               <div className="h-[200px] rounded-md overflow-hidden">
                 <GoogleMap 
-                  eventLocation={eventLocation}
-                  eventName={`${partyGroup.name} - ${partyGroup.eventAddress}`}
+                  eventLocation={{
+                    lat: eventLocation[0],
+                    lng: eventLocation[1],
+                    name: `${partyGroup.name} - ${partyGroup.eventAddress}, ${partyGroup.eventCity} ${partyGroup.eventPostcode}`
+                  }}
                 />
               </div>
             </div>
