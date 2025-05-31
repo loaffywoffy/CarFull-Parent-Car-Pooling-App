@@ -21,20 +21,29 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
     const geocodeEventAddress = async () => {
       try {
         console.log('EventMap geocoding address:', address, city, postcode);
-        const coords = await geocodeAddress(address, city, postcode);
-        console.log('EventMap received coordinates:', coords);
+        
+        // Try geocoding with full address first
+        let coords = await geocodeAddress(address, city, postcode);
+        console.log('EventMap full address geocoding result:', coords);
+        
+        // If that fails, try just the postcode which often works better
+        if (!coords || coords[0] === 0 || coords[1] === 0) {
+          console.log('EventMap: Trying postcode-only geocoding');
+          coords = await geocodeAddress("", "", postcode);
+          console.log('EventMap postcode geocoding result:', coords);
+        }
         
         if (coords && coords[0] !== 0 && coords[1] !== 0) {
           setEventCoordinates(coords);
         } else {
-          // If no geocoding results, set default London coordinates
-          console.log('EventMap: Setting default coordinates due to failed geocoding');
-          setEventCoordinates([51.5074, -0.1276]);
+          // If geocoding completely fails, use a more central London location
+          console.log('EventMap: Using fallback coordinates');
+          setEventCoordinates([51.5154, -0.1426]); // Oxford Street area
         }
       } catch (error) {
         console.error('EventMap geocoding error:', error);
-        // Set default London coordinates if geocoding fails
-        setEventCoordinates([51.5074, -0.1276]);
+        // Use central London coordinates if geocoding fails
+        setEventCoordinates([51.5154, -0.1426]);
       }
     };
 

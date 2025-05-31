@@ -66,8 +66,8 @@ export default function GoogleMap({
           ? { lat: eventLocation.lat, lng: eventLocation.lng }
           : { lat: 51.5074, lng: -0.1276 };
         
-        // Set appropriate zoom level based on whether we have an event location
-        const zoom = eventLocation ? 15 : 11;
+        // Set appropriate zoom level - always use 15 for street-level detail
+        const zoom = eventLocation ? 16 : 11;
 
         console.log('Creating map with center:', center);
         console.log('Map container element:', mapRef.current);
@@ -150,9 +150,9 @@ export default function GoogleMap({
 
     console.log('Updating map with new event location:', eventLocation);
     
-    // Update map center and zoom
+    // Update map center and zoom with higher zoom level for better detail
     map.setCenter({ lat: eventLocation.lat, lng: eventLocation.lng });
-    map.setZoom(15);
+    map.setZoom(17);
 
     // Add event location marker
     const eventMarker = new google.maps.Marker({
