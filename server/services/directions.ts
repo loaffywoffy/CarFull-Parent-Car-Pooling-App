@@ -21,8 +21,10 @@ export async function calculateDrivingDistance(
 
   try {
     const googleApiKey = process.env.VITE_GOOGLE_MAPS_API_KEY;
+    console.log('Server-side Google API key available:', !!googleApiKey);
     if (!googleApiKey) {
-      console.error('Google Maps API key not found');
+      console.error('Google Maps API key not found in server environment');
+      console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('GOOGLE')));
       return null;
     }
 

@@ -124,25 +124,17 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
             }
 
             try {
-              // Use Google Maps geocoding for carpool coordinates
-              const carpoolCoordinates = await new Promise<[number, number]>((resolve, reject) => {
-                if (!window.google?.maps?.Geocoder) {
-                  reject(new Error('Google Maps not loaded'));
-                  return;
-                }
-                
-                const geocoder = new window.google.maps.Geocoder();
-                const fullAddress = `${carpool.address}, ${carpool.city} ${carpool.postcode}`;
-                
-                geocoder.geocode({ address: fullAddress }, (results, status) => {
-                  if (status === 'OK' && results && results[0]) {
-                    const location = results[0].geometry.location;
-                    resolve([location.lat(), location.lng()]);
-                  } else {
-                    reject(new Error(`Geocoding failed: ${status}`));
-                  }
-                });
-              });
+              // Use cached geocoding to avoid redundant API calls
+              const carpoolCoordinates = await geocodeAddress(
+                carpool.address, 
+                carpool.city || "", 
+                carpool.postcode
+              );
+              
+              if (!carpoolCoordinates || carpoolCoordinates[0] === 0 || carpoolCoordinates[1] === 0) {
+                console.error(`Failed to geocode carpool address: ${carpool.address}, ${carpool.city} ${carpool.postcode}`);
+                throw new Error('Carpool geocoding failed');
+              }
 
               // Calculate driving distance from event (if event location is available)
               let distance = null;
@@ -192,7 +184,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               // Calculate driving distance from user (if user location is available)
               let distanceFromUser = null;
               let drivingTimeFromUser = null;
-              if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
+              if (userCoordinates && 
+                  userCoordinates.length === 2 && 
+                  typeof userCoordinates[0] === 'number' && 
+                  typeof userCoordinates[1] === 'number' &&
+                  userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
                   carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0) {
                 
                 // Check if user and carpool are at the same location
@@ -224,7 +220,11 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
 
               // Calculate driving distance from user to event (if user location is available)
               let distanceToEventFromUser = null;
-              if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
+              if (userCoordinates && 
+                  userCoordinates.length === 2 && 
+                  typeof userCoordinates[0] === 'number' && 
+                  typeof userCoordinates[1] === 'number' &&
+                  userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
                   partyGroup?.eventAddress && partyGroup?.eventPostcode) {
                 const partyCoordinates = await new Promise<[number, number]>((resolve, reject) => {
                   if (!window.google?.maps?.Geocoder) {
