@@ -677,9 +677,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         console.log(`[DEBUG] Approval URLs - Approve: ${approveUrl}, Reject: ${rejectUrl}`);
         
+        // Include parent's address if driver offers home pickup/dropoff
+        let addressInfo = '';
+        const includeAddress = (
+          (needsPickup && (carpool.outboundDropoffPreference === 'direct-home')) ||
+          (needsDropoff && (carpool.returnDropoffPreference === 'direct-home')) ||
+          (needsBoth && (carpool.outboundDropoffPreference === 'direct-home' || carpool.returnDropoffPreference === 'direct-home'))
+        );
+        
+        if (includeAddress) {
+          addressInfo = `Address: ${validationResult.data.address}, ${validationResult.data.city}, ${validationResult.data.postcode}\n`;
+        }
+
         const message = `New ride request for ${eventName}:\n\n` +
           `Child: ${childName}\n` +
           `Parent: ${parentName}\n` +
+          `${addressInfo}` +
           `Direction: ${direction}\n\n` +
           `Approve: ${approveUrl}\n` +
           `Reject: ${rejectUrl}`;
