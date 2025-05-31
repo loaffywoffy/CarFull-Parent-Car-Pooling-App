@@ -18,6 +18,28 @@ import { DeleteEventDialog } from "@/components/delete-event-dialog";
 import { EditEventDialog } from "@/components/edit-event-dialog";
 import type { PartyGroup } from "@shared/schema";
 
+// Helper function to get event type icon and colors
+function getEventTypeIcon(eventType: string) {
+  switch (eventType?.toLowerCase()) {
+    case 'wedding':
+      return { icon: Heart, bgColor: 'bg-pink-100', iconColor: 'text-pink-600' };
+    case 'graduation':
+      return { icon: GraduationCap, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' };
+    case 'birthday':
+    case 'birthday party':
+      return { icon: Gift, bgColor: 'bg-purple-100', iconColor: 'text-purple-600' };
+    case 'baby shower':
+    case 'christening':
+      return { icon: Baby, bgColor: 'bg-green-100', iconColor: 'text-green-600' };
+    case 'bar mitzvah':
+    case 'bat mitzvah':
+    case 'party':
+      return { icon: PartyPopper, bgColor: 'bg-yellow-100', iconColor: 'text-yellow-600' };
+    default:
+      return { icon: Calendar, bgColor: 'bg-orange-100', iconColor: 'text-orange-600' };
+  }
+}
+
 export default function EventPage() {
   const params = useParams();
   const shareableUrl = params.shareableUrl;
@@ -189,15 +211,20 @@ export default function EventPage() {
               <TabsContent value="details">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   {/* Event Type */}
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Event Type</h3>
-                      <p className="text-gray-600 text-sm sm:text-base capitalize">{event.eventType}</p>
-                    </div>
-                  </div>
+                  {(() => {
+                    const { icon: EventIcon, bgColor, iconColor } = getEventTypeIcon(event.eventType || '');
+                    return (
+                      <div className="flex items-start space-x-3">
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 ${bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                          <EventIcon className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColor}`} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Event Type</h3>
+                          <p className="text-gray-600 text-sm sm:text-base capitalize">{event.eventType}</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Date & Time */}
                   <div className="flex items-start space-x-3">
