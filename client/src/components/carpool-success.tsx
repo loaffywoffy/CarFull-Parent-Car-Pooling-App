@@ -90,17 +90,38 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
             <span className="font-medium text-gray-900">Your Offer Details</span>
           </div>
           
-          <div className="text-sm text-gray-600 space-y-1">
+          <div className="text-sm text-gray-600 space-y-2">
             <p><strong>Driver:</strong> {carpoolData.parentName}</p>
-            <p><strong>For:</strong> {carpoolData.childName}</p>
-            <p><strong>From:</strong> {
-              carpoolData.outboundDropoffPreference === 'pickup-point' && carpoolData.outboundPickupLocation
-                ? `${carpoolData.outboundPickupLocation}, ${carpoolData.outboundPickupLocationCity}`
-                : `${carpoolData.address}, ${carpoolData.city}`
-            }</p>
-            {carpoolData.outboundDepartureTime && (
-              <p><strong>Departure:</strong> {carpoolData.outboundDepartureTime}</p>
+            <p><strong>Parent of:</strong> {carpoolData.childName}</p>
+            <p><strong>Phone:</strong> {carpoolData.phoneNumber}</p>
+            <p><strong>Location:</strong> {carpoolData.address}, {carpoolData.city}, {carpoolData.postcode}</p>
+            
+            {/* Service details */}
+            <div className="border-t pt-2 mt-3">
+              <p><strong>Service offering:</strong></p>
+              {(carpoolData.canPickup || carpoolData.canBoth) && (
+                <p className="ml-2">• Transportation TO {eventLabels.toEvent} ({carpoolData.spacesAvailable} space{carpoolData.spacesAvailable !== 1 ? 's' : ''})</p>
+              )}
+              {(carpoolData.canDropoff || carpoolData.canBoth) && (
+                <p className="ml-2">• Transportation FROM {eventLabels.fromEvent} ({carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable} space{(carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable) !== 1 ? 's' : ''})</p>
+              )}
+            </div>
+            
+            {carpoolData.additionalNotes && (
+              <div className="border-t pt-2 mt-3">
+                <p><strong>Notes:</strong> {carpoolData.additionalNotes}</p>
+              </div>
             )}
+          </div>
+        </div>
+
+        <div className="bg-blue-50 rounded-lg p-4 mb-6">
+          <h3 className="font-medium text-blue-900 mb-2">What happens next?</h3>
+          <div className="text-sm text-blue-800 space-y-1">
+            <p>• Other parents can now see your offer and request spaces</p>
+            <p>• You'll receive requests via the event page</p>
+            <p>• To edit your offer, return to the event page and select "Edit Offer"</p>
+            <p>• You can delete your offer anytime using SMS verification</p>
           </div>
         </div>
 
@@ -110,10 +131,6 @@ export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "b
         >
           Continue to Event Page
         </Button>
-
-        <p className="text-xs text-gray-500 mt-4">
-          Other parents can now see your offer and request spaces for their children.
-        </p>
       </div>
     </div>
   );

@@ -25,6 +25,7 @@ import LocationMap from "@/components/location-map";
 import { geocodeAddress } from "@/lib/geocoding";
 import { SMSVerificationDialog } from "@/components/sms-verification-dialog";
 import CarpoolSuccess from "@/components/carpool-success";
+import { PhoneInputWithValidation } from "@/components/phone-input-with-validation";
 
 interface CarpoolOfferFormProps {
   onSuccess: () => void;
@@ -509,9 +510,14 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem className="md:w-1/2">
-                    <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. 07961 318588" type="tel" {...field} />
+                      <PhoneInputWithValidation
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        label="Phone Number"
+                        placeholder="e.g. 07961 318588"
+                        required={true}
+                      />
                     </FormControl>
                     <p className="text-xs text-gray-600 mt-1">
                       We'll send a verification code to confirm your number before creating the ride offer

@@ -2,7 +2,7 @@ import { useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import CarpoolOfferForm from "@/components/carpool-offer-form";
 import { useLocation } from "wouter";
 
@@ -56,14 +56,10 @@ export default function CreateCarpoolPage() {
         Back to event
       </Button>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Offer a Ride</h1>
-        <p className="text-gray-600">Share your car space for {partyGroup.name}</p>
-      </div>
-
       <Card>
         <CardHeader>
-          <CardTitle>Carpool Offer Details</CardTitle>
+          <CardTitle>Offer a Ride</CardTitle>
+          <CardDescription>Share your car space for {partyGroup.name}</CardDescription>
         </CardHeader>
         <CardContent>
           <CarpoolOfferForm
