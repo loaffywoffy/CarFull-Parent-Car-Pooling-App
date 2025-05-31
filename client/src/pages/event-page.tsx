@@ -216,46 +216,52 @@ export default function EventPage() {
               </TabsList>
 
               <TabsContent value="details">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {/* Date & Time */}
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                <div className="space-y-6">
+                  {/* Date & Time Section */}
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <Calendar className="h-5 w-5 text-blue-600" />
+                      <h3 className="font-semibold text-gray-900">When</h3>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Date & Time</h3>
-                      <p className="text-gray-600 text-sm sm:text-base">{formatDate(event.eventDate)}</p>
-                      <p className="text-xs sm:text-sm text-gray-500">
-                        Starts at {formatTime(event.targetArrivalTime)}
-                        {event.endTime && ` • Ends at ${formatTime(event.endTime)}`}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Location</h3>
-                      <p className="text-gray-600 text-sm sm:text-base">{event.eventAddress}</p>
-                      <p className="text-xs sm:text-sm text-gray-500">
-                        {event.eventCity} {event.eventPostcode}
-                      </p>
+                    <div className="space-y-2">
+                      <p className="text-gray-900 font-medium">{formatDate(event.eventDate)}</p>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600">
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-4 w-4" />
+                          <span>Starts {formatTime(event.targetArrivalTime)}</span>
+                        </div>
+                        {event.endTime && (
+                          <div className="flex items-center space-x-1">
+                            <Clock className="h-4 w-4" />
+                            <span>Ends {formatTime(event.endTime)}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Organizer */}
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                  {/* Location Section */}
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <MapPin className="h-5 w-5 text-green-600" />
+                      <h3 className="font-semibold text-gray-900">Where</h3>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Organized by</h3>
-                      <p className="text-gray-600 text-sm sm:text-base">{event.createdBy}</p>
+                    <div className="space-y-1">
+                      <p className="text-gray-900 font-medium">{event.eventAddress}</p>
+                      <p className="text-gray-600">{event.eventCity} {event.eventPostcode}</p>
+                    </div>
+                  </div>
+
+                  {/* Organizer Section */}
+                  <div className="bg-purple-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <Users className="h-5 w-5 text-purple-600" />
+                      <h3 className="font-semibold text-gray-900">Organized by</h3>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-gray-900 font-medium">{event.createdBy}</p>
                       {event.phoneNumber && (
-                        <p className="text-xs sm:text-sm text-gray-500">{event.phoneNumber}</p>
+                        <p className="text-gray-600">{event.phoneNumber}</p>
                       )}
                     </div>
                   </div>
