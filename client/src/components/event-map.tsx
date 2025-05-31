@@ -20,27 +20,28 @@ export default function EventMap({ address, city, postcode, eventName }: EventMa
   useEffect(() => {
     const geocodeEventAddress = async () => {
       try {
-        const coords = await geocodeAddress(fullAddress);
-        if (coords) {
+        console.log('EventMap geocoding address:', address, city, postcode);
+        const coords = await geocodeAddress(address, city, postcode);
+        console.log('EventMap received coordinates:', coords);
+        
+        if (coords && coords[0] !== 0 && coords[1] !== 0) {
           setEventCoordinates(coords);
         } else {
           // If no geocoding results, set default London coordinates
+          console.log('EventMap: Setting default coordinates due to failed geocoding');
           setEventCoordinates([51.5074, -0.1276]);
         }
       } catch (error) {
-        console.error('Failed to geocode event address:', error);
+        console.error('EventMap geocoding error:', error);
         // Set default London coordinates if geocoding fails
         setEventCoordinates([51.5074, -0.1276]);
       }
     };
 
-    if (fullAddress) {
-      geocodeEventAddress().catch(error => {
-        console.error('Geocoding promise rejected:', error);
-        setEventCoordinates([51.5074, -0.1276]);
-      });
+    if (address || postcode) {
+      geocodeEventAddress();
     }
-  }, [fullAddress]);
+  }, [address, city, postcode]);
 
   return (
     <div className="space-y-4">
