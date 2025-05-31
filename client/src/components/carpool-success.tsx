@@ -10,6 +10,9 @@ interface CarpoolSuccessProps {
 }
 
 export default function CarpoolSuccess({ carpoolData, onContinue, eventType = "birthday" }: CarpoolSuccessProps) {
+  // Debug logging
+  console.log("CarpoolSuccess - received carpoolData:", carpoolData);
+  
   // Helper function to get event-specific labels
   const getEventLabels = (eventType: string = "birthday") => {
     const eventMap: Record<string, { eventName: string; toEvent: string; fromEvent: string }> = {
