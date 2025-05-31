@@ -286,7 +286,52 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               console.error(`Error calculating distance for carpool ${carpool.id}:`, error);
               console.error('Carpool address:', `${carpool.address}, ${carpool.city} ${carpool.postcode}`);
               console.error('User coordinates:', userCoordinates);
-              return { ...carpool, distance: null, distanceFromUser: null, distanceToEventFromUser: null };
+              
+              // Calculate basic straight-line distances as fallback
+              let fallbackDistance = null;
+              let fallbackDistanceFromUser = null;
+              let fallbackDistanceToEvent = null;
+              
+              try {
+                if (carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0 && 
+                    partyGroup?.eventAddress && partyGroup?.eventPostcode) {
+                  const eventCoords = await geocodeAddress(partyGroup.eventAddress, partyGroup.eventCity || "", partyGroup.eventPostcode);
+                  if (eventCoords[0] !== 0 && eventCoords[1] !== 0) {
+                    fallbackDistance = calculateDistance(
+                      carpoolCoordinates[0], carpoolCoordinates[1],
+                      eventCoords[0], eventCoords[1]
+                    );
+                  }
+                }
+                
+                if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
+                    carpoolCoordinates[0] !== 0 && carpoolCoordinates[1] !== 0) {
+                  fallbackDistanceFromUser = calculateDistance(
+                    userCoordinates[0], userCoordinates[1],
+                    carpoolCoordinates[0], carpoolCoordinates[1]
+                  );
+                }
+                
+                if (userCoordinates && userCoordinates[0] !== 0 && userCoordinates[1] !== 0 && 
+                    partyGroup?.eventAddress && partyGroup?.eventPostcode) {
+                  const eventCoords = await geocodeAddress(partyGroup.eventAddress, partyGroup.eventCity || "", partyGroup.eventPostcode);
+                  if (eventCoords[0] !== 0 && eventCoords[1] !== 0) {
+                    fallbackDistanceToEvent = calculateDistance(
+                      userCoordinates[0], userCoordinates[1],
+                      eventCoords[0], eventCoords[1]
+                    );
+                  }
+                }
+              } catch (fallbackError) {
+                console.error('Fallback distance calculation failed:', fallbackError);
+              }
+              
+              return { 
+                ...carpool, 
+                distance: fallbackDistance, 
+                distanceFromUser: fallbackDistanceFromUser, 
+                distanceToEventFromUser: fallbackDistanceToEvent 
+              };
             }
           })
         );
