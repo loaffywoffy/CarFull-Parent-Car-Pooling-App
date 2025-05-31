@@ -348,6 +348,20 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
           const eventDistanceB = b.distance ?? Infinity;
           return eventDistanceA - eventDistanceB;
         }
+        
+        if (sortBy === "distance-to-event") {
+          // Sort by distance from user to event location
+          if (userCoordinates) {
+            const distanceA = a.distanceToEventFromUser ?? Infinity;
+            const distanceB = b.distanceToEventFromUser ?? Infinity;
+            return distanceA - distanceB;
+          }
+          
+          // Fallback to driver to event distance if no user coordinates
+          const eventDistanceA = a.distance ?? Infinity;
+          const eventDistanceB = b.distance ?? Infinity;
+          return eventDistanceA - eventDistanceB;
+        }
         if (sortBy === "spaces") {
           return (b.spacesAvailable || 0) - (a.spacesAvailable || 0);
         }
