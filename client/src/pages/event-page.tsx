@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map, Edit, Trash2, Mail, MessageCircle, ChevronDown } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map, Edit, Trash2, Mail, MessageCircle, ChevronDown, Heart, GraduationCap, Baby, PartyPopper, Gift } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import CarpoolList from "@/components/carpool-list";
@@ -187,7 +187,18 @@ export default function EventPage() {
               </TabsList>
 
               <TabsContent value="details">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                  {/* Event Type */}
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Event Type</h3>
+                      <p className="text-gray-600 text-sm sm:text-base capitalize">{event.eventType}</p>
+                    </div>
+                  </div>
+
                   {/* Date & Time */}
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
