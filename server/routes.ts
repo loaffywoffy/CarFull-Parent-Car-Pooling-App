@@ -1406,21 +1406,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let ridesAccepted = 0;
       let totalMilesSaved = 0;
 
+      // Helper function to geocode an address
+      const geocodeAddress = async (address: string): Promise<[number, number] | null> => {
+        try {
+          const googleApiKey = process.env.VITE_GOOGLE_MAPS_API_KEY;
+          if (!googleApiKey) return null;
+
+          const response = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${googleApiKey}`
+          );
+          const data = await response.json();
+          
+          if (data.results && data.results.length > 0) {
+            const location = data.results[0].geometry.location;
+            return [location.lat, location.lng];
+          }
+          return null;
+        } catch (error) {
+          console.error('Geocoding error:', error);
+          return null;
+        }
+      };
+
+      // Helper function to calculate distance in miles
+      const calculateDistanceInMiles = async (startCoords: [number, number], endCoords: [number, number]): Promise<number | null> => {
+        try {
+          const googleApiKey = process.env.VITE_GOOGLE_MAPS_API_KEY;
+          if (!googleApiKey) return null;
+
+          const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${startCoords[0]},${startCoords[1]}&destination=${endCoords[0]},${endCoords[1]}&key=${googleApiKey}`;
+          const response = await fetch(url);
+          const data = await response.json();
+          
+          if (data?.routes?.[0]?.legs?.[0]) {
+            const distanceInMeters = data.routes[0].legs[0].distance.value;
+            const distanceInMiles = (distanceInMeters / 1000) * 0.621371; // Convert km to miles
+            return distanceInMiles;
+          }
+          return null;
+        } catch (error) {
+          console.error('Distance calculation error:', error);
+          return null;
+        }
+      };
+
       for (const carpool of allCarpools) {
         const requests = await storage.getCarpoolRequestsByCarpoolId(carpool.id);
         const approvedRequests = requests.filter(req => req.approvalStatus === 'approved');
         ridesAccepted += approvedRequests.length;
 
-        // Calculate miles saved based on ride direction
+        // Get event details for distance calculation
+        const event = partyGroups.find(pg => pg.id === carpool.partyGroupId);
+        if (!event) continue;
+
+        const eventAddress = `${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`;
+        const eventCoords = await geocodeAddress(eventAddress);
+        
+        if (!eventCoords) {
+          // Fallback to estimated distance if geocoding fails
+          for (const request of approvedRequests) {
+            const estimatedMilesPerOneWayTrip = 5;
+            if (request.needsBoth) {
+              totalMilesSaved += estimatedMilesPerOneWayTrip * 2;
+            } else if (request.needsPickup || request.needsDropoff) {
+              totalMilesSaved += estimatedMilesPerOneWayTrip;
+            }
+          }
+          continue;
+        }
+
+        // Calculate real distances for each approved request
         for (const request of approvedRequests) {
-          const estimatedMilesPerOneWayTrip = 5; // Conservative estimate for local events
+          const childAddress = `${request.address}, ${request.city} ${request.postcode}`;
+          const childCoords = await geocodeAddress(childAddress);
           
-          if (request.needsBoth) {
-            // Round trip - count both directions
-            totalMilesSaved += estimatedMilesPerOneWayTrip * 2;
-          } else if (request.needsPickup || request.needsDropoff) {
-            // One-way trip
-            totalMilesSaved += estimatedMilesPerOneWayTrip;
+          if (childCoords) {
+            const distance = await calculateDistanceInMiles(childCoords, eventCoords);
+            if (distance) {
+              if (request.needsBoth) {
+                // Round trip - count both directions
+                totalMilesSaved += distance * 2;
+              } else if (request.needsPickup || request.needsDropoff) {
+                // One-way trip
+                totalMilesSaved += distance;
+              }
+            } else {
+              // Fallback to estimate if distance calculation fails
+              const estimatedMilesPerOneWayTrip = 5;
+              if (request.needsBoth) {
+                totalMilesSaved += estimatedMilesPerOneWayTrip * 2;
+              } else if (request.needsPickup || request.needsDropoff) {
+                totalMilesSaved += estimatedMilesPerOneWayTrip;
+              }
+            }
+          } else {
+            // Fallback to estimate if geocoding fails
+            const estimatedMilesPerOneWayTrip = 5;
+            if (request.needsBoth) {
+              totalMilesSaved += estimatedMilesPerOneWayTrip * 2;
+            } else if (request.needsPickup || request.needsDropoff) {
+              totalMilesSaved += estimatedMilesPerOneWayTrip;
+            }
           }
         }
       }
