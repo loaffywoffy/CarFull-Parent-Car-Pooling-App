@@ -170,9 +170,7 @@ export default function OrganizerHomePage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to Carfull</h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Set up carpools for your event and share a simple link with parents
-          </p>
+          <p className="text-xl text-gray-600 mb-8">Set up carpools for your event and share a simple link with parents.</p>
           
           {!showForm && (
             <Button onClick={() => setShowForm(true)} size="lg" className="bg-blue-600 hover:bg-blue-700">
