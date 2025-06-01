@@ -203,7 +203,7 @@ export default function OrganizerHomePage() {
                 <CardTitle className="text-lg">2. Share Link</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Get a unique URL to share with parents via email, text, or social media</p>
+                <p className="text-gray-600">Get a unique URL to share with parents via email, text, or social media.</p>
               </CardContent>
             </Card>
 
