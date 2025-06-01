@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map, Edit, Trash2, Mail, MessageCircle, ChevronDown, Heart, GraduationCap, Baby, PartyPopper, Gift, Navigation, ExternalLink, Trophy, BookOpen, Star, Sparkles } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map, Edit, Trash2, Mail, MessageCircle, ChevronDown, Heart, GraduationCap, Baby, PartyPopper, Gift, Navigation, ExternalLink, Trophy, BookOpen, Star, Sparkles, School, Cake } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import CarpoolList from "@/components/carpool-list";
@@ -23,25 +23,22 @@ function getEventTypeIcon(eventType: string) {
   const normalizedType = eventType?.toLowerCase().replace(/-/g, ' ');
   
   switch (normalizedType) {
-    case 'wedding':
-      return { icon: Heart, bgColor: 'bg-pink-100', iconColor: 'text-pink-600' };
-    case 'graduation':
-      return { icon: GraduationCap, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' };
     case 'birthday':
-    case 'birthday party':
-      return { icon: Gift, bgColor: 'bg-purple-100', iconColor: 'text-purple-600' };
-    case 'baby shower':
-    case 'christening':
-      return { icon: Baby, bgColor: 'bg-green-100', iconColor: 'text-green-600' };
+      return { icon: Cake, bgColor: 'bg-purple-100', iconColor: 'text-purple-600' };
     case 'bar mitzvah':
     case 'bat mitzvah':
-      return { icon: Star, bgColor: 'bg-indigo-100', iconColor: 'text-indigo-600' };
+      return { icon: School, bgColor: 'bg-indigo-100', iconColor: 'text-indigo-600' };
+    case 'graduation':
+      return { icon: GraduationCap, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' };
+    case 'wedding':
+      return { icon: Heart, bgColor: 'bg-pink-100', iconColor: 'text-pink-600' };
+    case 'celebration':
     case 'party':
       return { icon: PartyPopper, bgColor: 'bg-yellow-100', iconColor: 'text-yellow-600' };
     case 'sports':
-      return { icon: Car, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' };
+      return { icon: Trophy, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' };
     case 'school':
-      return { icon: Users, bgColor: 'bg-green-100', iconColor: 'text-green-600' };
+      return { icon: School, bgColor: 'bg-green-100', iconColor: 'text-green-600' };
     default:
       return { icon: Calendar, bgColor: 'bg-orange-100', iconColor: 'text-orange-600' };
   }
