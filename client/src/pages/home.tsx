@@ -284,7 +284,7 @@ export default function Home() {
 
         {/* Content based on active tab */}
         {activeTab === "partyGroups" && (
-          <div className="backdrop-blur-sm bg-white/80 rounded-lg shadow-lg p-6">
+          <div className="backdrop-blur-sm bg-white/70 rounded-lg shadow-lg p-6">
             {partyGroupTab === "list" && (
               <PartyGroupsList
                 onSelectPartyGroup={handleSelectPartyGroup}
@@ -325,7 +325,7 @@ export default function Home() {
         )}
 
         {activeTab === "offer" && selectedPartyGroup && (
-          <div className="backdrop-blur-sm bg-white/80 rounded-lg shadow-lg p-6">
+          <div className="backdrop-blur-sm bg-white/70 rounded-lg shadow-lg p-6">
             <CarpoolOfferForm 
             onSuccess={handleCarpoolSubmitSuccess} 
             onCancel={() => {
@@ -361,7 +361,7 @@ export default function Home() {
         )}
 
         {activeTab === "view" && selectedPartyGroup && (
-          <div className="backdrop-blur-sm bg-white/80 rounded-lg shadow-lg p-6">
+          <div className="backdrop-blur-sm bg-white/70 rounded-lg shadow-lg p-6">
             <div className="space-y-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-neutral-800">
