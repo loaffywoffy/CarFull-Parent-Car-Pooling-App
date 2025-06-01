@@ -7,8 +7,49 @@ const app = express();
 // Trust proxy for accurate IP detection (important for rate limiting)
 app.set('trust proxy', true);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Rate limiting middleware
+app.use((req, res, next) => {
+  const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+  const isApiRequest = req.path.startsWith('/api');
+  
+  if (isApiRequest) {
+    // Check rate limit for API requests (100 requests per 15 minutes)
+    const now = Date.now();
+    const windowMs = 15 * 60 * 1000; // 15 minutes
+    const maxRequests = 100;
+    
+    if (!global.rateLimitStore) {
+      global.rateLimitStore = new Map();
+    }
+    
+    const key = `${clientIP}:${Math.floor(now / windowMs)}`;
+    const current = global.rateLimitStore.get(key) || 0;
+    
+    if (current >= maxRequests) {
+      return res.status(429).json({ 
+        message: 'Too many requests. Please try again later.',
+        retryAfter: Math.ceil((windowMs - (now % windowMs)) / 1000)
+      });
+    }
+    
+    global.rateLimitStore.set(key, current + 1);
+    
+    // Clean up old entries
+    if (Math.random() < 0.01) { // 1% chance to clean up
+      for (const [k] of global.rateLimitStore) {
+        const keyTime = parseInt(k.split(':')[1]) * windowMs;
+        if (now - keyTime > windowMs * 2) {
+          global.rateLimitStore.delete(k);
+        }
+      }
+    }
+  }
+  
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
