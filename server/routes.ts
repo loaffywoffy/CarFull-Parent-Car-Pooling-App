@@ -1404,17 +1404,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate rides taken (approved carpool requests)
       let ridesAccepted = 0;
+      let totalMilesSaved = 0;
 
       for (const carpool of allCarpools) {
         const requests = await storage.getCarpoolRequestsByCarpoolId(carpool.id);
         const approvedRequests = requests.filter(req => req.approvalStatus === 'approved');
         ridesAccepted += approvedRequests.length;
-      }
 
-      // For MVP, estimate miles saved based on average trip distance
-      // This would be replaced with actual calculations once Google API is integrated
-      const estimatedMilesPerTrip = 5; // Conservative estimate for local events
-      const totalMilesSaved = ridesAccepted * estimatedMilesPerTrip;
+        // Calculate miles saved based on ride direction
+        for (const request of approvedRequests) {
+          const estimatedMilesPerOneWayTrip = 5; // Conservative estimate for local events
+          
+          if (request.needsBoth) {
+            // Round trip - count both directions
+            totalMilesSaved += estimatedMilesPerOneWayTrip * 2;
+          } else if (request.needsPickup || request.needsDropoff) {
+            // One-way trip
+            totalMilesSaved += estimatedMilesPerOneWayTrip;
+          }
+        }
+      }
 
       // Calculate CO2 emissions reduced (400g per mile)
       const co2ReductionGrams = totalMilesSaved * 400;
