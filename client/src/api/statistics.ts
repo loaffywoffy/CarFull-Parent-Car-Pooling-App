@@ -9,6 +9,6 @@ export interface KidpoolStatistics {
 }
 
 export async function getKidpoolStatistics(): Promise<KidpoolStatistics> {
-  const response = await apiRequest("/api/statistics");
+  const response = await fetch("/api/statistics");
   return response.json();
 }

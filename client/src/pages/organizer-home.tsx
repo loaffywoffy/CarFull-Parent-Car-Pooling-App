@@ -18,6 +18,8 @@ import { useLocation } from "wouter";
 import confetti from "canvas-confetti";
 import { SMSVerificationDialog } from "@/components/sms-verification-dialog";
 import { PhoneInputWithValidation } from "@/components/phone-input-with-validation";
+import { useQuery } from "@tanstack/react-query";
+import { getKidpoolStatistics } from "@/api/statistics";
 
 // Form validation schema matching the existing party group form
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
@@ -82,6 +84,12 @@ export default function OrganizerHomePage() {
   const [pendingFormData, setPendingFormData] = useState<PartyGroupFormValues | null>(null);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Fetch real statistics from the database
+  const { data: statistics, isLoading: statsLoading } = useQuery({
+    queryKey: ["/api/statistics"],
+    queryFn: getKidpoolStatistics,
+  });
 
   const form = useForm<PartyGroupFormValues>({
     resolver: zodResolver(partyGroupFormSchema),
@@ -210,6 +218,79 @@ export default function OrganizerHomePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">Parents can offer rides or request spots without creating accounts</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Kidpool Data Section */}
+        {!showForm && (
+          <div className="mb-12">
+            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-bold text-gray-900 mb-2">Kidpool Impact</CardTitle>
+                <CardDescription className="text-gray-600">
+                  Real data showing the positive impact of our carpool community
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {statsLoading ? (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="text-center p-4 bg-white rounded-lg">
+                        <div className="h-8 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : statistics ? (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
+                        {statistics.totalEvents}
+                      </div>
+                      <div className="text-sm text-gray-600">Events Created</div>
+                    </div>
+                    
+                    <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                      <div className="text-2xl font-bold text-green-600 mb-1">
+                        {statistics.carpoolOffers}
+                      </div>
+                      <div className="text-sm text-gray-600">Carpool Offers</div>
+                    </div>
+                    
+                    <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                      <div className="text-2xl font-bold text-purple-600 mb-1">
+                        {statistics.ridesAccepted}
+                      </div>
+                      <div className="text-sm text-gray-600">Rides Taken</div>
+                    </div>
+                    
+                    <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                      <div className="text-2xl font-bold text-orange-600 mb-1">
+                        {statistics.milesSaved}
+                      </div>
+                      <div className="text-sm text-gray-600">Miles Saved</div>
+                    </div>
+                    
+                    <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                      <div className="text-2xl font-bold text-red-600 mb-1">
+                        {statistics.co2ReductionKg}kg
+                      </div>
+                      <div className="text-sm text-gray-600">CO₂ Reduced</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-8">
+                    Unable to load statistics at the moment
+                  </div>
+                )}
+                
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-gray-600">
+                    CO₂ calculation based on EPA data: 400g per mile for average passenger vehicle
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>
