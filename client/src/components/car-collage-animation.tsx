@@ -47,7 +47,7 @@ export default function CarCollageAnimation() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 animate-pulse" 
-           style={{ animationDuration: '4s' }} /></div>
+           style={{ animationDuration: '4s' }} />
       
       {/* Floating cars */}
       {cars.map((car) => (
