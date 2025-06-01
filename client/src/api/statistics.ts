@@ -1,6 +1,6 @@
 import { apiRequest } from "@/lib/queryClient";
 
-export interface CarpoolStatistics {
+export interface CarpullStatistics {
   totalEvents: number;
   carpoolOffers: number;
   ridesAccepted: number;
@@ -8,7 +8,7 @@ export interface CarpoolStatistics {
   co2ReductionKg: number;
 }
 
-export async function getCarpoolStatistics(): Promise<CarpoolStatistics> {
+export async function getCarpullStatistics(): Promise<CarpullStatistics> {
   const response = await fetch("/api/statistics");
   return response.json();
 }

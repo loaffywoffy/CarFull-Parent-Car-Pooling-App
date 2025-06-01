@@ -19,7 +19,7 @@ import confetti from "canvas-confetti";
 import { SMSVerificationDialog } from "@/components/sms-verification-dialog";
 import { PhoneInputWithValidation } from "@/components/phone-input-with-validation";
 import { useQuery } from "@tanstack/react-query";
-import { getCarpoolStatistics } from "@/api/statistics";
+import { getCarpullStatistics } from "@/api/statistics";
 
 // Form validation schema matching the existing party group form
 const partyGroupFormSchema = insertPartyGroupSchema.extend({
@@ -88,7 +88,7 @@ export default function OrganizerHomePage() {
   // Fetch real statistics from the database
   const { data: statistics, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/statistics"],
-    queryFn: getCarpoolStatistics,
+    queryFn: getCarpullStatistics,
   });
 
   const form = useForm<PartyGroupFormValues>({
@@ -228,7 +228,7 @@ export default function OrganizerHomePage() {
           <div className="mb-12">
             <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl font-bold text-gray-900 mb-2">Carpool Impact</CardTitle>
+                <CardTitle className="text-2xl font-bold text-gray-900 mb-2">Carpull Impact</CardTitle>
                 <CardDescription className="text-gray-600">
                   Real data showing the positive impact of our carpool community
                 </CardDescription>
