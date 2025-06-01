@@ -215,7 +215,7 @@ export default function OrganizerHomePage() {
                 <CardTitle className="text-lg">3. Parents Join</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Parents can offer rides or request spots without creating accounts</p>
+                <p className="text-gray-600">Parents can offer rides or request spots without creating accounts.</p>
               </CardContent>
             </Card>
           </div>
