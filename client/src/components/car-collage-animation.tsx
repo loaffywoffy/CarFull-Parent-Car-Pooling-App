@@ -44,10 +44,10 @@ export default function CarCollageAnimation() {
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 animate-pulse" 
-           style={{ animationDuration: '8s' }} />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 animate-pulse" 
+           style={{ animationDuration: '4s' }} /></div>
       
       {/* Floating cars */}
       {cars.map((car) => (
@@ -64,14 +64,14 @@ export default function CarCollageAnimation() {
           {car.id % 2 === 0 ? (
             <Car 
               size={car.size} 
-              className="text-blue-400 drop-shadow-sm animate-bounce"
-              style={{ animationDelay: `${car.id * 0.5}s`, animationDuration: '3s' }}
+              className="text-blue-600 drop-shadow-lg animate-bounce opacity-60"
+              style={{ animationDelay: `${car.id * 0.5}s`, animationDuration: '2s' }}
             />
           ) : (
             <Users 
               size={car.size} 
-              className="text-purple-400 drop-shadow-sm animate-pulse"
-              style={{ animationDelay: `${car.id * 0.3}s`, animationDuration: '4s' }}
+              className="text-purple-600 drop-shadow-lg animate-pulse opacity-60"
+              style={{ animationDelay: `${car.id * 0.3}s`, animationDuration: '3s' }}
             />
           )}
         </div>
@@ -79,9 +79,9 @@ export default function CarCollageAnimation() {
       
       {/* Subtle pattern overlay */}
       <div 
-        className="absolute inset-0 opacity-20"
+        className="absolute inset-0 opacity-30"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23667eea' fill-opacity='0.1'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23667eea' fill-opacity='0.2'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3Ccircle cx='10' cy='10' r='1'/%3E%3Ccircle cx='50' cy='10' r='1'/%3E%3Ccircle cx='10' cy='50' r='1'/%3E%3Ccircle cx='50' cy='50' r='1'/%3E%3C/g%3E%3C/svg%3E")`,
         }}
       />
     </div>

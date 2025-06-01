@@ -266,7 +266,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       <CarCollageAnimation />
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+      <div className="relative z-20 container mx-auto px-4 py-8 max-w-4xl">
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-neutral-800 mb-2 flex items-center justify-center gap-2">
             <Car className="h-8 w-8 text-primary animate-bounce" />
