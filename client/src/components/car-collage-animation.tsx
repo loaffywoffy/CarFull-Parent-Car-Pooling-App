@@ -18,16 +18,16 @@ export default function CarCollageAnimation() {
   const [icons, setIcons] = useState<FloatingIcon[]>([]);
 
   useEffect(() => {
-    // Initialize floating icons with better visibility
-    const initialIcons: FloatingIcon[] = Array.from({ length: 8 }, (_, i) => ({
+    // Initialize floating icons with much larger visibility
+    const initialIcons: FloatingIcon[] = Array.from({ length: 6 }, (_, i) => ({
       id: i,
-      x: Math.random() * 85 + 5, // Keep away from edges
-      y: Math.random() * 85 + 5,
-      size: Math.random() * 20 + 25, // Larger icons
-      speed: Math.random() * 0.5 + 0.2, // Faster movement
+      x: Math.random() * 80 + 10, // Keep away from edges
+      y: Math.random() * 80 + 10,
+      size: 60 + Math.random() * 40, // Much larger icons (60-100px)
+      speed: Math.random() * 0.3 + 0.1, // Slower for visibility
       directionX: (Math.random() - 0.5) * 2,
       directionY: (Math.random() - 0.5) * 2,
-      opacity: Math.random() * 0.4 + 0.5, // More visible
+      opacity: 0.8 + Math.random() * 0.2, // Very visible (0.8-1.0)
       type: i % 2 === 0 ? 'car' : 'users',
     }));
     
@@ -67,11 +67,11 @@ export default function CarCollageAnimation() {
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Animated gradient background */}
+      {/* Lighter background for better icon contrast */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100"
+        className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
         style={{
-          animation: 'pulse 8s ease-in-out infinite',
+          animation: 'pulse 10s ease-in-out infinite',
         }}
       />
       
@@ -90,21 +90,23 @@ export default function CarCollageAnimation() {
           {icon.type === 'car' ? (
             <Car 
               size={icon.size} 
-              className="text-blue-600 drop-shadow-lg animate-bounce"
+              className="text-blue-700 animate-bounce"
               style={{ 
-                animationDelay: `${icon.id * 0.4}s`, 
+                animationDelay: `${icon.id * 0.5}s`, 
                 animationDuration: '2s',
-                filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))'
+                filter: 'drop-shadow(0 8px 16px rgba(59, 130, 246, 0.5))',
+                strokeWidth: 2
               }}
             />
           ) : (
             <Users 
               size={icon.size} 
-              className="text-purple-600 drop-shadow-lg animate-pulse"
+              className="text-purple-700 animate-pulse"
               style={{ 
-                animationDelay: `${icon.id * 0.3}s`, 
-                animationDuration: '2.5s',
-                filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))'
+                animationDelay: `${icon.id * 0.4}s`, 
+                animationDuration: '3s',
+                filter: 'drop-shadow(0 8px 16px rgba(147, 51, 234, 0.5))',
+                strokeWidth: 2
               }}
             />
           )}
