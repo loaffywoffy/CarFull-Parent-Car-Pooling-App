@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map, Edit, Trash2, Mail, MessageCircle, ChevronDown, Heart, GraduationCap, Baby, PartyPopper, Gift, Navigation, ExternalLink } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Car, ArrowLeft, Share2, Copy, CalendarPlus, Map, Edit, Trash2, Mail, MessageCircle, ChevronDown, Heart, GraduationCap, Baby, PartyPopper, Gift, Navigation, ExternalLink, Trophy, BookOpen, Star, Sparkles } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import CarpoolList from "@/components/carpool-list";
@@ -35,12 +35,13 @@ function getEventTypeIcon(eventType: string) {
       return { icon: Baby, bgColor: 'bg-green-100', iconColor: 'text-green-600' };
     case 'bar mitzvah':
     case 'bat mitzvah':
+      return { icon: Star, bgColor: 'bg-indigo-100', iconColor: 'text-indigo-600' };
     case 'party':
       return { icon: PartyPopper, bgColor: 'bg-yellow-100', iconColor: 'text-yellow-600' };
     case 'sports':
-      return { icon: Trophy, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' };
+      return { icon: Car, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' };
     case 'school':
-      return { icon: BookOpen, bgColor: 'bg-green-100', iconColor: 'text-green-600' };
+      return { icon: Users, bgColor: 'bg-green-100', iconColor: 'text-green-600' };
     default:
       return { icon: Calendar, bgColor: 'bg-orange-100', iconColor: 'text-orange-600' };
   }
