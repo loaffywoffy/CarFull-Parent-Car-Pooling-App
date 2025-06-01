@@ -500,7 +500,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   name="childName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Your Childs Name</FormLabel>
+                      <FormLabel>Your Child's Name</FormLabel>
                       <FormControl>
                         <Input placeholder="Child's Name" {...field} />
                       </FormControl>
