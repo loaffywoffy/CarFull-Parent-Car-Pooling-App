@@ -388,19 +388,21 @@ export default function EventPage() {
                     </div>
                     
                     <div className="grid grid-cols-3 gap-2">
-                      <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
+                      <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs" asChild>
                         <a href={`https://maps.google.com/maps?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-3 w-3" />
-                          Google Maps
+                          <span className="hidden sm:inline">Google Maps</span>
+                          <span className="sm:hidden">Google</span>
                         </a>
                       </Button>
-                      <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
+                      <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs" asChild>
                         <a href={`https://maps.apple.com/?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-3 w-3" />
-                          Apple Maps
+                          <span className="hidden sm:inline">Apple Maps</span>
+                          <span className="sm:hidden">Apple</span>
                         </a>
                       </Button>
-                      <Button variant="outline" size="sm" className="flex items-center gap-1" asChild>
+                      <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs" asChild>
                         <a href={`https://waze.com/ul?q=${encodeURIComponent(`${event.eventAddress}, ${event.eventCity} ${event.eventPostcode}`)}`} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-3 w-3" />
                           Waze
