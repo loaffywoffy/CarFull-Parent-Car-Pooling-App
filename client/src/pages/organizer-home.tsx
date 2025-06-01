@@ -288,7 +288,16 @@ export default function OrganizerHomePage() {
                 
                 <div className="mt-6 text-center">
                   <p className="text-sm text-gray-600">
-                    CO₂ calculation based on EPA data: 400g per mile for average passenger vehicle
+                    CO₂ calculation based on{" "}
+                    <a 
+                      href="https://www.epa.gov/greenvehicles/greenhouse-gas-emissions-typical-passenger-vehicle#:~:text=including%20the%20calculations.-,How%20much%20tailpipe%20carbon%20dioxide%20(CO2)%20is%20emitted%20from,of%20CO2%20per%20mile."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      EPA data
+                    </a>
+                    : 400g per mile for average passenger vehicle
                   </p>
                 </div>
               </CardContent>
