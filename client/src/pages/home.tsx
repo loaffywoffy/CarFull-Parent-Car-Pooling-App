@@ -12,6 +12,7 @@ import PartyGroupDetails from "@/components/party-group-details";
 import JoinPartyGroup from "@/components/join-party-group";
 
 import CarpoolSummary from "@/components/carpool-summary";
+import CarCollageAnimation from "@/components/car-collage-animation";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Car, Users, MapPin, Calendar } from "lucide-react";
 
@@ -263,8 +264,9 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="relative min-h-screen overflow-hidden">
+      <CarCollageAnimation />
+      <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-neutral-800 mb-2 flex items-center justify-center gap-2">
             <Car className="h-8 w-8 text-primary animate-bounce" />
@@ -282,7 +284,7 @@ export default function Home() {
 
         {/* Content based on active tab */}
         {activeTab === "partyGroups" && (
-          <>
+          <div className="backdrop-blur-sm bg-white/80 rounded-lg shadow-lg p-6">
             {partyGroupTab === "list" && (
               <PartyGroupsList
                 onSelectPartyGroup={handleSelectPartyGroup}
@@ -319,18 +321,20 @@ export default function Home() {
                 onCancel={() => setPartyGroupTab("details")}
               />
             )}
-          </>
+          </div>
         )}
 
         {activeTab === "offer" && selectedPartyGroup && (
-          <CarpoolOfferForm 
+          <div className="backdrop-blur-sm bg-white/80 rounded-lg shadow-lg p-6">
+            <CarpoolOfferForm 
             onSuccess={handleCarpoolSubmitSuccess} 
             onCancel={() => {
               setActiveTab("partyGroups");
               setPartyGroupTab("details");
             }}
             partyGroupId={selectedPartyGroup.id} 
-          />
+            />
+          </div>
         )}
 
         {activeTab === "offer" && !selectedPartyGroup && (
@@ -357,7 +361,8 @@ export default function Home() {
         )}
 
         {activeTab === "view" && selectedPartyGroup && (
-          <div className="space-y-6">
+          <div className="backdrop-blur-sm bg-white/80 rounded-lg shadow-lg p-6">
+            <div className="space-y-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-neutral-800">
                 Ride Information for {selectedPartyGroup.name}
