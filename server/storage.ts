@@ -62,6 +62,10 @@ export interface IStorage {
   // Verification operations
   storeVerificationCode(phoneNumber: string, code: string, action: string): Promise<void>;
   verifyCode(phoneNumber: string, code: string, action?: string): Promise<boolean>;
+
+  // Distance cache operations
+  getCachedDistance(requestId: number): Promise<number | null>;
+  setCachedDistance(requestId: number, miles: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -510,6 +514,7 @@ export class DatabaseStorage implements IStorage {
 
   // Verification methods (using in-memory storage for simplicity)
   private verificationCodes = new Map<string, { code: string; action: string; timestamp: number }>();
+  private distanceCache = new Map<number, number>(); // requestId -> miles
 
   async storeVerificationCode(phoneNumber: string, code: string, action: string): Promise<void> {
     const key = `${phoneNumber}:${action}`;
@@ -561,6 +566,14 @@ export class DatabaseStorage implements IStorage {
 
     console.log(`[DEBUG] Code verification failed for key: ${key}`);
     return false;
+  }
+
+  async getCachedDistance(requestId: number): Promise<number | null> {
+    return this.distanceCache.get(requestId) || null;
+  }
+
+  async setCachedDistance(requestId: number, miles: number): Promise<void> {
+    this.distanceCache.set(requestId, miles);
   }
 }
 
