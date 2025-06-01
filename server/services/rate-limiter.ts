@@ -39,8 +39,9 @@ class RateLimitService {
   private readonly MIN_TIME_BETWEEN_REQUESTS = 5000; // 5 seconds minimum between requests
   private readonly SUSPICIOUS_PATTERNS = [
     /^(\d)\1{9,}$/, // Repeated digits like 1111111111
-    /^(01|02|03|07|08|09)\d{8}$/, // Invalid UK formats
-    /^[0-9]{11,}$/, // Too many digits
+    /^0{10,}$/, // All zeros (10 or more)
+    /^1{10,}$/, // All ones (10 or more)
+    /^[0-9]{15,}$/, // Too many digits (15 or more)
   ];
   
   // Development/testing exemptions
