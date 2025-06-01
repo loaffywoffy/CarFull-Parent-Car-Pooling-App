@@ -668,8 +668,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`[DEBUG] Event name: ${eventName}, Driver phone: ${carpool.phoneNumber}`);
         
         // Create approval links
-        const baseUrl = process.env.REPLIT_DEV_DOMAIN ? 
-          `https://${process.env.REPLIT_DEV_DOMAIN}` : 
+        const baseUrl = process.env.REPLIT_DOMAINS ? 
+          `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
           `http://localhost:5000`;
         
         const approveUrl = `${baseUrl}/a/${approvalToken}`;
