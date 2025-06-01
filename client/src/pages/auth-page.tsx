@@ -38,7 +38,7 @@ export default function AuthPage() {
           <div className="p-6 flex flex-col justify-center">
             <Card className="border-none shadow-lg bg-gradient-to-br from-primary/10 to-primary/5">
               <CardHeader>
-                <CardTitle className="text-3xl font-bold text-primary">Welcome to Carpull</CardTitle>
+                <CardTitle className="text-3xl font-bold text-primary">Welcome to Carfull</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-lg">
