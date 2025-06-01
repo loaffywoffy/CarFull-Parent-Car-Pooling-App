@@ -1,6 +1,3 @@
-
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L17 10h-1.1A5.99 5.99 0 0 0 11 6.1V5c0-.6-.4-1-1-1H6c-.6 0-1 .4-1 1v1.1A5.99 5.99 0 0 0 .1 11H0c-.6 0-1 .4-1 1v4c0 .6.4 1 1 1h2"/>
-  <path d="M14 18c0 1.1-.9 2-2 2s-2-.9-2-2"/>
-  <path d="M20 18c0 1.1-.9 2-2 2s-2-.9-2-2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <text y="70" font-size="70" text-anchor="middle" x="50">🚗</text>
 </svg>
