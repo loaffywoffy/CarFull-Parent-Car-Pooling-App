@@ -191,7 +191,7 @@ export default function OrganizerHomePage() {
                 <CardTitle className="text-lg">1. Create Event</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Set up your event details including date, time, and location</p>
+                <p className="text-gray-600">Set up your event details including date, time, and location.</p>
               </CardContent>
             </Card>
 
