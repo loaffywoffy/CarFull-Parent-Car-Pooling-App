@@ -263,6 +263,9 @@ export default function Home() {
     setSuccessInfo({ ...successInfo, show: false });
   };
 
+  // Debug: Log when component renders
+  console.log('Home component rendering with background animation');
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       <CarCollageAnimation />

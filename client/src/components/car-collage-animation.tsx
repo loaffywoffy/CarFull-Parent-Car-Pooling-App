@@ -2,43 +2,65 @@
 import { useEffect, useState } from 'react';
 import { Car, Users } from 'lucide-react';
 
-interface FloatingCar {
+interface FloatingIcon {
   id: number;
   x: number;
   y: number;
   size: number;
   speed: number;
-  direction: number;
+  directionX: number;
+  directionY: number;
   opacity: number;
+  type: 'car' | 'users';
 }
 
 export default function CarCollageAnimation() {
-  const [cars, setCars] = useState<FloatingCar[]>([]);
+  const [icons, setIcons] = useState<FloatingIcon[]>([]);
 
   useEffect(() => {
-    // Initialize floating cars
-    const initialCars: FloatingCar[] = Array.from({ length: 8 }, (_, i) => ({
+    // Initialize floating icons
+    const initialIcons: FloatingIcon[] = Array.from({ length: 12 }, (_, i) => ({
       id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 20 + 15,
-      speed: Math.random() * 0.5 + 0.2,
-      direction: Math.random() * 360,
-      opacity: Math.random() * 0.3 + 0.1,
+      x: Math.random() * 90,
+      y: Math.random() * 90,
+      size: Math.random() * 15 + 20,
+      speed: Math.random() * 0.3 + 0.1,
+      directionX: (Math.random() - 0.5) * 2,
+      directionY: (Math.random() - 0.5) * 2,
+      opacity: Math.random() * 0.4 + 0.2,
+      type: i % 2 === 0 ? 'car' : 'users',
     }));
     
-    setCars(initialCars);
+    setIcons(initialIcons);
 
     const interval = setInterval(() => {
-      setCars(prevCars => 
-        prevCars.map(car => ({
-          ...car,
-          x: (car.x + Math.cos(car.direction) * car.speed + 100) % 100,
-          y: (car.y + Math.sin(car.direction) * car.speed + 100) % 100,
-          direction: car.direction + (Math.random() - 0.5) * 0.1,
-        }))
+      setIcons(prevIcons => 
+        prevIcons.map(icon => {
+          let newX = icon.x + icon.directionX * icon.speed;
+          let newY = icon.y + icon.directionY * icon.speed;
+          let newDirectionX = icon.directionX;
+          let newDirectionY = icon.directionY;
+
+          // Bounce off edges
+          if (newX <= 0 || newX >= 95) {
+            newDirectionX = -icon.directionX;
+            newX = Math.max(0, Math.min(95, newX));
+          }
+          if (newY <= 0 || newY >= 95) {
+            newDirectionY = -icon.directionY;
+            newY = Math.max(0, Math.min(95, newY));
+          }
+
+          return {
+            ...icon,
+            x: newX,
+            y: newY,
+            directionX: newDirectionX,
+            directionY: newDirectionY,
+          };
+        })
       );
-    }, 100);
+    }, 50);
 
     return () => clearInterval(interval);
   }, []);
@@ -46,42 +68,52 @@ export default function CarCollageAnimation() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 animate-pulse" 
-           style={{ animationDuration: '4s' }} />
+      <div 
+        className="absolute inset-0 bg-gradient-to-br from-blue-200 via-indigo-200 to-purple-200 opacity-60"
+        style={{
+          animation: 'pulse 6s ease-in-out infinite',
+        }}
+      />
       
-      {/* Floating cars */}
-      {cars.map((car) => (
+      {/* Floating icons */}
+      {icons.map((icon) => (
         <div
-          key={car.id}
-          className="absolute transition-all duration-100 ease-linear"
+          key={icon.id}
+          className="absolute transition-all duration-75 ease-linear"
           style={{
-            left: `${car.x}%`,
-            top: `${car.y}%`,
-            opacity: car.opacity,
-            transform: `rotate(${car.direction}deg)`,
+            left: `${icon.x}%`,
+            top: `${icon.y}%`,
+            opacity: icon.opacity,
           }}
         >
-          {car.id % 2 === 0 ? (
+          {icon.type === 'car' ? (
             <Car 
-              size={car.size} 
-              className="text-blue-600 drop-shadow-lg animate-bounce opacity-60"
-              style={{ animationDelay: `${car.id * 0.5}s`, animationDuration: '2s' }}
+              size={icon.size} 
+              className="text-blue-600 drop-shadow-md animate-pulse"
+              style={{ 
+                animationDelay: `${icon.id * 0.5}s`, 
+                animationDuration: '3s' 
+              }}
             />
           ) : (
             <Users 
-              size={car.size} 
-              className="text-purple-600 drop-shadow-lg animate-pulse opacity-60"
-              style={{ animationDelay: `${car.id * 0.3}s`, animationDuration: '3s' }}
+              size={icon.size} 
+              className="text-purple-600 drop-shadow-md animate-bounce"
+              style={{ 
+                animationDelay: `${icon.id * 0.3}s`, 
+                animationDuration: '4s' 
+              }}
             />
           )}
         </div>
       ))}
       
-      {/* Subtle pattern overlay */}
+      {/* Subtle dot pattern overlay */}
       <div 
-        className="absolute inset-0 opacity-40"
+        className="absolute inset-0 opacity-20"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23667eea' fill-opacity='0.3'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3Ccircle cx='10' cy='10' r='1'/%3E%3Ccircle cx='50' cy='10' r='1'/%3E%3Ccircle cx='10' cy='50' r='1'/%3E%3Ccircle cx='50' cy='50' r='1'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `radial-gradient(circle at 25% 25%, #3b82f6 2px, transparent 2px), radial-gradient(circle at 75% 75%, #8b5cf6 1px, transparent 1px)`,
+          backgroundSize: '50px 50px',
         }}
       />
     </div>
