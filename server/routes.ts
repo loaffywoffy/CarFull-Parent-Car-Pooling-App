@@ -14,6 +14,7 @@ import { messagingService } from "./services/sms";
 import { verificationService } from "./services/verification";
 import { rateLimitService } from "./services/rate-limiter";
 import { phoneValidator } from "./services/phone-validator";
+import { calculateDrivingDistance } from "./services/directions";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth system is disabled for MVP
@@ -1390,6 +1391,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Statistics endpoint for Kidpool Data
+  app.get("/api/statistics", async (req, res) => {
+    try {
+      // Get total party groups/events created
+      const partyGroups = await storage.getPartyGroups();
+      const totalEvents = partyGroups.length;
+
+      // Get all carpools to count available offers
+      const allCarpools = await storage.getCarpools();
+      const carpoolOffers = allCarpools.length;
+
+      // Calculate rides taken (approved carpool requests)
+      let ridesAccepted = 0;
+
+      for (const carpool of allCarpools) {
+        const requests = await storage.getCarpoolRequestsByCarpoolId(carpool.id);
+        const approvedRequests = requests.filter(req => req.approvalStatus === 'approved');
+        ridesAccepted += approvedRequests.length;
+      }
+
+      // For MVP, estimate miles saved based on average trip distance
+      // This would be replaced with actual calculations once Google API is integrated
+      const estimatedMilesPerTrip = 5; // Conservative estimate for local events
+      const totalMilesSaved = ridesAccepted * estimatedMilesPerTrip;
+
+      // Calculate CO2 emissions reduced (400g per mile)
+      const co2ReductionGrams = totalMilesSaved * 400;
+      const co2ReductionKg = co2ReductionGrams / 1000;
+
+      res.json({
+        totalEvents,
+        carpoolOffers,
+        ridesAccepted,
+        milesSaved: Math.round(totalMilesSaved * 10) / 10,
+        co2ReductionKg: Math.round(co2ReductionKg * 10) / 10
+      });
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
+      res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
