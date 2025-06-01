@@ -14,16 +14,16 @@ export const messagingService = {
       : process.env.TWILIO_PHONE_NUMBER;
     
     const actionMessages = {
-      'verification': 'Your KidPool verification code is',
-      'create_event': 'To create an event, enter this verification code',
-      'create_carpool': 'To create a carpool offer, enter this verification code',
-      'edit_event': 'To edit this event, enter this verification code',
-      'book_carpool': 'To book this carpool, enter this verification code',
-      'delete_event': 'To delete this event, enter this verification code',
-      'delete_carpool': 'To delete this carpool, enter this verification code'
+      'verification': '🔐 Your KidPool verification code is',
+      'create_event': '🎉 To create your event, enter this verification code',
+      'create_carpool': '🚗 To create your carpool offer, enter this verification code',
+      'edit_event': '✏️ To edit your event, enter this verification code',
+      'book_carpool': '🎫 To book this carpool spot, enter this verification code',
+      'delete_event': '🗑️ To delete your event, enter this verification code',
+      'delete_carpool': '❌ To delete your carpool offer, enter this verification code'
     };
     
-    const message = `${actionMessages[action] || actionMessages['verification']}: ${code}`;
+    const message = `${actionMessages[action] || actionMessages['verification']}: ${code}\n\n⚡ Code expires in 10 minutes. Don't share this code with anyone!`;
     
     return client.messages.create({
       body: message,

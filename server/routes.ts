@@ -258,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             month: 'long'
           });
 
-          const confirmationMessage = `Your ${newPartyGroup.eventType} event "${newPartyGroup.name}" has been created successfully! Event details: ${eventDate} at ${newPartyGroup.targetArrivalTime}. Share this link with parents: ${eventUrl}`;
+          const confirmationMessage = `🎉 Your ${newPartyGroup.eventType} event "${newPartyGroup.name}" is live!\n\n📅 ${eventDate} at ${newPartyGroup.targetArrivalTime}\n📍 ${newPartyGroup.eventAddress}, ${newPartyGroup.eventCity}\n\n🚗 Share with parents to get carpool offers: ${eventUrl}\n\n💡 Tip: Parents can create carpool offers or request rides directly from this link!`;
 
           await messagingService.sendCarpoolUpdate(
             newPartyGroup.phoneNumber,
@@ -1360,7 +1360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             month: 'long'
           });
 
-          const confirmationMessage = `Your ${newPartyGroup.eventType} event "${newPartyGroup.name}" has been created successfully! Event details: ${eventDate} at ${newPartyGroup.targetArrivalTime}. Share this link with parents: ${eventUrl}`;
+          const confirmationMessage = `🎉 Your ${newPartyGroup.eventType} event "${newPartyGroup.name}" is live!\n\n📅 ${eventDate} at ${newPartyGroup.targetArrivalTime}\n📍 ${newPartyGroup.eventAddress}, ${newPartyGroup.eventCity}\n\n🚗 Share with parents to get carpool offers: ${eventUrl}\n\n💡 Tip: Parents can create carpool offers or request rides directly from this link!`;
 
           await messagingService.sendCarpoolUpdate(
             newPartyGroup.phoneNumber,
