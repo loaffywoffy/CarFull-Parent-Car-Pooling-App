@@ -18,16 +18,16 @@ export default function CarCollageAnimation() {
   const [icons, setIcons] = useState<FloatingIcon[]>([]);
 
   useEffect(() => {
-    // Initialize floating icons
-    const initialIcons: FloatingIcon[] = Array.from({ length: 12 }, (_, i) => ({
+    // Initialize floating icons with better visibility
+    const initialIcons: FloatingIcon[] = Array.from({ length: 8 }, (_, i) => ({
       id: i,
-      x: Math.random() * 90,
-      y: Math.random() * 90,
-      size: Math.random() * 15 + 20,
-      speed: Math.random() * 0.3 + 0.1,
+      x: Math.random() * 85 + 5, // Keep away from edges
+      y: Math.random() * 85 + 5,
+      size: Math.random() * 20 + 25, // Larger icons
+      speed: Math.random() * 0.5 + 0.2, // Faster movement
       directionX: (Math.random() - 0.5) * 2,
       directionY: (Math.random() - 0.5) * 2,
-      opacity: Math.random() * 0.4 + 0.2,
+      opacity: Math.random() * 0.4 + 0.5, // More visible
       type: i % 2 === 0 ? 'car' : 'users',
     }));
     
@@ -41,14 +41,14 @@ export default function CarCollageAnimation() {
           let newDirectionX = icon.directionX;
           let newDirectionY = icon.directionY;
 
-          // Bounce off edges
-          if (newX <= 0 || newX >= 95) {
+          // Bounce off edges with better boundaries
+          if (newX <= 2 || newX >= 93) {
             newDirectionX = -icon.directionX;
-            newX = Math.max(0, Math.min(95, newX));
+            newX = Math.max(2, Math.min(93, newX));
           }
-          if (newY <= 0 || newY >= 95) {
+          if (newY <= 2 || newY >= 93) {
             newDirectionY = -icon.directionY;
-            newY = Math.max(0, Math.min(95, newY));
+            newY = Math.max(2, Math.min(93, newY));
           }
 
           return {
@@ -60,7 +60,7 @@ export default function CarCollageAnimation() {
           };
         })
       );
-    }, 50);
+    }, 60); // Smoother animation
 
     return () => clearInterval(interval);
   }, []);
@@ -69,9 +69,9 @@ export default function CarCollageAnimation() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {/* Animated gradient background */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-blue-200 via-indigo-200 to-purple-200 opacity-60"
+        className="absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100"
         style={{
-          animation: 'pulse 6s ease-in-out infinite',
+          animation: 'pulse 8s ease-in-out infinite',
         }}
       />
       
@@ -79,29 +79,32 @@ export default function CarCollageAnimation() {
       {icons.map((icon) => (
         <div
           key={icon.id}
-          className="absolute transition-all duration-75 ease-linear"
+          className="absolute transition-all duration-100 ease-linear transform"
           style={{
             left: `${icon.x}%`,
             top: `${icon.y}%`,
             opacity: icon.opacity,
+            transform: 'translate(-50%, -50%)', // Center the icons
           }}
         >
           {icon.type === 'car' ? (
             <Car 
               size={icon.size} 
-              className="text-blue-600 drop-shadow-md animate-pulse"
+              className="text-blue-600 drop-shadow-lg animate-bounce"
               style={{ 
-                animationDelay: `${icon.id * 0.5}s`, 
-                animationDuration: '3s' 
+                animationDelay: `${icon.id * 0.4}s`, 
+                animationDuration: '2s',
+                filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))'
               }}
             />
           ) : (
             <Users 
               size={icon.size} 
-              className="text-purple-600 drop-shadow-md animate-bounce"
+              className="text-purple-600 drop-shadow-lg animate-pulse"
               style={{ 
                 animationDelay: `${icon.id * 0.3}s`, 
-                animationDuration: '4s' 
+                animationDuration: '2.5s',
+                filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))'
               }}
             />
           )}
@@ -113,7 +116,7 @@ export default function CarCollageAnimation() {
         className="absolute inset-0 opacity-20"
         style={{
           backgroundImage: `radial-gradient(circle at 25% 25%, #3b82f6 2px, transparent 2px), radial-gradient(circle at 75% 75%, #8b5cf6 1px, transparent 1px)`,
-          backgroundSize: '50px 50px',
+          backgroundSize: '80px 80px',
         }}
       />
     </div>
