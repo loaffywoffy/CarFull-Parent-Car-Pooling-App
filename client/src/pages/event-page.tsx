@@ -20,7 +20,9 @@ import type { PartyGroup } from "@shared/schema";
 
 // Helper function to get event type icon and colors
 function getEventTypeIcon(eventType: string) {
-  switch (eventType?.toLowerCase()) {
+  const normalizedType = eventType?.toLowerCase().replace(/-/g, ' ');
+  
+  switch (normalizedType) {
     case 'wedding':
       return { icon: Heart, bgColor: 'bg-pink-100', iconColor: 'text-pink-600' };
     case 'graduation':
@@ -35,6 +37,10 @@ function getEventTypeIcon(eventType: string) {
     case 'bat mitzvah':
     case 'party':
       return { icon: PartyPopper, bgColor: 'bg-yellow-100', iconColor: 'text-yellow-600' };
+    case 'sports':
+      return { icon: Trophy, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' };
+    case 'school':
+      return { icon: BookOpen, bgColor: 'bg-green-100', iconColor: 'text-green-600' };
     default:
       return { icon: Calendar, bgColor: 'bg-orange-100', iconColor: 'text-orange-600' };
   }
