@@ -18,23 +18,20 @@ export default function CarCollageAnimation() {
   const [icons, setIcons] = useState<FloatingIcon[]>([]);
 
   useEffect(() => {
-    console.log('CarCollageAnimation: Initializing icons...');
-    
     // Initialize floating icons with much larger visibility
     const initialIcons: FloatingIcon[] = Array.from({ length: 6 }, (_, i) => ({
       id: i,
-      x: 20 + Math.random() * 60, // Keep well away from edges
-      y: 20 + Math.random() * 60,
-      size: 80 + Math.random() * 40, // Even larger icons (80-120px)
-      speed: Math.random() * 0.2 + 0.1, // Slower for better visibility
+      x: Math.random() * 80 + 10, // Keep away from edges
+      y: Math.random() * 80 + 10,
+      size: 60 + Math.random() * 40, // Much larger icons (60-100px)
+      speed: Math.random() * 0.3 + 0.1, // Slower for visibility
       directionX: (Math.random() - 0.5) * 2,
       directionY: (Math.random() - 0.5) * 2,
-      opacity: 1, // Maximum visibility
+      opacity: 0.8 + Math.random() * 0.2, // Very visible (0.8-1.0)
       type: i % 2 === 0 ? 'car' : 'users',
     }));
     
     setIcons(initialIcons);
-    console.log('CarCollageAnimation: Icons set:', initialIcons);
 
     const interval = setInterval(() => {
       setIcons(prevIcons => 
@@ -78,11 +75,6 @@ export default function CarCollageAnimation() {
         }}
       />
       
-      {/* Debug indicator */}
-      <div className="absolute top-4 left-4 text-xs text-gray-600 z-10 pointer-events-none">
-        Animation Active ({icons.length} icons)
-      </div>
-      
       {/* Floating icons */}
       {icons.map((icon) => (
         <div
@@ -98,25 +90,23 @@ export default function CarCollageAnimation() {
           {icon.type === 'car' ? (
             <Car 
               size={icon.size} 
-              className="text-blue-600 animate-bounce"
+              className="text-blue-700 animate-bounce"
               style={{ 
                 animationDelay: `${icon.id * 0.5}s`, 
                 animationDuration: '2s',
-                filter: 'drop-shadow(0 4px 8px rgba(59, 130, 246, 0.8))',
-                strokeWidth: 3,
-                fill: 'rgba(59, 130, 246, 0.2)'
+                filter: 'drop-shadow(0 8px 16px rgba(59, 130, 246, 0.5))',
+                strokeWidth: 2
               }}
             />
           ) : (
             <Users 
               size={icon.size} 
-              className="text-purple-600 animate-pulse"
+              className="text-purple-700 animate-pulse"
               style={{ 
                 animationDelay: `${icon.id * 0.4}s`, 
                 animationDuration: '3s',
-                filter: 'drop-shadow(0 4px 8px rgba(147, 51, 234, 0.8))',
-                strokeWidth: 3,
-                fill: 'rgba(147, 51, 234, 0.2)'
+                filter: 'drop-shadow(0 8px 16px rgba(147, 51, 234, 0.5))',
+                strokeWidth: 2
               }}
             />
           )}

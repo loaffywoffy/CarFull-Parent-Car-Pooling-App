@@ -165,19 +165,8 @@ export default function OrganizerHomePage() {
 
 
   return (
-    <div 
-      className="min-h-screen relative"
-      style={{
-        backgroundImage: `url('/car-pattern-bg.png')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      {/* Background overlay for better text readability */}
-      <div className="absolute inset-0 bg-white/85 backdrop-blur-sm"></div>
-      
-      <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to Carfull</h1>
