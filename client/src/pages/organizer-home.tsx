@@ -227,9 +227,7 @@ export default function OrganizerHomePage() {
             <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold text-gray-900 mb-2">Carfull Impact</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Real data showing the positive impact of our carpool community
-                </CardDescription>
+                <CardDescription className="text-gray-600">Real data showing the positive impact of our carpool community.</CardDescription>
               </CardHeader>
               <CardContent>
                 {statsLoading ? (
