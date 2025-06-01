@@ -470,7 +470,6 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
           )}
         </div>
       ) : null}
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Your Information Section */}
@@ -501,7 +500,7 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
                   name="childName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Parent of (Child's Name)</FormLabel>
+                      <FormLabel>Your Childs Name</FormLabel>
                       <FormControl>
                         <Input placeholder="Child's Name" {...field} />
                       </FormControl>
@@ -1197,15 +1196,15 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
           </div>
         </form>
       </Form>
-       <SMSVerificationDialog
-        isOpen={showVerification}
-        onClose={() => setShowVerification(false)}
-        onVerified={handleVerificationSuccess}
-        phoneNumber={form.getValues("phoneNumber")}
-        action="create_carpool"
-        title="Verify Phone Number"
-        description="Please verify your phone number to create this carpool offer."
-      />
+      <SMSVerificationDialog
+       isOpen={showVerification}
+       onClose={() => setShowVerification(false)}
+       onVerified={handleVerificationSuccess}
+       phoneNumber={form.getValues("phoneNumber")}
+       action="create_carpool"
+       title="Verify Phone Number"
+       description="Please verify your phone number to create this carpool offer."
+     />
     </div>
   );
 }
