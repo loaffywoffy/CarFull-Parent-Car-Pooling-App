@@ -219,7 +219,100 @@ class RouteOptimizationService {
   }
 
   /**
-   * Call Google Routes API with waypoint optimization
+   * Call Google Directions API as fallback for route optimization
+   */
+  private async callGoogleDirectionsAPI(waypoints: Waypoint[]): Promise<OptimizedRoute> {
+    const origin = waypoints[0];
+    const destination = waypoints[waypoints.length - 1];
+    const intermediateWaypoints = waypoints.slice(1, -1);
+
+    // Build waypoints string for Directions API
+    let waypointsParam = '';
+    if (intermediateWaypoints.length > 0) {
+      const waypointCoords = intermediateWaypoints.map(wp => 
+        `${wp.location.lat},${wp.location.lng}`
+      ).join('|');
+      waypointsParam = `&waypoints=optimize:true|${waypointCoords}`;
+    }
+
+    const url = `https://maps.googleapis.com/maps/api/directions/json?` +
+      `origin=${origin.location.lat},${origin.location.lng}` +
+      `&destination=${destination.location.lat},${destination.location.lng}` +
+      waypointsParam +
+      `&key=${this.apiKey}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Directions API error: ${response.status} - ${errorText}`);
+      throw new Error(`Directions API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.status !== 'OK' || !data.routes || data.routes.length === 0) {
+      throw new Error(`Directions API failed: ${data.status || 'No routes found'}`);
+    }
+
+    return this.parseDirectionsResponse(data, waypoints);
+  }
+
+  /**
+   * Parse Google Directions API response
+   */
+  private parseDirectionsResponse(data: any, originalWaypoints: Waypoint[]): OptimizedRoute {
+    const route = data.routes[0];
+    const legs = route.legs;
+
+    // Create optimized waypoint order
+    let optimizedWaypoints = [originalWaypoints[0]]; // Start with origin
+    
+    // Add intermediate waypoints in optimized order
+    if (data.routes[0].waypoint_order) {
+      const intermediateWaypoints = originalWaypoints.slice(1, -1);
+      data.routes[0].waypoint_order.forEach((index: number) => {
+        optimizedWaypoints.push(intermediateWaypoints[index]);
+      });
+    } else {
+      // If no optimization, keep original order
+      optimizedWaypoints.push(...originalWaypoints.slice(1, -1));
+    }
+    
+    optimizedWaypoints.push(originalWaypoints[originalWaypoints.length - 1]); // End with destination
+
+    // Calculate total distance and duration
+    let totalDistance = 0;
+    let totalDuration = 0;
+    
+    const routeLegs: RouteLeg[] = legs.map((leg: any) => {
+      totalDistance += leg.distance.value;
+      totalDuration += leg.duration.value;
+      
+      return {
+        startAddress: leg.start_address,
+        endAddress: leg.end_address,
+        distance: leg.distance.text,
+        duration: leg.duration.text,
+        steps: leg.steps?.map((step: any) => ({
+          instruction: step.html_instructions?.replace(/<[^>]*>/g, '') || '',
+          distance: step.distance.text,
+          duration: step.duration.text
+        }))
+      };
+    });
+
+    return {
+      totalDistance: this.formatDistance(totalDistance),
+      totalDuration: this.formatDuration(`${totalDuration}s`),
+      waypoints: optimizedWaypoints,
+      legs: routeLegs,
+      polyline: route.overview_polyline?.points
+    };
+  }
+
+  /**
+   * Call Google Routes API with waypoint optimization (fallback to Directions API)
    */
   private async callGoogleRoutesAPI(waypoints: Waypoint[]): Promise<OptimizedRoute> {
     const origin = waypoints[0];
@@ -279,7 +372,9 @@ class RouteOptimizationService {
       );
 
       if (!response.ok) {
-        throw new Error(`Routes API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`Routes API error: ${response.status} - ${errorText}`);
+        throw new Error(`Routes API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
@@ -290,8 +385,9 @@ class RouteOptimizationService {
 
       return this.parseRouteResponse(data.routes[0], waypoints);
     } catch (error) {
-      console.error('Google Routes API error:', error);
-      throw error;
+      console.log('Routes API failed, falling back to Directions API:', error);
+      // Fallback to Directions API which is more widely available
+      return this.callGoogleDirectionsAPI(waypoints);
     }
   }
 
