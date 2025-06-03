@@ -54,6 +54,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
   const [userCoordinates, setUserCoordinates] = useState<[number, number] | null>(null);
   const [showMapView, setShowMapView] = useState(false);
   const [eventCoordinates, setEventCoordinates] = useState<[number, number] | null>(null);
+  const [expandedCarpoolId, setExpandedCarpoolId] = useState<number | null>(selectedCarpoolId || null);
 
   const { data: carpools, isLoading, refetch: refetchCarpools } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId, "carpools"],
@@ -370,7 +371,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
   const filteredCarpools = filterCarpools(carpoolsWithDistance.length > 0 ? carpoolsWithDistance : carpools || []);
 
   const CarpoolCard = ({ carpool }: { carpool: any }) => {
-    const [showDetails, setShowDetails] = useState(selectedCarpoolId === carpool.id);
+    const showDetails = expandedCarpoolId === carpool.id;
     const [showRequestForm, setShowRequestForm] = useState(selectedCarpoolId === carpool.id);
     const [mapVisible, setMapVisible] = useState(selectedCarpoolId === carpool.id);
     const [showShareDialog, setShowShareDialog] = useState(false);
@@ -499,8 +500,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
 
   // Effect to respond to the selectedCarpoolId prop changes
   useEffect(() => {
-    if (selectedCarpoolId) {
-        setShowDetails(true);
+    if (selectedCarpoolId === carpool.id) {
+        setExpandedCarpoolId(carpool.id);
         setMapVisible(true);
       }
     }, [selectedCarpoolId, carpool.id]);
@@ -541,9 +542,13 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
           <div 
             className="flex flex-col sm:flex-row sm:justify-between sm:items-start cursor-pointer gap-3"
             onClick={() => {
-              setShowDetails(!showDetails);
-              // If opening details, auto-show map
-              if (!showDetails) setMapVisible(true);
+              // Toggle accordion - only allow one carpool to be expanded at a time
+              if (expandedCarpoolId === carpool.id) {
+                setExpandedCarpoolId(null);
+              } else {
+                setExpandedCarpoolId(carpool.id);
+                setMapVisible(true);
+              }
             }}
           >
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -725,7 +730,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                   e.stopPropagation();
                   setShowRequestForm(!showRequestForm);
                   if (!showDetails) {
-                    setShowDetails(true);
+                    setExpandedCarpoolId(carpool.id);
                     setMapVisible(true); // Show map when opening details via request button
                   }
                   
