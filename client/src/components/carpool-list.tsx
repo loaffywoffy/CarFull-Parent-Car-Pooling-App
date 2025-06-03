@@ -58,7 +58,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
   const { data: carpools, isLoading, refetch: refetchCarpools } = useQuery({
     queryKey: ["/api/party-groups", partyGroupId, "carpools"],
     queryFn: () => getCarpoolsByPartyGroupId(partyGroupId),
-    refetchInterval: 1000, // Refetch every 1 second for immediate updates when requests are rejected/approved
+    refetchInterval: 30000, // Refetch every 30 seconds to prevent rate limiting
   });
 
   // Fetch the party details to get the event location

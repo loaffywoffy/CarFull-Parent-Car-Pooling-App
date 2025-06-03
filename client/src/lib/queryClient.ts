@@ -2,6 +2,13 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
+    if (res.status === 429) {
+      // For rate limiting, throw a specific error to prevent retries
+      const text = (await res.text()) || res.statusText;
+      const error = new Error(`${res.status}: ${text}`);
+      error.name = 'RateLimitError';
+      throw error;
+    }
     const text = (await res.text()) || res.statusText;
     throw new Error(`${res.status}: ${text}`);
   }
@@ -47,8 +54,15 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 15 * 60 * 1000, // 15 minutes (updated from cacheTime)
+      retry: (failureCount, error) => {
+        // Don't retry on rate limits or auth errors
+        if (error?.name === 'RateLimitError' || error?.message?.includes('429')) {
+          return false;
+        }
+        return failureCount < 2;
+      },
     },
     mutations: {
       retry: false,

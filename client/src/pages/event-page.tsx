@@ -56,8 +56,16 @@ export default function EventPage() {
     queryKey: [`/api/party-groups/by-url/${shareableUrl}`],
     queryFn: getQueryFn({ on401: "throw" }),
     enabled: !!shareableUrl,
-    retry: false, // Disable retry to see the actual error
-    refetchOnMount: true, // Force refetch on mount
+    retry: (failureCount, error) => {
+      // Don't retry rate limit errors
+      if (error?.name === 'RateLimitError' || error?.message?.includes('429')) {
+        return false;
+      }
+      return failureCount < 1;
+    },
+    refetchOnMount: true,
+    staleTime: 0, // Force fresh data
+    gcTime: 0, // Don't cache to avoid stale rate limit errors
   });
 
   console.log("Event page - shareableUrl:", shareableUrl);
