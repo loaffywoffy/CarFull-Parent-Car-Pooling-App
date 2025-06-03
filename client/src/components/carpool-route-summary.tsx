@@ -50,7 +50,7 @@ interface CarpoolRouteSummaryProps {
   eventCity: string;
   eventPostcode: string;
   targetArrivalTime?: string;
-  endTime?: string;
+  endTime?: string | null;
 }
 
 // Helper function to parse duration string and return minutes
