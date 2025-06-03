@@ -54,7 +54,7 @@ interface CarpoolRouteSummaryProps {
 export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventPostcode }: CarpoolRouteSummaryProps) {
   const [driverAddress, setDriverAddress] = useState("");
   const [activeTab, setActiveTab] = useState<"outbound" | "return">("outbound");
-  const [showRoute, setShowRoute] = useState(false);
+  const [showRoute, setShowRoute] = useState(true); // Auto-show route
 
   // Get carpool data to determine available directions
   const { data: carpool } = useQuery({
@@ -66,9 +66,14 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
     }
   });
 
-  // Set default tab based on carpool capabilities
+  // Set default tab based on carpool capabilities and auto-populate driver address
   useEffect(() => {
     if (carpool) {
+      // Auto-populate driver address from carpool data
+      const carpoolFullAddress = `${carpool.address}, ${carpool.city} ${carpool.postcode}`;
+      console.log('Setting driver address:', carpoolFullAddress);
+      setDriverAddress(carpoolFullAddress);
+      
       if (!carpool.canPickup && carpool.canDropoff) {
         // If only dropoff, default to return trip
         setActiveTab("return");
@@ -81,7 +86,7 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
 
   const { data: optimizedRoute, isLoading, error, refetch } = useQuery<OptimizedRoute>({
     queryKey: ['/api/carpools', carpoolId, 'optimize-route', driverAddress, activeTab],
-    enabled: false, // Only fetch when user clicks "Get Route"
+    enabled: !!driverAddress.trim() && showRoute, // Auto-fetch when driver address is available
     queryFn: async () => {
       if (!driverAddress.trim()) {
         throw new Error("Driver address is required");
@@ -124,12 +129,7 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
     },
   });
 
-  const handleGetRoute = () => {
-    if (driverAddress.trim()) {
-      setShowRoute(true);
-      refetch();
-    }
-  };
+  // Route is automatically calculated when driver address is available
 
   const getWaypointIcon = (type: string) => {
     switch (type) {
@@ -169,28 +169,14 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="driverAddress">Driver's Home Address</Label>
-          <div className="flex gap-2">
-            <Input
-              id="driverAddress"
-              placeholder="Enter your home address..."
-              value={driverAddress}
-              onChange={(e) => setDriverAddress(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleGetRoute();
-                }
-              }}
-            />
-            <Button 
-              onClick={handleGetRoute}
-              disabled={!driverAddress.trim() || isLoading}
-            >
-              {isLoading ? "Getting Route..." : "Get Route"}
-            </Button>
+        {driverAddress && (
+          <div className="bg-green-50 p-3 rounded-md border border-green-200">
+            <div className="flex items-center gap-2 text-sm text-green-800">
+              <span className="font-medium">Driver Address:</span>
+              <span>{driverAddress}</span>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Direction Toggle - show if carpool offers both directions OR set default for single direction */}
         {carpool && (
