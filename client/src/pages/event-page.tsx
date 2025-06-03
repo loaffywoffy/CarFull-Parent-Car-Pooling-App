@@ -55,8 +55,15 @@ export default function EventPage() {
   const { data: event, isLoading, error } = useQuery<PartyGroup>({
     queryKey: [`/api/party-groups/by-url/${shareableUrl}`],
     queryFn: async () => {
+      if (!shareableUrl) {
+        throw new Error("No shareable URL provided");
+      }
+      
       const response = await fetch(`/api/party-groups/by-url/${shareableUrl}`);
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Event not found");
+        }
         if (response.status === 429) {
           // For rate limiting, wait and retry
           await new Promise(resolve => setTimeout(resolve, 2000));
@@ -68,10 +75,16 @@ export default function EventPage() {
         }
         throw new Error(`${response.status}: ${response.statusText}`);
       }
-      return await response.json();
+      
+      const data = await response.json();
+      if (!data || !data.id) {
+        throw new Error("Invalid event data received");
+      }
+      
+      return data;
     },
     enabled: !!shareableUrl,
-    retry: false,
+    retry: 2,
     refetchOnMount: true,
     staleTime: 0,
     gcTime: 0,
