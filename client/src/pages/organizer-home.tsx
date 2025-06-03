@@ -320,7 +320,7 @@ export default function OrganizerHomePage() {
                 </p>
                 
                 <div className="flex items-center gap-4 text-xs text-gray-500">
-                  <span>🚗 Multi-family events</span>
+                  <span>🚗 Multi-dropoff/pickup events</span>
                   <span>⏰ Time savings</span>
                   <span>🌍 Carbon reduction</span>
                 </div>
