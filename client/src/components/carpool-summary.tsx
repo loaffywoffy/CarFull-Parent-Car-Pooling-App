@@ -19,6 +19,7 @@ import {
 import CarpoolRequestsList from "./carpool-requests-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CarpoolRouteSummary } from "./carpool-route-summary";
 
 interface CarpoolSummaryProps {
   partyGroupId: number;
@@ -151,6 +152,15 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                     postcode={carpool.postcode}
                     height="200px"
                     type="pickup"
+                  />
+                </div>
+
+                <div>
+                  <CarpoolRouteSummary 
+                    carpoolId={carpool.id}
+                    eventAddress={partyGroup?.eventAddress || ""}
+                    eventCity={partyGroup?.eventCity || ""}
+                    eventPostcode={partyGroup?.eventPostcode || ""}
                   />
                 </div>
               </div>

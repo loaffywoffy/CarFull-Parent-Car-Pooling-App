@@ -15,6 +15,7 @@ import { verificationService } from "./services/verification";
 import { rateLimitService } from "./services/rate-limiter";
 import { phoneValidator } from "./services/phone-validator";
 import { calculateDrivingDistance } from "./services/directions";
+import { routeOptimizationService } from "./services/route-optimization";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth system is disabled for MVP
@@ -1319,6 +1320,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Driving distance calculation error:", error);
       res.status(500).json({ error: "Failed to calculate driving distance" });
+    }
+  });
+
+  // Route optimization endpoint for carpool drivers
+  app.post("/api/carpools/:id/optimize-route", async (req, res) => {
+    try {
+      const carpoolId = parseInt(req.params.id);
+      if (isNaN(carpoolId)) {
+        return res.status(400).json({ error: "Invalid carpool ID" });
+      }
+
+      const { startLocation, eventLocation } = req.body;
+
+      if (!startLocation || !eventLocation || 
+          !startLocation.lat || !startLocation.lng || !startLocation.address ||
+          !eventLocation.lat || !eventLocation.lng || !eventLocation.address) {
+        return res.status(400).json({ 
+          error: "Start and event locations with coordinates and addresses are required" 
+        });
+      }
+
+      // Get carpool to verify it exists
+      const carpool = await storage.getCarpoolById(carpoolId);
+      if (!carpool) {
+        return res.status(404).json({ error: "Carpool not found" });
+      }
+
+      const optimizedRoute = await routeOptimizationService.optimizeRoute(
+        carpoolId,
+        startLocation,
+        eventLocation
+      );
+
+      res.json(optimizedRoute);
+    } catch (error) {
+      console.error("Route optimization error:", error);
+      res.status(500).json({ error: "Failed to optimize route" });
     }
   });
 
