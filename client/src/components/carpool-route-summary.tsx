@@ -87,6 +87,8 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
   const { data: optimizedRoute, isLoading, error, refetch } = useQuery<OptimizedRoute>({
     queryKey: ['/api/carpools', carpoolId, 'optimize-route', driverAddress, activeTab],
     enabled: !!driverAddress.trim() && showRoute, // Auto-fetch when driver address is available
+    refetchInterval: 3000, // Refetch every 3 seconds to catch new pickups/dropoffs immediately
+    refetchOnWindowFocus: true, // Refetch when window gains focus
     queryFn: async () => {
       if (!driverAddress.trim()) {
         throw new Error("Driver address is required");
@@ -305,29 +307,7 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
               </div>
             </div>
 
-            {optimizedRoute.legs.length > 0 && (
-              <>
-                <Separator />
-                <div>
-                  <h4 className="font-medium mb-3">Route Segments</h4>
-                  <div className="space-y-2">
-                    {optimizedRoute.legs.map((leg, index) => (
-                      <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium">
-                            Step {index + 1}: {leg.startAddress} → {leg.endAddress}
-                          </span>
-                          <div className="flex gap-2 text-xs text-muted-foreground">
-                            <span>{leg.distance}</span>
-                            <span>{leg.duration}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+
           </div>
         )}
       </CardContent>

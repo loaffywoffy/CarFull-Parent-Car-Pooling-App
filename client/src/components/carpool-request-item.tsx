@@ -41,6 +41,7 @@ export default function CarpoolRequestItem({ request, compact = false, onDelete,
       
       // Refetch the data to update the UI
       queryClient.invalidateQueries({ queryKey: ["/api/carpools", partyGroupId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/carpools", request.carpoolId, "optimize-route"] });
       
       // Call the optional callback
       if (onDelete) onDelete();

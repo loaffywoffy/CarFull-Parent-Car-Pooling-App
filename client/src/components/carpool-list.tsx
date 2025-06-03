@@ -433,6 +433,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
         // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ["/api/carpools", carpool.id, "requests"] });
         queryClient.invalidateQueries({ queryKey: ["/api/party-groups", partyGroupId, "carpools"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/carpools", carpool.id, "optimize-route"] });
       },
       onError: (error: any) => {
         toast({
