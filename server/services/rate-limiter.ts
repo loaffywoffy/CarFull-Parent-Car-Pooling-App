@@ -225,6 +225,13 @@ class RateLimitService {
 
   // Comprehensive bot protection that combines all checks
   performBotProtection(ip: string, phoneNumber: string): { allowed: boolean; reason?: string; timeUntilReset?: number } {
+    // 0. Check if this phone number is exempted for testing - bypass all checks
+    if (this.EXEMPTED_NUMBERS.has(phoneNumber) || 
+        this.EXEMPTED_NUMBERS.has(phoneNumber.startsWith('07') ? '+44' + phoneNumber.substring(1) : phoneNumber)) {
+      console.log(`[DEBUG] Phone number ${phoneNumber} is exempted from all rate limiting and bot protection`);
+      return { allowed: true };
+    }
+
     // 1. Check for suspicious phone number patterns first
     if (this.isSuspiciousPhoneNumber(phoneNumber)) {
       this.blockedPhoneNumbers.add(phoneNumber);
