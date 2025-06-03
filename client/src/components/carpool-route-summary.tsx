@@ -300,7 +300,7 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
                 <div className="flex flex-col">
                   <span className="text-xs text-muted-foreground">Total Stops</span>
                   <Badge variant="outline" className="text-sm font-medium">
-                    {optimizedRoute.waypoints.length}
+                    {optimizedRoute.waypoints.length - 1}
                   </Badge>
                 </div>
               </div>
