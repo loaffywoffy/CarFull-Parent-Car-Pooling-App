@@ -170,6 +170,7 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
                     eventCity={partyGroup?.eventCity || ""}
                     eventPostcode={partyGroup?.eventPostcode || ""}
                     targetArrivalTime={partyGroup?.targetArrivalTime}
+                    endTime={partyGroup?.endTime}
                   />
                 </div>
               </div>
