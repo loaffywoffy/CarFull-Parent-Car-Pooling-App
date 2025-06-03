@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, MapPin, ArrowRight, Car, ArrowLeft, Info } from "lucide-react";
-import { type Carpool, type CarpoolRequest } from "@shared/schema";
+import { type Carpool, type CarpoolRequest, type PartyGroup } from "@shared/schema";
 import LocationMapWrapper from "./location-map-wrapper";
 import { getCarpoolRequests } from "@/api/carpools";
 import DeleteCarpoolButton from "./delete-carpool-button";
@@ -29,19 +29,27 @@ interface CarpoolSummaryProps {
 
 export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEvents }: CarpoolSummaryProps) {
   const [carpools, setCarpools] = useState<Record<number, Carpool>>({});
+  const [partyGroup, setPartyGroup] = useState<PartyGroup | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchCarpools() {
+    async function fetchData() {
       try {
-        const response = await fetch(`/api/party-groups/${partyGroupId}/carpools`);
-        if (!response.ok) throw new Error('Failed to fetch carpools');
-        const carpoolsArray = await response.json();
+        // Fetch party group data
+        const partyGroupResponse = await fetch(`/api/party-groups/${partyGroupId}`);
+        if (!partyGroupResponse.ok) throw new Error('Failed to fetch party group');
+        const partyGroupData = await partyGroupResponse.json();
+
+        // Fetch carpools data
+        const carpoolsResponse = await fetch(`/api/party-groups/${partyGroupId}/carpools`);
+        if (!carpoolsResponse.ok) throw new Error('Failed to fetch carpools');
+        const carpoolsArray = await carpoolsResponse.json();
 
         if (isMounted) {
+          setPartyGroup(partyGroupData);
           const carpoolsMap: Record<number, Carpool> = {};
           carpoolsArray.forEach((carpool: Carpool) => {
             carpoolsMap[carpool.id] = carpool;
@@ -50,20 +58,20 @@ export default function CarpoolSummary({ partyGroupId, onRequestSpot, onBackToEv
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching carpools:", error);
+        console.error("Error fetching data:", error);
         if (isMounted) {
           setIsLoading(false);
           toast({
             title: "Error",
-            description: "Failed to fetch carpools. Please try again.",
+            description: "Failed to fetch data. Please try again.",
             variant: "destructive",
           });
         }
       }
     }
 
-    fetchCarpools();
-    const interval = setInterval(fetchCarpools, 5000);
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
     return () => {
       isMounted = false;
       clearInterval(interval);
