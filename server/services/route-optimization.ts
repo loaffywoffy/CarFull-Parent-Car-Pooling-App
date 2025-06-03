@@ -387,7 +387,12 @@ class RouteOptimizationService {
     } catch (error) {
       console.log('Routes API failed, falling back to Directions API:', error);
       // Fallback to Directions API which is more widely available
-      return this.callGoogleDirectionsAPI(waypoints);
+      try {
+        return await this.callGoogleDirectionsAPI(waypoints);
+      } catch (directionsError) {
+        console.error('Both Routes API and Directions API failed:', directionsError);
+        throw new Error('Route optimization failed: Unable to calculate route with available APIs');
+      }
     }
   }
 

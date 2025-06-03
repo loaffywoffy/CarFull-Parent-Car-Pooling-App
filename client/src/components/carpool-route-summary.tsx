@@ -221,7 +221,7 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
           </div>
         )}
 
-        {error && (
+        {error && !isLoading && !optimizedRoute && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
