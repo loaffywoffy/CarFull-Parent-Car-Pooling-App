@@ -54,18 +54,27 @@ export default function EventPage() {
 
   const { data: event, isLoading, error } = useQuery<PartyGroup>({
     queryKey: [`/api/party-groups/by-url/${shareableUrl}`],
-    queryFn: getQueryFn({ on401: "throw" }),
-    enabled: !!shareableUrl,
-    retry: (failureCount, error) => {
-      // Don't retry rate limit errors
-      if (error?.name === 'RateLimitError' || error?.message?.includes('429')) {
-        return false;
+    queryFn: async () => {
+      const response = await fetch(`/api/party-groups/by-url/${shareableUrl}`);
+      if (!response.ok) {
+        if (response.status === 429) {
+          // For rate limiting, wait and retry
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const retryResponse = await fetch(`/api/party-groups/by-url/${shareableUrl}`);
+          if (!retryResponse.ok) {
+            throw new Error(`${retryResponse.status}: ${retryResponse.statusText}`);
+          }
+          return await retryResponse.json();
+        }
+        throw new Error(`${response.status}: ${response.statusText}`);
       }
-      return failureCount < 1;
+      return await response.json();
     },
+    enabled: !!shareableUrl,
+    retry: false,
     refetchOnMount: true,
-    staleTime: 0, // Force fresh data
-    gcTime: 0, // Don't cache to avoid stale rate limit errors
+    staleTime: 0,
+    gcTime: 0,
   });
 
   console.log("Event page - shareableUrl:", shareableUrl);
