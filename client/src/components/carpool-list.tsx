@@ -1577,17 +1577,18 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
             </DialogContent>
           </Dialog>
 
-          {/* Driver Route Summary - only show when viewing carpool details */}
-          {showDetails && partyGroup && (
-            <div className="mt-4 pt-4 border-t">
-              <CarpoolRouteSummary 
-                carpoolId={carpool.id}
-                eventAddress={partyGroup.eventAddress}
-                eventCity={partyGroup.eventCity}
-                eventPostcode={partyGroup.eventPostcode}
-              />
+          {/* Enhanced Driver Route Summary - always visible for debugging */}
+          <div className="mt-4 pt-4 border-t">
+            <div className="text-xs text-gray-500 mb-2">
+              Debug: showDetails={showDetails.toString()}, partyGroup={partyGroup ? 'exists' : 'null'}
             </div>
-          )}
+            <CarpoolRouteSummary 
+              carpoolId={carpool.id}
+              eventAddress={partyGroup?.eventAddress || ""}
+              eventCity={partyGroup?.eventCity || ""}
+              eventPostcode={partyGroup?.eventPostcode || ""}
+            />
+          </div>
         </CardContent>
       </Card>
     );
