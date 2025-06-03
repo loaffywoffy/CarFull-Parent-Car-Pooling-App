@@ -281,13 +281,13 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
                            waypoint.type === 'pickup' ? 'Pickup' : 
                            waypoint.type === 'destination' ? 'Event' : waypoint.type}
                         </Badge>
+                        {waypoint.childName && (
+                          <span className="text-xs text-muted-foreground">
+                            {waypoint.childName}
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm font-medium">{waypoint.address}</p>
-                      {waypoint.childName && (
-                        <p className="text-xs text-muted-foreground">
-                          Pickup: {waypoint.childName}
-                        </p>
-                      )}
                     </div>
                     {index < optimizedRoute.waypoints.length - 1 && optimizedRoute.legs[index] && (
                       <div className="text-xs text-muted-foreground text-right">
