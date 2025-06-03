@@ -149,10 +149,10 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Route className="h-5 w-5" />
-          Driver Route Summary
+          Enhanced Driver Route Summary
         </CardTitle>
         <CardDescription>
-          Get an optimized route with pickup order for your carpool passengers
+          Advanced route optimization with automatic start points and comprehensive trip statistics
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
