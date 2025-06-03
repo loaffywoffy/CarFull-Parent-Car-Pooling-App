@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Calendar, Share2, Users, MapPin, Cake, GraduationCap, Heart, Trophy, School, PartyPopper, ChevronLeft } from "lucide-react";
+import { Calendar, Share2, Users, MapPin, Cake, GraduationCap, Heart, Trophy, School, PartyPopper, ChevronLeft, Clock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -221,7 +222,70 @@ export default function OrganizerHomePage() {
           </div>
         )}
 
-        {/* Kidpool Data Section */}
+        {/* Coming Soon - Route Optimization Feature */}
+        {!showForm && (
+          <div className="mb-12">
+            <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 relative overflow-hidden">
+              <div className="absolute top-4 right-4">
+                <Badge className="bg-purple-600 text-white">Coming Soon</Badge>
+              </div>
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                  <MapPin className="h-6 w-6 text-purple-600" />
+                  Smart Route Optimization
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  Automatically calculate the most efficient pickup and drop-off routes for your carpools
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-3">
+                      <MapPin className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Optimal Routes</h4>
+                    <p className="text-sm text-gray-600">
+                      AI-powered routing to minimize travel time and distance for all participants
+                    </p>
+                  </div>
+                  
+                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                      <Clock className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Time Savings</h4>
+                    <p className="text-sm text-gray-600">
+                      Reduce total journey time by up to 30% with intelligent waypoint ordering
+                    </p>
+                  </div>
+                  
+                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                      <Users className="h-6 w-6 text-green-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Easy Coordination</h4>
+                    <p className="text-sm text-gray-600">
+                      Share optimized routes with clear pickup times and turn-by-turn directions
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-gray-600 mb-4">
+                    🚗 Perfect for events with multiple families • 🌍 Reduces carbon footprint • ⏰ Saves valuable time
+                  </p>
+                  <Button disabled className="bg-gray-300 text-gray-500 cursor-not-allowed">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Available Soon
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Carfull Data Section */}
         {!showForm && (
           <div className="mb-12">
             <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
