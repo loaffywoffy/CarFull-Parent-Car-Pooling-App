@@ -350,42 +350,45 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
               
               <div className="space-y-3">
                 {optimizedRoute.waypoints.map((waypoint, index) => {
-                  // Calculate timing for each waypoint
+                  // Calculate timing for each waypoint based on actual leg durations
                   let waypointTime = "";
                   
                   if (activeTab === "outbound" && targetArrivalTime) {
-                    // For outbound: work backwards from event time
-                    const totalTravelMinutes = parseDurationToMinutes(optimizedRoute.totalDuration);
-                    const recommendedDeparture = subtractMinutesFromTime(targetArrivalTime, totalTravelMinutes);
-                    
-                    // Calculate cumulative time to this waypoint
-                    let cumulativeMinutes = 0;
-                    for (let i = 0; i < index; i++) {
-                      if (optimizedRoute.legs[i]) {
-                        cumulativeMinutes += parseDurationToMinutes(optimizedRoute.legs[i].duration);
-                      }
-                    }
-                    
-                    waypointTime = addMinutesToTime(recommendedDeparture, cumulativeMinutes);
-                    
-                    if (waypoint.type === 'origin') {
-                      waypointTime = recommendedDeparture;
-                    } else if (waypoint.type === 'destination') {
+                    // For outbound: work backwards from event time using actual leg durations
+                    if (waypoint.type === 'destination') {
+                      // Event destination - use target arrival time
                       waypointTime = targetArrivalTime;
+                    } else if (waypoint.type === 'origin') {
+                      // Starting point - calculate by subtracting total time from target arrival
+                      const totalTravelMinutes = parseDurationToMinutes(optimizedRoute.totalDuration);
+                      waypointTime = subtractMinutesFromTime(targetArrivalTime, totalTravelMinutes);
+                    } else {
+                      // Intermediate waypoints - calculate cumulative time from start
+                      const totalTravelMinutes = parseDurationToMinutes(optimizedRoute.totalDuration);
+                      const startTime = subtractMinutesFromTime(targetArrivalTime, totalTravelMinutes);
+                      
+                      let cumulativeMinutes = 0;
+                      for (let i = 0; i < index; i++) {
+                        if (optimizedRoute.legs[i]) {
+                          cumulativeMinutes += parseDurationToMinutes(optimizedRoute.legs[i].duration);
+                        }
+                      }
+                      waypointTime = addMinutesToTime(startTime, cumulativeMinutes);
                     }
                   } else if (activeTab === "return" && carpool?.returnCollectionTime) {
-                    // For return: work forwards from departure time
-                    let cumulativeMinutes = 0;
-                    for (let i = 0; i < index; i++) {
-                      if (optimizedRoute.legs[i]) {
-                        cumulativeMinutes += parseDurationToMinutes(optimizedRoute.legs[i].duration);
-                      }
-                    }
-                    
-                    waypointTime = addMinutesToTime(carpool.returnCollectionTime, cumulativeMinutes);
-                    
+                    // For return: work forwards from departure time using actual leg durations
                     if (waypoint.type === 'origin') {
+                      // Starting point (event) - use departure time
                       waypointTime = carpool.returnCollectionTime;
+                    } else {
+                      // All other waypoints - calculate cumulative time from start
+                      let cumulativeMinutes = 0;
+                      for (let i = 0; i < index; i++) {
+                        if (optimizedRoute.legs[i]) {
+                          cumulativeMinutes += parseDurationToMinutes(optimizedRoute.legs[i].duration);
+                        }
+                      }
+                      waypointTime = addMinutesToTime(carpool.returnCollectionTime, cumulativeMinutes);
                     }
                   }
                   
