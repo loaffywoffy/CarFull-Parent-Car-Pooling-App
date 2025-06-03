@@ -435,7 +435,17 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
         // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ["/api/carpools", carpool.id, "requests"] });
         queryClient.invalidateQueries({ queryKey: ["/api/party-groups", partyGroupId, "carpools"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/carpools", carpool.id, "optimize-route"] });
+        // Invalidate all route optimization queries for this carpool to ensure Enhanced Driver Route Summary updates for both directions
+        queryClient.invalidateQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey;
+            return Array.isArray(key) && 
+                   key.length >= 3 && 
+                   key[0] === '/api/carpools' && 
+                   key[1] === carpool.id && 
+                   key[2] === 'optimize-route';
+          }
+        });
       },
       onError: (error: any) => {
         toast({
