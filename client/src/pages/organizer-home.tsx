@@ -92,10 +92,7 @@ export default function OrganizerHomePage() {
     queryFn: getCarfullStatistics,
   });
 
-  // Debug logging for statistics
-  console.log("Statistics data:", statistics);
-  console.log("Statistics loading:", statsLoading);
-  console.log("Statistics error:", statsError);
+
 
   const form = useForm<PartyGroupFormValues>({
     resolver: zodResolver(partyGroupFormSchema),
