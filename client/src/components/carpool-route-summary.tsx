@@ -87,7 +87,7 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
   const { data: optimizedRoute, isLoading, error, refetch } = useQuery<OptimizedRoute>({
     queryKey: ['/api/carpools', carpoolId, 'optimize-route', driverAddress, activeTab],
     enabled: !!driverAddress.trim() && showRoute, // Auto-fetch when driver address is available
-    refetchInterval: 3000, // Refetch every 3 seconds to catch new pickups/dropoffs immediately
+    refetchInterval: 500, // Refetch every 500ms to catch new pickups/dropoffs immediately
     refetchOnWindowFocus: true, // Refetch when window gains focus
     queryFn: async () => {
       if (!driverAddress.trim()) {

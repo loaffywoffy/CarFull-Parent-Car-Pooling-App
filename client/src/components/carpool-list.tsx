@@ -393,7 +393,8 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
     const { data: carpoolRequests = [] } = useQuery({
       queryKey: ["/api/carpools", carpool.id, "requests"],
       queryFn: () => getCarpoolRequests(carpool.id),
-      refetchInterval: 1000, // Refresh every 1 second for immediate updates when requests are rejected/approved
+      refetchInterval: 500, // Refresh every 500ms for immediate updates when requests are rejected/approved
+      refetchOnWindowFocus: true,
     });
 
     // Mutation for submitting a carpool request
