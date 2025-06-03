@@ -28,6 +28,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import DeleteCarpoolRequestButton from "@/components/delete-carpool-request-button";
 import DeleteCarpoolButton from "@/components/delete-carpool-button";
 import LocationMapWrapper from "@/components/location-map-wrapper";
+import { CarpoolRouteSummary } from "@/components/carpool-route-summary";
 
 // Using MapBox component instead of old OpenStreetMap component
 
@@ -1575,6 +1576,18 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* Driver Route Summary - only show when viewing carpool details */}
+          {showDetails && partyGroup && (
+            <div className="mt-4 pt-4 border-t">
+              <CarpoolRouteSummary 
+                carpoolId={carpool.id}
+                eventAddress={partyGroup.eventAddress}
+                eventCity={partyGroup.eventCity}
+                eventPostcode={partyGroup.eventPostcode}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     );
