@@ -171,14 +171,7 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {driverAddress && (
-          <div className="bg-green-50 p-3 rounded-md border border-green-200">
-            <div className="flex items-center gap-2 text-sm text-green-800">
-              <span className="font-medium">Driver Address:</span>
-              <span>{driverAddress}</span>
-            </div>
-          </div>
-        )}
+
 
         {/* Direction Toggle - show if carpool offers both directions OR set default for single direction */}
         {carpool && (
