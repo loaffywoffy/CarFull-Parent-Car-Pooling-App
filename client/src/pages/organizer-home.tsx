@@ -87,10 +87,15 @@ export default function OrganizerHomePage() {
   const { toast } = useToast();
 
   // Fetch real statistics from the database
-  const { data: statistics, isLoading: statsLoading } = useQuery({
+  const { data: statistics, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ["/api/statistics"],
     queryFn: getCarfullStatistics,
   });
+
+  // Debug logging for statistics
+  console.log("Statistics data:", statistics);
+  console.log("Statistics loading:", statsLoading);
+  console.log("Statistics error:", statsError);
 
   const form = useForm<PartyGroupFormValues>({
     resolver: zodResolver(partyGroupFormSchema),

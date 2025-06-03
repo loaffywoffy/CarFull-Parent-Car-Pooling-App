@@ -58,10 +58,10 @@ export default function CarpoolSummaryNew({ partyGroupId, onRequestSpot, onBackT
     // Initial fetch of carpool requests
     fetchAllRequests();
     
-    // Set up an interval to refresh the requests data every 5 seconds
+    // Set up an interval to refresh the requests data every 30 seconds
     const intervalId = setInterval(() => {
       fetchAllRequests();
-    }, 5000);
+    }, 30000);
     
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
