@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, MapPin, Navigation, Clock, Users, Route } from "lucide-react";
+import { AlertCircle, MapPin, Navigation, Clock, Users, Route, ArrowRight, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Waypoint {
   address: string;
@@ -51,49 +52,42 @@ interface CarpoolRouteSummaryProps {
 }
 
 export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventPostcode }: CarpoolRouteSummaryProps) {
-  const [startAddress, setStartAddress] = useState("");
+  const [driverAddress, setDriverAddress] = useState("");
+  const [activeTab, setActiveTab] = useState<"outbound" | "return">("outbound");
   const [showRoute, setShowRoute] = useState(false);
 
+  // Get carpool data to determine available directions
+  const { data: carpool } = useQuery({
+    queryKey: ['/api/carpools', carpoolId],
+    queryFn: async () => {
+      const response = await fetch(`/api/carpools/${carpoolId}`);
+      if (!response.ok) throw new Error('Failed to fetch carpool');
+      return response.json();
+    }
+  });
+
   const { data: optimizedRoute, isLoading, error, refetch } = useQuery<OptimizedRoute>({
-    queryKey: ['/api/carpools', carpoolId, 'optimize-route', startAddress],
+    queryKey: ['/api/carpools', carpoolId, 'optimize-route', driverAddress, activeTab],
     enabled: false, // Only fetch when user clicks "Get Route"
     queryFn: async () => {
-      if (!startAddress.trim()) {
-        throw new Error("Start address is required");
+      if (!driverAddress.trim()) {
+        throw new Error("Driver address is required");
       }
 
-      // Geocode start address
-      const geocodeResponse = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(startAddress)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
-      );
-      const geocodeData = await geocodeResponse.json();
-      
-      if (!geocodeData.results || geocodeData.results.length === 0) {
-        throw new Error("Could not find start location");
-      }
-
-      const startLocation = {
-        lat: geocodeData.results[0].geometry.location.lat,
-        lng: geocodeData.results[0].geometry.location.lng,
-        address: startAddress
-      };
-
-      // Geocode event address
       const eventFullAddress = `${eventAddress}, ${eventCity} ${eventPostcode}`;
-      const eventGeocodeResponse = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(eventFullAddress)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
-      );
-      const eventGeocodeData = await eventGeocodeResponse.json();
-      
-      if (!eventGeocodeData.results || eventGeocodeData.results.length === 0) {
-        throw new Error("Could not find event location");
-      }
 
-      const eventLocation = {
-        lat: eventGeocodeData.results[0].geometry.location.lat,
-        lng: eventGeocodeData.results[0].geometry.location.lng,
-        address: eventFullAddress
-      };
+      // Determine start and destination based on trip direction
+      let startLocation, destinationLocation;
+      
+      if (activeTab === "outbound") {
+        // For outbound trips: start from driver's home, end at event
+        startLocation = { address: driverAddress };
+        destinationLocation = { address: eventFullAddress };
+      } else {
+        // For return trips: start from event, end at driver's home
+        startLocation = { address: eventFullAddress };
+        destinationLocation = { address: driverAddress };
+      }
 
       // Get optimized route
       const response = await fetch(`/api/carpools/${carpoolId}/optimize-route`, {
@@ -103,7 +97,8 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
         },
         body: JSON.stringify({
           startLocation,
-          eventLocation
+          destinationLocation,
+          direction: activeTab
         }),
       });
 
@@ -117,7 +112,7 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
   });
 
   const handleGetRoute = () => {
-    if (startAddress.trim()) {
+    if (driverAddress.trim()) {
       setShowRoute(true);
       refetch();
     }
@@ -162,13 +157,13 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="startAddress">Your Starting Address</Label>
+          <Label htmlFor="driverAddress">Driver's Home Address</Label>
           <div className="flex gap-2">
             <Input
-              id="startAddress"
-              placeholder="Enter your starting address..."
-              value={startAddress}
-              onChange={(e) => setStartAddress(e.target.value)}
+              id="driverAddress"
+              placeholder="Enter your home address..."
+              value={driverAddress}
+              onChange={(e) => setDriverAddress(e.target.value)}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   handleGetRoute();
@@ -177,12 +172,31 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
             />
             <Button 
               onClick={handleGetRoute}
-              disabled={!startAddress.trim() || isLoading}
+              disabled={!driverAddress.trim() || isLoading}
             >
               {isLoading ? "Getting Route..." : "Get Route"}
             </Button>
           </div>
         </div>
+
+        {/* Direction Toggle - only show if carpool offers both directions */}
+        {carpool && carpool.canPickup && carpool.canDropoff && (
+          <div className="space-y-2">
+            <Label>Trip Direction</Label>
+            <Tabs value={activeTab} onValueChange={(value: "outbound" | "return") => setActiveTab(value)}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="outbound" className="flex items-center gap-2">
+                  <ArrowRight className="h-4 w-4" />
+                  To Event
+                </TabsTrigger>
+                <TabsTrigger value="return" className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  From Event
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        )}
 
         {error && (
           <Alert variant="destructive">
