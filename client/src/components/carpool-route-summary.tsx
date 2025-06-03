@@ -283,9 +283,9 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
                         </Badge>
                       </div>
                       <p className="text-sm font-medium">{waypoint.address}</p>
-                      {waypoint.parentName && waypoint.childName && (
+                      {waypoint.childName && (
                         <p className="text-xs text-muted-foreground">
-                          Pickup: {waypoint.childName} ({waypoint.parentName})
+                          Pickup: {waypoint.childName}
                         </p>
                       )}
                     </div>
