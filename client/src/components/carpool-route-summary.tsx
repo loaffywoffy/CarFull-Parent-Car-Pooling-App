@@ -49,9 +49,52 @@ interface CarpoolRouteSummaryProps {
   eventAddress: string;
   eventCity: string;
   eventPostcode: string;
+  targetArrivalTime?: string;
 }
 
-export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventPostcode }: CarpoolRouteSummaryProps) {
+// Helper function to parse duration string and return minutes
+function parseDurationToMinutes(duration: string): number {
+  const match = duration.match(/(\d+)\s*(?:hours?|hrs?|h)?\s*(\d+)?\s*(?:minutes?|mins?|m)?/i);
+  if (match) {
+    const hours = parseInt(match[1]) || 0;
+    const minutes = parseInt(match[2]) || 0;
+    return hours * 60 + minutes;
+  }
+  
+  // Try to parse just minutes
+  const minutesMatch = duration.match(/(\d+)/);
+  if (minutesMatch) {
+    return parseInt(minutesMatch[1]);
+  }
+  
+  return 0;
+}
+
+// Helper function to add minutes to a time string
+function addMinutesToTime(timeStr: string, minutes: number): string {
+  const [hours, mins] = timeStr.split(':').map(Number);
+  const totalMinutes = hours * 60 + mins + minutes;
+  const newHours = Math.floor(totalMinutes / 60) % 24;
+  const newMins = totalMinutes % 60;
+  return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
+}
+
+// Helper function to subtract minutes from a time string
+function subtractMinutesFromTime(timeStr: string, minutes: number): string {
+  const [hours, mins] = timeStr.split(':').map(Number);
+  const totalMinutes = hours * 60 + mins - minutes;
+  const newHours = Math.floor(totalMinutes / 60);
+  const newMins = totalMinutes % 60;
+  
+  // Handle negative times (previous day)
+  if (newHours < 0) {
+    return `${(24 + newHours).toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
+  }
+  
+  return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
+}
+
+export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventPostcode, targetArrivalTime }: CarpoolRouteSummaryProps) {
   const [driverAddress, setDriverAddress] = useState("");
   const [activeTab, setActiveTab] = useState<"outbound" | "return">("outbound");
   const [showRoute, setShowRoute] = useState(true); // Auto-show route
@@ -266,37 +309,124 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
             <Separator />
 
             <div>
-              <h4 className="font-medium mb-3">Optimized Route</h4>
+              <h4 className="font-medium mb-3">Optimized Route with Timing</h4>
+              {/* Show timing summary */}
+              {(() => {
+                if (activeTab === "outbound" && targetArrivalTime) {
+                  // Calculate recommended departure time for outbound
+                  const totalTravelMinutes = parseDurationToMinutes(optimizedRoute.totalDuration);
+                  const recommendedDeparture = subtractMinutesFromTime(targetArrivalTime, totalTravelMinutes);
+                  
+                  return (
+                    <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-800">Outbound Journey</span>
+                      </div>
+                      <div className="text-xs text-blue-700">
+                        <div>Event starts: {targetArrivalTime}</div>
+                        <div>Recommended departure: {recommendedDeparture}</div>
+                        <div>Total travel time: {optimizedRoute.totalDuration}</div>
+                      </div>
+                    </div>
+                  );
+                } else if (activeTab === "return" && carpool?.returnCollectionTime) {
+                  // Show departure time for return journey
+                  return (
+                    <div className="mb-4 p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">Return Journey</span>
+                      </div>
+                      <div className="text-xs text-green-700">
+                        <div>Departure from event: {carpool.returnCollectionTime}</div>
+                        <div>Total travel time: {optimizedRoute.totalDuration}</div>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+              
               <div className="space-y-3">
-                {optimizedRoute.waypoints.map((waypoint, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 border text-sm font-medium">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        {getWaypointIcon(waypoint.type)}
-                        <Badge variant="outline" className={getWaypointColor(waypoint.type)}>
-                          {waypoint.type === 'origin' ? 'Start' : 
-                           waypoint.type === 'pickup' ? 'Pickup' : 
-                           waypoint.type === 'destination' ? 'Event' : waypoint.type}
-                        </Badge>
-                        {waypoint.childName && (
-                          <span className="text-xs text-muted-foreground">
-                            {waypoint.childName}
-                          </span>
-                        )}
+                {optimizedRoute.waypoints.map((waypoint, index) => {
+                  // Calculate timing for each waypoint
+                  let waypointTime = "";
+                  
+                  if (activeTab === "outbound" && targetArrivalTime) {
+                    // For outbound: work backwards from event time
+                    const totalTravelMinutes = parseDurationToMinutes(optimizedRoute.totalDuration);
+                    const recommendedDeparture = subtractMinutesFromTime(targetArrivalTime, totalTravelMinutes);
+                    
+                    // Calculate cumulative time to this waypoint
+                    let cumulativeMinutes = 0;
+                    for (let i = 0; i < index; i++) {
+                      if (optimizedRoute.legs[i]) {
+                        cumulativeMinutes += parseDurationToMinutes(optimizedRoute.legs[i].duration);
+                      }
+                    }
+                    
+                    waypointTime = addMinutesToTime(recommendedDeparture, cumulativeMinutes);
+                    
+                    if (waypoint.type === 'origin') {
+                      waypointTime = recommendedDeparture;
+                    } else if (waypoint.type === 'destination') {
+                      waypointTime = targetArrivalTime;
+                    }
+                  } else if (activeTab === "return" && carpool?.returnCollectionTime) {
+                    // For return: work forwards from departure time
+                    let cumulativeMinutes = 0;
+                    for (let i = 0; i < index; i++) {
+                      if (optimizedRoute.legs[i]) {
+                        cumulativeMinutes += parseDurationToMinutes(optimizedRoute.legs[i].duration);
+                      }
+                    }
+                    
+                    waypointTime = addMinutesToTime(carpool.returnCollectionTime, cumulativeMinutes);
+                    
+                    if (waypoint.type === 'origin') {
+                      waypointTime = carpool.returnCollectionTime;
+                    }
+                  }
+                  
+                  return (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 border text-sm font-medium">
+                        {index + 1}
                       </div>
-                      <p className="text-sm font-medium">{waypoint.address}</p>
-                    </div>
-                    {index < optimizedRoute.waypoints.length - 1 && optimizedRoute.legs[index] && (
-                      <div className="text-xs text-muted-foreground text-right">
-                        <div>{optimizedRoute.legs[index].distance}</div>
-                        <div>{optimizedRoute.legs[index].duration}</div>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          {getWaypointIcon(waypoint.type)}
+                          <Badge variant="outline" className={getWaypointColor(waypoint.type)}>
+                            {waypoint.type === 'origin' ? 'Start' : 
+                             waypoint.type === 'pickup' ? 'Pickup' : 
+                             waypoint.type === 'destination' ? 'Event' : waypoint.type}
+                          </Badge>
+                          {waypoint.childName && (
+                            <span className="text-xs text-muted-foreground">
+                              {waypoint.childName}
+                            </span>
+                          )}
+                          {waypointTime && (
+                            <Badge variant="secondary" className="text-xs">
+                              {activeTab === "outbound" 
+                                ? (waypoint.type === 'destination' ? `Arrive ${waypointTime}` : `${waypointTime}`) 
+                                : (waypoint.type === 'origin' ? `Depart ${waypointTime}` : `Arrive ${waypointTime}`)
+                              }
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium">{waypoint.address}</p>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      {index < optimizedRoute.waypoints.length - 1 && optimizedRoute.legs[index] && (
+                        <div className="text-xs text-muted-foreground text-right">
+                          <div>{optimizedRoute.legs[index].distance}</div>
+                          <div>{optimizedRoute.legs[index].duration}</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

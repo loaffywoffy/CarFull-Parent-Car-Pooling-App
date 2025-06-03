@@ -1602,6 +1602,7 @@ export default function CarpoolList({ partyGroupId, onRequestSpot, onOfferRide, 
                 eventAddress={partyGroup.eventAddress}
                 eventCity={partyGroup.eventCity}
                 eventPostcode={partyGroup.eventPostcode}
+                targetArrivalTime={partyGroup.targetArrivalTime}
               />
             </div>
           )}
