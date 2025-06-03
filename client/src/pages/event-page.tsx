@@ -168,6 +168,41 @@ export default function EventPage() {
     });
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-3 py-4 sm:px-4 sm:py-8">
+          <Card className="mb-6">
+            <CardContent className="p-8 text-center">
+              <div className="animate-pulse">
+                <div className="h-16 w-16 bg-gray-200 rounded-xl mx-auto mb-4"></div>
+                <div className="h-8 bg-gray-200 rounded mx-auto mb-2 w-48"></div>
+                <div className="h-4 bg-gray-200 rounded mx-auto w-32"></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-3 py-4 sm:px-4 sm:py-8">
+          <Card className="mb-6">
+            <CardContent className="p-8 text-center">
+              <div className="text-red-600 mb-4">Event not found</div>
+              <Button asChild>
+                <Link href="/">Go Home</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-3 py-4 sm:px-4 sm:py-8">
