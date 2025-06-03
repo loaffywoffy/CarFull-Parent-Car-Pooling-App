@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,19 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
     }
   });
 
+  // Set default tab based on carpool capabilities
+  useEffect(() => {
+    if (carpool) {
+      if (!carpool.canPickup && carpool.canDropoff) {
+        // If only dropoff, default to return trip
+        setActiveTab("return");
+      } else {
+        // Default to outbound for pickup-only or both directions
+        setActiveTab("outbound");
+      }
+    }
+  }, [carpool]);
+
   const { data: optimizedRoute, isLoading, error, refetch } = useQuery<OptimizedRoute>({
     queryKey: ['/api/carpools', carpoolId, 'optimize-route', driverAddress, activeTab],
     enabled: false, // Only fetch when user clicks "Get Route"
@@ -80,11 +93,11 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
       let startLocation, destinationLocation;
       
       if (activeTab === "outbound") {
-        // For outbound trips: start from driver's home, end at event
+        // For trips TO the event: start from driver's home, end at event
         startLocation = { address: driverAddress };
         destinationLocation = { address: eventFullAddress };
       } else {
-        // For return trips: start from event, end at driver's home
+        // For trips FROM the event (return): start from event, end at driver's home
         startLocation = { address: eventFullAddress };
         destinationLocation = { address: driverAddress };
       }
@@ -179,22 +192,44 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
           </div>
         </div>
 
-        {/* Direction Toggle - only show if carpool offers both directions */}
-        {carpool && carpool.canPickup && carpool.canDropoff && (
+        {/* Direction Toggle - show if carpool offers both directions OR set default for single direction */}
+        {carpool && (
           <div className="space-y-2">
-            <Label>Trip Direction</Label>
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "outbound" | "return")}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="outbound" className="flex items-center gap-2">
-                  <ArrowRight className="h-4 w-4" />
-                  To Event
-                </TabsTrigger>
-                <TabsTrigger value="return" className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  From Event
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {(carpool.canPickup && carpool.canDropoff) || carpool.canBoth ? (
+              // Show toggle for carpools offering both directions
+              <>
+                <Label>Trip Direction</Label>
+                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "outbound" | "return")}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="outbound" className="flex items-center gap-2">
+                      <ArrowRight className="h-4 w-4" />
+                      To Event (Outbound)
+                    </TabsTrigger>
+                    <TabsTrigger value="return" className="flex items-center gap-2">
+                      <ArrowLeft className="h-4 w-4" />
+                      From Event (Inbound)
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </>
+            ) : (
+              // Show info for single-direction carpools
+              <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                <div className="flex items-center gap-2 text-sm text-blue-800">
+                  {carpool.canPickup ? (
+                    <>
+                      <ArrowRight className="h-4 w-4" />
+                      <span>Route planning for trips TO the event (pickup service)</span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowLeft className="h-4 w-4" />
+                      <span>Route planning for trips FROM the event (dropoff service)</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
