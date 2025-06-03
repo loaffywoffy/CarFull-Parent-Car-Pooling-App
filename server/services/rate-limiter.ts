@@ -47,7 +47,9 @@ class RateLimitService {
   // Development/testing exemptions
   private readonly EXEMPTED_NUMBERS = new Set([
     '+447961318588',  // Test number 1
-    '+447734660565'   // Test number 2
+    '07961318588',    // Test number 1 local format
+    '+447734660565',  // Test number 2
+    '07734660565'     // Test number 2 local format
   ]);
 
   constructor() {
@@ -104,8 +106,17 @@ class RateLimitService {
     console.log(`[DEBUG] Checking rate limit for phone: "${phoneNumber}"`);
     console.log(`[DEBUG] Exempted numbers:`, Array.from(this.EXEMPTED_NUMBERS));
     
+    // Check both original and normalized formats
     if (this.EXEMPTED_NUMBERS.has(phoneNumber)) {
       console.log(`[DEBUG] Phone number ${phoneNumber} is exempted from rate limiting`);
+      return { allowed: true };
+    }
+    
+    // Also check normalized format (convert 07 to +44)
+    const normalizedPhone = phoneNumber.startsWith('07') ? 
+      '+44' + phoneNumber.substring(1) : phoneNumber;
+    if (this.EXEMPTED_NUMBERS.has(normalizedPhone)) {
+      console.log(`[DEBUG] Normalized phone number ${normalizedPhone} is exempted from rate limiting`);
       return { allowed: true };
     }
 
