@@ -183,7 +183,7 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
         {carpool && carpool.canPickup && carpool.canDropoff && (
           <div className="space-y-2">
             <Label>Trip Direction</Label>
-            <Tabs value={activeTab} onValueChange={(value: "outbound" | "return") => setActiveTab(value)}>
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "outbound" | "return")}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="outbound" className="flex items-center gap-2">
                   <ArrowRight className="h-4 w-4" />
@@ -209,16 +209,41 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
 
         {showRoute && optimizedRoute && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            {/* Enhanced Statistics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex items-center gap-2">
                 <Navigation className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium">Total Distance:</span>
-                <Badge variant="outline">{optimizedRoute.totalDistance}</Badge>
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">Total Distance</span>
+                  <Badge variant="outline" className="text-sm font-medium">{optimizedRoute.totalDistance}</Badge>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium">Total Time:</span>
-                <Badge variant="outline">{optimizedRoute.totalDuration}</Badge>
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">Estimated Time</span>
+                  <Badge variant="outline" className="text-sm font-medium">{optimizedRoute.totalDuration}</Badge>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-purple-600" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    {activeTab === "outbound" ? "Pickups" : "Dropoffs"}
+                  </span>
+                  <Badge variant="outline" className="text-sm font-medium">
+                    {optimizedRoute.waypoints.filter(w => w.type === 'pickup' || w.type === 'dropoff').length}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-orange-600" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">Total Stops</span>
+                  <Badge variant="outline" className="text-sm font-medium">
+                    {optimizedRoute.waypoints.length}
+                  </Badge>
+                </div>
               </div>
             </div>
 

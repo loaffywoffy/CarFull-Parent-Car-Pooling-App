@@ -96,7 +96,7 @@ export async function calculateAndCacheDistance(
   }
 }
 
-async function geocodeAddress(address: string, apiKey: string): Promise<GeocodeResult | null> {
+export async function geocodeAddress(address: string, apiKey: string): Promise<GeocodeResult | null> {
   try {
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`

@@ -45,7 +45,81 @@ class RouteOptimizationService {
   }
 
   /**
-   * Optimize route for a carpool using Google Routes API
+   * Optimize route for a carpool with direction-based routing
+   */
+  async optimizeRouteWithDirection(
+    carpoolId: number,
+    startLocation: { lat: number; lng: number; address: string },
+    destinationLocation: { lat: number; lng: number; address: string },
+    direction: 'outbound' | 'return'
+  ): Promise<OptimizedRoute> {
+    if (!this.apiKey) {
+      throw new Error('Google Maps API key not configured');
+    }
+
+    // Get carpool and approved requests
+    const carpool = await storage.getCarpoolById(carpoolId);
+    if (!carpool) {
+      throw new Error('Carpool not found');
+    }
+
+    const requests = await storage.getCarpoolRequestsByCarpoolId(carpoolId);
+    const approvedRequests = requests.filter(req => req.approvalStatus === 'approved');
+
+    // Filter requests based on direction
+    const relevantRequests = approvedRequests.filter(req => {
+      if (direction === 'outbound') {
+        return req.needsPickup || req.needsBoth;
+      } else {
+        return req.needsDropoff || req.needsBoth;
+      }
+    });
+
+    if (relevantRequests.length === 0) {
+      // No passengers for this direction, just return direct route
+      return this.getDirectRoute(startLocation, destinationLocation);
+    }
+
+    // Build waypoints based on direction
+    const waypoints: Waypoint[] = [
+      {
+        address: startLocation.address,
+        location: startLocation,
+        type: 'origin'
+      }
+    ];
+
+    // Add pickup/dropoff points
+    for (const request of relevantRequests) {
+      waypoints.push({
+        address: `${request.address}, ${request.city} ${request.postcode}`,
+        location: {
+          lat: 0, // Will be geocoded
+          lng: 0
+        },
+        type: direction === 'outbound' ? 'pickup' : 'dropoff',
+        requestId: request.id,
+        parentName: request.parentName,
+        childName: request.childName
+      });
+    }
+
+    // Add destination
+    waypoints.push({
+      address: destinationLocation.address,
+      location: destinationLocation,
+      type: 'destination'
+    });
+
+    // Geocode waypoints that need coordinates
+    await this.geocodeWaypoints(waypoints);
+
+    // Call Google Routes API
+    return this.callGoogleRoutesAPI(waypoints);
+  }
+
+  /**
+   * Optimize route for a carpool using Google Routes API (legacy method)
    */
   async optimizeRoute(
     carpoolId: number,

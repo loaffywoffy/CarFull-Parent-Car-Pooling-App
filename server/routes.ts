@@ -1331,13 +1331,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid carpool ID" });
       }
 
-      const { startLocation, eventLocation } = req.body;
+      const { startLocation, destinationLocation, direction } = req.body;
 
-      if (!startLocation || !eventLocation || 
-          !startLocation.lat || !startLocation.lng || !startLocation.address ||
-          !eventLocation.lat || !eventLocation.lng || !eventLocation.address) {
+      if (!startLocation || !destinationLocation || 
+          !startLocation.address || !destinationLocation.address) {
         return res.status(400).json({ 
-          error: "Start and event locations with coordinates and addresses are required" 
+          error: "Start and destination locations with addresses are required" 
         });
       }
 
@@ -1347,10 +1346,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Carpool not found" });
       }
 
-      const optimizedRoute = await routeOptimizationService.optimizeRoute(
+      // Geocode both addresses
+      const { geocodeAddress } = await import("./services/distance-cache");
+      
+      // Geocode start location
+      const startCoords = await geocodeAddress(startLocation.address, process.env.VITE_GOOGLE_MAPS_API_KEY || '');
+      if (!startCoords) {
+        return res.status(400).json({ error: "Could not geocode start address" });
+      }
+
+      // Geocode destination location
+      const destCoords = await geocodeAddress(destinationLocation.address, process.env.VITE_GOOGLE_MAPS_API_KEY || '');
+      if (!destCoords) {
+        return res.status(400).json({ error: "Could not geocode destination address" });
+      }
+
+      const startLocationWithCoords = {
+        ...startLocation,
+        lat: startCoords.lat,
+        lng: startCoords.lng
+      };
+
+      const destinationLocationWithCoords = {
+        ...destinationLocation,
+        lat: destCoords.lat,
+        lng: destCoords.lng
+      };
+
+      const optimizedRoute = await routeOptimizationService.optimizeRouteWithDirection(
         carpoolId,
-        startLocation,
-        eventLocation
+        startLocationWithCoords,
+        destinationLocationWithCoords,
+        direction || 'outbound'
       );
 
       res.json(optimizedRoute);
