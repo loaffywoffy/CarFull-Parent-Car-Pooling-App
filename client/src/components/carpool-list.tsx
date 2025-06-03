@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { CarpoolRouteSummary } from "@/components/carpool-route-summary";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
 // Removed old OpenStreetMap component - now using MapBox
@@ -28,7 +29,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import DeleteCarpoolRequestButton from "@/components/delete-carpool-request-button";
 import DeleteCarpoolButton from "@/components/delete-carpool-button";
 import LocationMapWrapper from "@/components/location-map-wrapper";
-import { CarpoolRouteSummary } from "@/components/carpool-route-summary";
 
 // Using MapBox component instead of old OpenStreetMap component
 
