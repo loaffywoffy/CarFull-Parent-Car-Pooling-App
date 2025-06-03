@@ -222,33 +222,6 @@ export default function OrganizerHomePage() {
           </div>
         )}
 
-        {/* Coming Soon - Route Optimization Feature */}
-        {!showForm && (
-          <div className="mb-8">
-            <Card className="bg-gray-50 border-gray-200">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-gray-600" />
-                    <h3 className="text-lg font-medium text-gray-900">Smart Route Optimization</h3>
-                  </div>
-                  <Badge variant="outline" className="text-gray-600 border-gray-300">Coming Soon</Badge>
-                </div>
-                
-                <p className="text-sm text-gray-600 mb-4">
-                  Automatically calculate the most efficient pickup and drop-off routes for your carpools to save time and reduce travel distance.
-                </p>
-                
-                <div className="flex items-center gap-4 text-xs text-gray-500">
-                  <span>🚗 Multi-family events</span>
-                  <span>⏰ Time savings</span>
-                  <span>🌍 Carbon reduction</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
         {/* Carfull Data Section */}
         {!showForm && (
           <div className="mb-12">
@@ -323,6 +296,33 @@ export default function OrganizerHomePage() {
                     </a>
                     : 400g per mile for average passenger vehicle
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Coming Soon - Route Optimization Feature */}
+        {!showForm && (
+          <div className="mb-8">
+            <Card className="bg-gray-50 border-gray-200">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-gray-600" />
+                    <h3 className="text-lg font-medium text-gray-900">Smart Route Optimization</h3>
+                  </div>
+                  <Badge variant="outline" className="text-gray-600 border-gray-300">Coming Soon</Badge>
+                </div>
+                
+                <p className="text-sm text-gray-600 mb-4">
+                  Automatically calculate the most efficient pickup and drop-off routes for your carpools to save time and reduce travel distance.
+                </p>
+                
+                <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <span>🚗 Multi-family events</span>
+                  <span>⏰ Time savings</span>
+                  <span>🌍 Carbon reduction</span>
                 </div>
               </CardContent>
             </Card>
