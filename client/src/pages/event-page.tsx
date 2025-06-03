@@ -56,6 +56,8 @@ export default function EventPage() {
     queryKey: [`/api/party-groups/by-url/${shareableUrl}`],
     queryFn: getQueryFn({ on401: "throw" }),
     enabled: !!shareableUrl,
+    retry: false, // Disable retry to see the actual error
+    refetchOnMount: true, // Force refetch on mount
   });
 
   console.log("Event page - shareableUrl:", shareableUrl);
