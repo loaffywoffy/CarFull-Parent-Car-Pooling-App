@@ -14,7 +14,7 @@ import { messagingService } from "./services/sms";
 import { verificationService } from "./services/verification";
 import { rateLimitService } from "./services/rate-limiter";
 import { phoneValidator } from "./services/phone-validator";
-import { calculateDrivingDistance } from "./services/directions-clean";
+import { calculateDrivingDistance } from "./services/directions-fixed";
 import { routeOptimizationService } from "./services/route-optimization";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -914,7 +914,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             if (partyGroup.targetArrivalTime && carpool.address) {
               try {
-                const { calculateDrivingDistance } = await import('./services/directions-clean.js');
+                const { calculateDrivingDistance } = await import('./services/directions-fixed.js');
                 const distance = await calculateDrivingDistance(
                   `${carpool.address}, ${carpool.city} ${carpool.postcode}`,
                   `${partyGroup.eventAddress}, ${partyGroup.eventCity} ${partyGroup.eventPostcode}`
@@ -1400,8 +1400,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid coordinates provided" });
       }
 
-      const { calculateDrivingDistance } = await import("./services/directions");
-      const result = await calculateDrivingDistance(startCoords, endCoords);
+      const { calculateDrivingDistance } = await import("./services/directions-fixed");
+      const result = await calculateDrivingDistance([startCoords[0], startCoords[1]] as [number, number], [endCoords[0], endCoords[1]] as [number, number]);
 
       if (result) {
         res.json(result);
