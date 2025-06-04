@@ -58,9 +58,14 @@ export const messagingService = {
     const directionText = carpoolData.canBoth ? "round trip" : 
                          (carpoolData.canPickup ? "to event" : "from event");
     
+    // Use appropriate spaces count based on carpool direction
+    const passengersCount = carpoolData.canBoth ? carpoolData.spacesAvailable : 
+                           (carpoolData.canPickup ? carpoolData.spacesAvailable : 
+                            (carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable));
+    
     const message = `🚗 Carpool offer created for ${eventData.name}!
 
-${directionText} service for ${carpoolData.spacesAvailable} passengers
+${directionText} service for ${passengersCount} passengers
 Event: ${eventData.eventAddress}, ${eventData.eventCity}
 Date: ${eventData.eventDate} at ${eventData.targetArrivalTime}
 
