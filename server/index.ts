@@ -51,6 +51,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Add specific logging for carpool requests
+app.use((req, res, next) => {
+  if (req.path === '/api/carpool-requests' && req.method === 'POST') {
+    console.error(`[CARPOOL REQUEST INTERCEPTED] Method: ${req.method}, Path: ${req.path}`);
+    console.error(`[CARPOOL REQUEST INTERCEPTED] Body:`, JSON.stringify(req.body));
+  }
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
