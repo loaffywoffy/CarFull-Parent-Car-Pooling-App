@@ -100,11 +100,10 @@ We'll send updates when passengers book with you.`;
       collectingText = `\n\nYou're collecting: ${names}`;
     }
 
-    // Add estimated arrival time if provided
+    // Add estimated arrival time if provided (only for pickup/outbound trips)
     let arrivalTimeText = "";
-    if (estimatedArrivalTime) {
-      const serviceType = bookingData.needsPickup ? "pickup" : "dropoff";
-      arrivalTimeText = `\n⏰ Estimated ${serviceType} time: ${estimatedArrivalTime}`;
+    if (estimatedArrivalTime && bookingData.needsPickup) {
+      arrivalTimeText = `\n⏰ Estimated pickup time: ${estimatedArrivalTime}`;
     }
 
     const message = `📍 New ${directionText} booking for ${eventData.name}

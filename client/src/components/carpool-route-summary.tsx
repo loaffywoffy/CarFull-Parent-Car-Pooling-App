@@ -428,7 +428,10 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
                             <Badge variant="outline" className={getWaypointColor(waypoint.type)}>
                               {waypoint.type === 'origin' ? 'Start' : 
                                waypoint.type === 'pickup' ? 'Pickup' : 
-                               waypoint.type === 'destination' ? (activeTab === 'return' ? 'Home' : 'Event') : waypoint.type}
+                               waypoint.type === 'dropoff' ? 'Dropoff' :
+                               waypoint.type === 'destination' ? (
+                                 activeTab === 'return' || (carpool && !carpool.canPickup && carpool.canDropoff) ? 'Home' : 'Event'
+                               ) : waypoint.type}
                             </Badge>
                             {waypoint.childName && (
                               <span className="text-xs text-muted-foreground">
