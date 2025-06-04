@@ -643,7 +643,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if ((needsDropoff || needsBoth) && (dropoffRequests >= returnSpaces)) {
-        canBookDropoff = false;
+        return res.status(400).json({ 
+          message: `No spaces available for dropoff. Current requests: ${dropoffRequests}, Available spaces: ${returnSpaces}. Existing requests: ${existingRequests.map(r => `${r.childName}(${r.approvalStatus})`).join(', ')}` 
+        });
       }
 
       // If "both ways" was requested but only one direction is available,
@@ -1023,7 +1025,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     const targetInMinutes = targetHours * 60 + targetMinutes;
                     
                     // Parse total duration to get total travel time
-                    const totalTravelMinutes = optimizedRoute.totalDuration.match(/(\d+)/)?.[1] ? parseInt(optimizedRoute.totalDuration.match(/(\d+)/)[1]) : 0;
+                    const durationMatch = optimizedRoute?.totalDuration?.match(/(\d+)/);
+                    const totalTravelMinutes = durationMatch ? parseInt(durationMatch[1]) : 0;
                     
                     // Calculate start time by subtracting total travel from target arrival
                     const startInMinutes = targetInMinutes - totalTravelMinutes;
