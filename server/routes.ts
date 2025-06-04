@@ -1610,64 +1610,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/party-groups", async (req, res) => {
-    try {
-      // Input sanitization
-      const sanitizedBody = {
-        ...req.body,
-        name: req.body.name?.trim(),
-        description: req.body.description?.trim(),
-        eventAddress: req.body.eventAddress?.trim(),
-        eventCity: req.body.eventCity?.trim(),
-        eventPostcode: req.body.eventPostcode?.trim(),
-        createdBy: req.body.createdBy?.trim(),
-        phoneNumber: req.body.phoneNumber?.trim(),
-        additionalInformation: req.body.additionalInformation?.trim()
-      };
 
-      // Validate required fields exist and are not empty after trimming
-      if (!sanitizedBody.name || !sanitizedBody.eventAddress || !sanitizedBody.createdBy || !sanitizedBody.phoneNumber) {
-        return res.status(400).json({ message: "Required fields cannot be empty" });
-      }
-
-      const validationResult = insertPartyGroupSchema.safeParse(sanitizedBody);
-      if (!validationResult.success) {
-        const errorMessage = fromZodError(validationResult.error).message;
-        return res.status(400).json({ message: errorMessage });
-      }
-
-      const newPartyGroup = await storage.createPartyGroup(validationResult.data);
-
-      // Send SMS confirmation to event creator
-      if (newPartyGroup.phoneNumber) {
-        try {
-          const eventUrl = `${req.protocol}://${req.get('host')}/events/${newPartyGroup.shareableUrl}`;
-          const eventDate = new Date(newPartyGroup.eventDate).toLocaleDateString('en-GB', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long'
-          });
-
-          const confirmationMessage = `🎉 Your ${newPartyGroup.eventType} event "${newPartyGroup.name}" is live!\n\n📅 ${eventDate} at ${newPartyGroup.targetArrivalTime}\n📍 ${newPartyGroup.eventAddress}, ${newPartyGroup.eventCity}\n\n🚗 Share with parents to get carpool offers: ${eventUrl}\n\n💡 Tip: Parents can create carpool offers or request rides directly from this link!`;
-
-          await messagingService.sendCarpoolUpdate(
-            newPartyGroup.phoneNumber,
-            confirmationMessage
-          );
-
-          console.log(`Event creation confirmation SMS sent to ${newPartyGroup.phoneNumber}`);
-        } catch (smsError) {
-          console.error("Failed to send event creation confirmation SMS:", smsError);
-          // Don't fail the request if SMS fails
-        }
-      }
-
-      res.status(201).json(newPartyGroup);
-    } catch (error) {
-      console.error("Error creating party group:", error);
-      res.status(500).json({ message: "Failed to create party group" });
-    }
-  });
 
   app.delete("/api/party-groups/:id", async (req, res) => {
     try {
