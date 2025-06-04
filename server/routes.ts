@@ -639,16 +639,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check space availability for each direction
       if ((needsPickup || needsBoth) && (pickupRequests >= outboundSpaces)) {
-        return res.status(400).json({ 
-          message: `No spaces available for pickup. Current requests: ${pickupRequests}, Available spaces: ${outboundSpaces}. Existing requests: ${existingRequests.map(r => `${r.childName}(${r.approvalStatus})`).join(', ')}` 
-        });
+        canBookPickup = false;
+        console.error(`[FORCE DEBUG] Pickup is full: ${pickupRequests}/${outboundSpaces}`);
       }
 
       if ((needsDropoff || needsBoth) && (dropoffRequests >= returnSpaces)) {
-        return res.status(400).json({ 
-          message: `No spaces available for dropoff. Current requests: ${dropoffRequests}, Available spaces: ${returnSpaces}. Existing requests: ${existingRequests.map(r => `${r.childName}(${r.approvalStatus})`).join(', ')}` 
-        });
+        canBookDropoff = false;
+        console.error(`[FORCE DEBUG] Dropoff is full: ${dropoffRequests}/${returnSpaces}`);
       }
+
+      console.error(`[FORCE DEBUG] Booking availability - canBookPickup: ${canBookPickup}, canBookDropoff: ${canBookDropoff}`);
 
       // If "both ways" was requested but only one direction is available,
       // we need to split the request and only book the available direction
