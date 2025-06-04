@@ -673,7 +673,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Single direction request
         if ((needsPickup && !canBookPickup) || (needsDropoff && !canBookDropoff)) {
           const direction = needsPickup ? "To party" : "From party";
-          return res.status(400).json({ message: `No spaces available for ${direction}` });
+          return res.status(400).json({ message: `No spaces available for ${needsPickup ? "pickup" : "dropoff"}` });
         }
       }
 
@@ -703,12 +703,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send SMS approval notification to the driver
       try {
         console.log(`[DEBUG] Starting SMS approval notification process for carpool ${carpoolId}`);
-        const direction = needsBoth ? "both ways" : (needsPickup ? "to event" : "from event");
+        // Use the actual final request state after any modifications
+        const finalDirection = validationResult.data.needsBoth ? "both ways" : 
+                              (validationResult.data.needsPickup ? "to event" : "from event");
         const childName = validationResult.data.childName;
         const parentName = validationResult.data.parentName;
         const approvalToken = newRequest.approvalToken;
 
-        console.log(`[DEBUG] Request details - Child: ${childName}, Parent: ${parentName}, Direction: ${direction}`);
+        console.log(`[DEBUG] Request details - Child: ${childName}, Parent: ${parentName}, Direction: ${finalDirection}`);
         console.log(`[DEBUG] Approval token: ${approvalToken}`);
 
         // Get party group info for context
@@ -754,15 +756,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           `Child: ${childName}\n` +
           `Parent: ${parentName}\n` +
           `${addressInfo}` +
-          `Direction: ${direction}\n` +
+          `Direction: ${finalDirection}\n` +
           `${requirementsInfo}\n` +
           `Approve: ${approveUrl}\n` +
           `Reject: ${rejectUrl}`;
 
-        console.log(`[DEBUG] SMS message prepared, sending to ${carpool.phoneNumber}`);
+        console.error(`[FORCE DEBUG] SMS message prepared, sending to ${carpool.phoneNumber}`);
+        console.error(`[FORCE DEBUG] SMS content:`, message);
+        
         await messagingService.sendCarpoolUpdate(carpool.phoneNumber, message);
 
-        console.log(`[INFO] SMS approval notification sent to ${carpool.phoneNumber}`);
+        console.error(`[FORCE DEBUG] SMS approval notification sent successfully to ${carpool.phoneNumber}`);
       } catch (smsError) {
         console.error("Failed to send SMS approval notification:", smsError);
         // Don't fail the request creation if SMS fails
