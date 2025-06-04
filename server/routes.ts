@@ -14,7 +14,7 @@ import { messagingService } from "./services/sms";
 import { verificationService } from "./services/verification";
 import { rateLimitService } from "./services/rate-limiter";
 import { phoneValidator } from "./services/phone-validator";
-import { calculateDrivingDistance } from "./services/directions";
+import { calculateDrivingDistance } from "./services/directions-clean";
 import { routeOptimizationService } from "./services/route-optimization";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -856,51 +856,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Determine pickup details based on request direction
           if (request.needsPickup || request.needsBoth) {
-            if (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address') {
+            if (carpool && (carpool.outboundDropoffPreference === 'my-home' || carpool.outboundDropoffPreference === 'my-address')) {
               pickupDetails = `Pickup: Bring ${request.childName} to ${carpool.address}, ${carpool.city}, ${carpool.postcode}`;
-            } else if (carpool.outboundDropoffPreference === 'pickup-point') {
-              pickupDetails = `Pickup: Meet at ${carpool.outboundPickupLocation || carpool.meetingPoint || carpool.address}`;
+            } else if (carpool && carpool.outboundDropoffPreference === 'pickup-point') {
+              pickupDetails = `Pickup: Meet at ${carpool.outboundPickupLocation || carpool.address}`;
             } else {
               pickupDetails = `Pickup: ${request.parentName} will collect from your address`;
             }
 
-            if (carpool.pickupTime) {
+            if (carpool && carpool.pickupTime) {
               pickupDetails += ` at ${carpool.pickupTime}`;
             }
           }
 
           // Determine dropoff details based on request direction
           if (request.needsDropoff || request.needsBoth) {
-            if (carpool.returnDropoffPreference === 'direct-home') {
+            if (carpool && carpool.returnDropoffPreference === 'direct-home') {
               dropoffDetails = `Dropoff: ${request.parentName} will return ${request.childName} to your address`;
-            } else if (carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address') {
+            } else if (carpool && (carpool.returnDropoffPreference === 'my-home' || carpool.returnDropoffPreference === 'my-address')) {
               dropoffDetails = `Dropoff: Collect ${request.childName} from ${carpool.address}, ${carpool.city}, ${carpool.postcode}`;
             } else {
-              dropoffDetails = `Dropoff: Collect ${request.childName} from ${carpool.meetingPoint || carpool.address}`;
+              dropoffDetails = `Dropoff: Collect ${request.childName} from ${carpool?.address}`;
             }
 
-            if (carpool.returnCollectionTime) {
+            if (carpool && carpool.returnCollectionTime) {
               dropoffDetails += ` around ${carpool.returnCollectionTime}`;
             }
           }
 
           // Add departure time information
           let departureInfo = '';
-          if (carpool.estimatedDepartureTime) {
+          if (carpool && carpool.estimatedDepartureTime) {
             departureInfo = `Departure: ${carpool.estimatedDepartureTime}\n`;
           }
 
           // Create link to view carpool details
-          const carpoolLink = `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000'}/events/${partyGroup.shareableUrl}`;
+          const carpoolLink = `${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${partyGroup?.shareableUrl}`;
 
           const message = `Great news! ${request.parentName} has approved your ride request for ${request.childName} to ${eventName}.\n\n` +
             `${departureInfo}${pickupDetails}${pickupDetails && dropoffDetails ? '\n' : ''}${dropoffDetails}\n\n` +
-            `Driver contact: ${carpool.phoneNumber}\n\n` +
+            `Driver contact: ${carpool?.phoneNumber}\n\n` +
             `View event details: ${carpoolLink}`;
 
           await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
         } catch (smsError) {
           console.error("Failed to send approval confirmation SMS:", smsError);
+        }
+
+        // Send booking update SMS to carpool creator with departure timing
+        try {
+          if (carpool && partyGroup && carpool.phoneNumber) {
+            // Get all approved bookings for this carpool to calculate updated timing
+            const allBookings = await storage.getCarpoolRequestsByCarpoolId(request.carpoolId);
+            
+            // Calculate recommended departure time using address-based distance calculation
+            let recommendedDepartureTime = "Check route summary for timing";
+            
+            if (partyGroup.targetArrivalTime && carpool.address) {
+              try {
+                const { calculateDrivingDistance } = await import('./services/directions-clean.js');
+                const distance = await calculateDrivingDistance(
+                  `${carpool.address}, ${carpool.city} ${carpool.postcode}`,
+                  `${partyGroup.eventAddress}, ${partyGroup.eventCity} ${partyGroup.eventPostcode}`
+                );
+                
+                if (distance) {
+                  // Calculate departure time by subtracting travel time from target arrival
+                  const [hours, minutes] = partyGroup.targetArrivalTime.split(':').map(Number);
+                  const targetMinutes = hours * 60 + minutes;
+                  const departureMinutes = targetMinutes - distance.duration;
+                  
+                  if (departureMinutes >= 0) {
+                    const depHours = Math.floor(departureMinutes / 60);
+                    const depMins = departureMinutes % 60;
+                    recommendedDepartureTime = `${depHours.toString().padStart(2, '0')}:${depMins.toString().padStart(2, '0')}`;
+                  }
+                }
+              } catch (distanceError) {
+                console.error("Error calculating updated departure time:", distanceError);
+              }
+            }
+
+            await messagingService.sendBookingUpdate(
+              carpool.phoneNumber,
+              carpool,
+              partyGroup,
+              request,
+              recommendedDepartureTime,
+              allBookings
+            );
+          }
+        } catch (smsError) {
+          console.error("Failed to send booking update SMS to carpool creator:", smsError);
         }
 
         return res.send(`
