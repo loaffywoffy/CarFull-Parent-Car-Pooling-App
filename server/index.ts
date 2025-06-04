@@ -57,6 +57,10 @@ app.use((req, res, next) => {
     console.error(`[CARPOOL REQUEST INTERCEPTED] Method: ${req.method}, Path: ${req.path}`);
     console.error(`[CARPOOL REQUEST INTERCEPTED] Body:`, JSON.stringify(req.body));
   }
+  // Also log all API requests to identify routing issues
+  if (req.path.startsWith('/api/') && req.method === 'POST') {
+    console.error(`[API POST REQUEST] ${req.method} ${req.path}`);
+  }
   next();
 });
 

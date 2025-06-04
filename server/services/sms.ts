@@ -167,11 +167,15 @@ We'll send updates when passengers book with you.`;
       arrivalTimeText = `\n⏰ Estimated pickup time: ${estimatedArrivalTime}`;
     }
 
+    // Only include departure time recommendation for pickup/outbound trips
+    let departureTimeText = "";
+    if (bookingData.needsPickup) {
+      departureTimeText = `\n💡 Recommended departure time based on new booking: ${recommendedDepartureTime}`;
+    }
+
     const message = `📍 New ${directionText} booking for ${eventData.name}
 
-${bookingData.childName} from ${bookingData.address}, ${bookingData.city}
-
-💡 Recommended departure time based on new booking: ${recommendedDepartureTime}${collectingText}${arrivalTimeText}
+${bookingData.childName} from ${bookingData.address}, ${bookingData.city}${departureTimeText}${collectingText}${arrivalTimeText}
 
 View updated route summary:
 ${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${eventData.shareableUrl}`;
