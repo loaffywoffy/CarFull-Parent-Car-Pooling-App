@@ -1016,12 +1016,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     }
                   }
 
-                  // Calculate arrival time based on direction
-                  if (direction === 'outbound' && recommendedDepartureTime !== "Check route summary for timing") {
-                    // For pickup: add travel time to departure time
-                    const [depHours, depMinutes] = recommendedDepartureTime.split(':').map(Number);
-                    const departureInMinutes = depHours * 60 + depMinutes;
-                    const arrivalInMinutes = departureInMinutes + cumulativeMinutes;
+                  // Calculate arrival time based on direction - matching Enhanced Driver Route Summary logic
+                  if (direction === 'outbound' && partyGroup.targetArrivalTime) {
+                    // For pickup: work backwards from target arrival time like Enhanced Driver Route Summary
+                    const [targetHours, targetMinutes] = partyGroup.targetArrivalTime.split(':').map(Number);
+                    const targetInMinutes = targetHours * 60 + targetMinutes;
+                    
+                    // Parse total duration to get total travel time
+                    const totalTravelMinutes = optimizedRoute.totalDuration.match(/(\d+)/)?.[1] ? parseInt(optimizedRoute.totalDuration.match(/(\d+)/)[1]) : 0;
+                    
+                    // Calculate start time by subtracting total travel from target arrival
+                    const startInMinutes = targetInMinutes - totalTravelMinutes;
+                    
+                    // Calculate arrival at passenger's address by adding cumulative time to start
+                    const arrivalInMinutes = startInMinutes + cumulativeMinutes;
                     const arrivalHours = Math.floor(arrivalInMinutes / 60);
                     const arrivalMins = arrivalInMinutes % 60;
                     estimatedArrivalTime = `${arrivalHours.toString().padStart(2, '0')}:${arrivalMins.toString().padStart(2, '0')}`;
