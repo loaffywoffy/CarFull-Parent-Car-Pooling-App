@@ -55,7 +55,7 @@ const carpoolFormSchema = z.object({
   outboundPickupLocation: z.string().optional(),
   outboundPickupLocationCity: z.string().optional(),
   outboundPickupLocationPostcode: z.string().optional(),
-  outboundDepartureTime: z.string().min(1, "Departure time is required"),
+  outboundDepartureTime: z.string().optional(),
 
   // Return dropoff preferences (when picking up FROM the party)
   returnDropoffPreference: z.string().optional(),
@@ -79,16 +79,12 @@ const carpoolFormSchema = z.object({
   if ((data.canPickup || data.canBoth) && !data.spacesAvailable) {
     return false;
   }
-  // If canDropoff or canBoth is selected, returnSpacesAvailable is required
-  if ((data.canDropoff || data.canBoth) && !data.returnSpacesAvailable) {
-    return false;
-  }
   return true;
 }, {
-  message: "Spaces available is required for selected carpool direction",
+  message: "Spaces available to take to party is required",
   path: ["spacesAvailable"]
 }).refine((data) => {
-  // Additional validation for returnSpacesAvailable
+  // If canDropoff or canBoth is selected, returnSpacesAvailable is required
   if ((data.canDropoff || data.canBoth) && !data.returnSpacesAvailable) {
     return false;
   }
@@ -96,6 +92,15 @@ const carpoolFormSchema = z.object({
 }, {
   message: "Spaces available from party is required",
   path: ["returnSpacesAvailable"]
+}).refine((data) => {
+  // If canPickup or canBoth is selected, outboundDepartureTime is required
+  if ((data.canPickup || data.canBoth) && !data.outboundDepartureTime) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Departure time is required for pickup service",
+  path: ["outboundDepartureTime"]
 });
 
 type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;
