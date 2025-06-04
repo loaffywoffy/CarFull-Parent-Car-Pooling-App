@@ -110,7 +110,7 @@ We'll send updates when passengers book with you.`;
 
 ${bookingData.childName} from ${bookingData.address}, ${bookingData.city}
 
-💡 Updated departure time: ${recommendedDepartureTime}${collectingText}${arrivalTimeText}
+💡 Recommended departure time based on new booking: ${recommendedDepartureTime}${collectingText}${arrivalTimeText}
 
 View updated route summary:
 ${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${eventData.shareableUrl}`;
