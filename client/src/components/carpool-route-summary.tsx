@@ -55,20 +55,31 @@ interface CarpoolRouteSummaryProps {
 
 // Helper function to parse duration string and return minutes
 function parseDurationToMinutes(duration: string): number {
-  const match = duration.match(/(\d+)\s*(?:hours?|hrs?|h)?\s*(\d+)?\s*(?:minutes?|mins?|m)?/i);
-  if (match) {
-    const hours = parseInt(match[1]) || 0;
-    const minutes = parseInt(match[2]) || 0;
-    return hours * 60 + minutes;
+  if (!duration) return 0;
+  
+  // Handle formats like "34 mins", "1 hour 5 mins", "25 minutes", etc.
+  const hoursMatch = duration.match(/(\d+)\s*(?:hours?|hrs?|h)/i);
+  const minutesMatch = duration.match(/(\d+)\s*(?:minutes?|mins?|m)/i);
+  
+  let totalMinutes = 0;
+  
+  if (hoursMatch) {
+    totalMinutes += parseInt(hoursMatch[1]) * 60;
   }
   
-  // Try to parse just minutes
-  const minutesMatch = duration.match(/(\d+)/);
   if (minutesMatch) {
-    return parseInt(minutesMatch[1]);
+    totalMinutes += parseInt(minutesMatch[1]);
   }
   
-  return 0;
+  // If no explicit time format found, try to extract first number as minutes
+  if (totalMinutes === 0) {
+    const numberMatch = duration.match(/(\d+)/);
+    if (numberMatch) {
+      totalMinutes = parseInt(numberMatch[1]);
+    }
+  }
+  
+  return totalMinutes;
 }
 
 // Helper function to add minutes to a time string
@@ -359,26 +370,29 @@ export function CarpoolRouteSummary({ carpoolId, eventAddress, eventCity, eventP
                   let waypointTime = "";
                   
                   if (activeTab === "outbound" && targetArrivalTime) {
-                    // For outbound: work backwards from event time using actual leg durations
+                    // For outbound: calculate arrival time at each waypoint
                     if (waypoint.type === 'destination') {
                       // Event destination - use target arrival time
                       waypointTime = targetArrivalTime;
-                    } else if (waypoint.type === 'origin') {
-                      // Starting point - calculate by subtracting total time from target arrival
-                      const totalTravelMinutes = parseDurationToMinutes(optimizedRoute.totalDuration);
-                      waypointTime = subtractMinutesFromTime(targetArrivalTime, totalTravelMinutes);
                     } else {
-                      // Intermediate waypoints - calculate cumulative time from start
+                      // Calculate start time by working backwards from event
                       const totalTravelMinutes = parseDurationToMinutes(optimizedRoute.totalDuration);
                       const startTime = subtractMinutesFromTime(targetArrivalTime, totalTravelMinutes);
                       
-                      let cumulativeMinutes = 0;
-                      for (let i = 0; i < index; i++) {
-                        if (optimizedRoute.legs[i]) {
-                          cumulativeMinutes += parseDurationToMinutes(optimizedRoute.legs[i].duration);
+                      if (waypoint.type === 'origin') {
+                        // Starting point - use calculated start time
+                        waypointTime = startTime;
+                      } else {
+                        // Intermediate waypoints - calculate cumulative time from start
+                        let cumulativeMinutes = 0;
+                        for (let i = 0; i < index; i++) {
+                          if (optimizedRoute.legs[i]) {
+                            const legMinutes = parseDurationToMinutes(optimizedRoute.legs[i].duration);
+                            cumulativeMinutes += legMinutes;
+                          }
                         }
+                        waypointTime = addMinutesToTime(startTime, cumulativeMinutes);
                       }
-                      waypointTime = addMinutesToTime(startTime, cumulativeMinutes);
                     }
                   } else if (activeTab === "return") {
                     // For return: work forwards from departure time using actual leg durations
