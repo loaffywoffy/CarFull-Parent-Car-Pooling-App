@@ -609,11 +609,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pickupRequests = existingRequests.filter(req => (req.needsPickup || req.needsBoth) && req.approvalStatus !== 'rejected').length;
       const dropoffRequests = existingRequests.filter(req => (req.needsDropoff || req.needsBoth) && req.approvalStatus !== 'rejected').length;
 
-      console.log(`[DEBUG] Space validation for carpool ${carpoolId}:`);
-      console.log(`[DEBUG] Total existing requests: ${existingRequests.length}`);
-      console.log(`[DEBUG] Pickup requests (non-rejected): ${pickupRequests} out of ${carpool.spacesAvailable} spaces`);
-      console.log(`[DEBUG] Dropoff requests (non-rejected): ${dropoffRequests} out of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces`);
-      console.log(`[DEBUG] Request statuses:`, existingRequests.map(req => `${req.childName}: ${req.approvalStatus} (pickup: ${req.needsPickup}, dropoff: ${req.needsDropoff}, both: ${req.needsBoth})`));
+      console.error(`[FORCE DEBUG] Space validation for carpool ${carpoolId}:`);
+      console.error(`[FORCE DEBUG] Total existing requests: ${existingRequests.length}`);
+      console.error(`[FORCE DEBUG] Pickup requests (non-rejected): ${pickupRequests} out of ${carpool.spacesAvailable} spaces`);
+      console.error(`[FORCE DEBUG] Dropoff requests (non-rejected): ${dropoffRequests} out of ${carpool.returnSpacesAvailable || carpool.spacesAvailable} spaces`);
+      console.error(`[FORCE DEBUG] Request statuses:`, existingRequests.map(req => `${req.childName}: ${req.approvalStatus} (pickup: ${req.needsPickup}, dropoff: ${req.needsDropoff}, both: ${req.needsBoth})`));
+      console.error(`[FORCE DEBUG] Request direction flags - needsPickup: ${needsPickup}, needsDropoff: ${needsDropoff}, needsBoth: ${needsBoth}`);
+      console.error(`[FORCE DEBUG] Carpool capabilities - canPickup: ${carpool.canPickup}, canDropoff: ${carpool.canDropoff}, canBoth: ${carpool.canBoth}`);
 
       // For outbound (to party), use spacesAvailable field
       const outboundSpaces = carpool.spacesAvailable;
