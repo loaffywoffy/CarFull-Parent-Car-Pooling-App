@@ -79,10 +79,23 @@ const carpoolFormSchema = z.object({
   if ((data.canPickup || data.canBoth) && !data.spacesAvailable) {
     return false;
   }
+  // If canDropoff or canBoth is selected, returnSpacesAvailable is required
+  if ((data.canDropoff || data.canBoth) && !data.returnSpacesAvailable) {
+    return false;
+  }
   return true;
 }, {
-  message: "Spaces available to take to party is required",
+  message: "Spaces available is required for selected carpool direction",
   path: ["spacesAvailable"]
+}).refine((data) => {
+  // Additional validation for returnSpacesAvailable
+  if ((data.canDropoff || data.canBoth) && !data.returnSpacesAvailable) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Spaces available from party is required",
+  path: ["returnSpacesAvailable"]
 });
 
 type CarpoolFormValues = z.infer<typeof carpoolFormSchema>;

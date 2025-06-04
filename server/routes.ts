@@ -937,60 +937,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 } else {
                   console.log("SMS booking update - no distance result, using route optimization");
-                  // Fallback: try to get timing from route optimization if available
-                  try {
-                    const optimizedRoute = await routeOptimizationService.optimizeRouteWithDirection(
-                      request.carpoolId,
-                      'outbound'
-                    );
-                    if (optimizedRoute && optimizedRoute.totalDuration) {
-                      const totalMinutes = parseDurationToMinutes(optimizedRoute.totalDuration);
-                      const [hours, minutes] = partyGroup.targetArrivalTime.split(':').map(Number);
-                      const targetMinutes = hours * 60 + minutes;
-                      const departureMinutes = targetMinutes - totalMinutes;
-                      
-                      if (departureMinutes >= 0) {
-                        const depHours = Math.floor(departureMinutes / 60);
-                        const depMins = departureMinutes % 60;
-                        recommendedDepartureTime = `${depHours.toString().padStart(2, '0')}:${depMins.toString().padStart(2, '0')}`;
-                        console.log(`SMS booking update - route optimization departure time: ${recommendedDepartureTime}`);
-                      }
-                    }
-                  } catch (routeError) {
-                    console.error("SMS booking update - route optimization failed:", routeError);
-                  }
+                  console.log("SMS booking update - using simple calculation from event arrival time");
                 }
               } catch (distanceError) {
                 console.error("Error calculating updated departure time:", distanceError);
               }
             }
             
-            // Helper function to parse duration (same as in carpool-route-summary.tsx)
-            function parseDurationToMinutes(duration: string): number {
-              if (!duration) return 0;
-              
-              const hoursMatch = duration.match(/(\d+)\s*(?:hours?|hrs?|h)/i);
-              const minutesMatch = duration.match(/(\d+)\s*(?:minutes?|mins?|m)/i);
-              
-              let totalMinutes = 0;
-              
-              if (hoursMatch) {
-                totalMinutes += parseInt(hoursMatch[1]) * 60;
-              }
-              
-              if (minutesMatch) {
-                totalMinutes += parseInt(minutesMatch[1]);
-              }
-              
-              if (totalMinutes === 0) {
-                const numberMatch = duration.match(/(\d+)/);
-                if (numberMatch) {
-                  totalMinutes = parseInt(numberMatch[1]);
-                }
-              }
-              
-              return totalMinutes;
-            }
+
 
             await messagingService.sendBookingUpdate(
               carpool.phoneNumber,
