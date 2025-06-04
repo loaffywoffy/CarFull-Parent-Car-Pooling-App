@@ -18,6 +18,26 @@ import { calculateDrivingDistance } from "./services/directions-fixed";
 import { routeOptimizationService } from "./services/route-optimization";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Automatically add known flagged numbers to SafeList on startup
+  const initializeSafeList = async () => {
+    const flaggedNumbers = ['+447961318588', '07961318588'];
+    for (const number of flaggedNumbers) {
+      try {
+        console.log(`Adding ${number} to Twilio SafeList...`);
+        await messagingService.addToSafeList(number);
+        console.log(`Successfully added ${number} to SafeList`);
+      } catch (error: any) {
+        if (error.code === 20409) {
+          console.log(`${number} already in SafeList`);
+        } else {
+          console.error(`Failed to add ${number} to SafeList:`, error.message);
+        }
+      }
+    }
+  };
+
+  // Initialize SafeList on startup
+  initializeSafeList().catch(console.error);
   // Auth system is disabled for MVP
   // setupAuth(app);
 
