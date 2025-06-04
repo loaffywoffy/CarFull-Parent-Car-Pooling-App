@@ -13,7 +13,7 @@ export const messagingService = {
       ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
       : process.env.TWILIO_PHONE_NUMBER;
     
-    const actionMessages = {
+    const actionMessages: Record<string, string> = {
       'verification': '🔐 Your KidPool verification code is',
       'create_event': '🎉 To create your event, enter this verification code',
       'create_carpool': '🚗 To create your carpool offer, enter this verification code',
@@ -23,7 +23,7 @@ export const messagingService = {
       'delete_carpool': '❌ To delete your carpool offer, enter this verification code'
     };
     
-    const message = `${actionMessages[action] || actionMessages['verification']}: ${code}\n\n⚡ Code expires in 10 minutes. Don't share this code with anyone!`;
+    const message = `${actionMessages[action as keyof typeof actionMessages] || actionMessages['verification']}: ${code}\n\n⚡ Code expires in 10 minutes. Don't share this code with anyone!`;
     
     return client.messages.create({
       body: message,
@@ -48,5 +48,66 @@ export const messagingService = {
     return Promise.all(
       numbers.map(number => this.sendCarpoolUpdate(number, message, channel))
     );
+  },
+
+  async sendCarpoolConfirmation(phoneNumber: string, carpoolData: any, eventData: any, recommendedDepartureTime: string, channel: 'sms' | 'whatsapp' = 'sms') {
+    const from = channel === 'whatsapp' 
+      ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
+      : process.env.TWILIO_PHONE_NUMBER;
+
+    const directionText = carpoolData.canBoth ? "round trip" : 
+                         (carpoolData.canPickup ? "to event" : "from event");
+    
+    const message = `🚗 Carpool offer created for ${eventData.name}!
+
+${directionText} service for ${carpoolData.spacesAvailable} passengers
+Event: ${eventData.eventAddress}, ${eventData.eventCity}
+Date: ${eventData.eventDate} at ${eventData.targetArrivalTime}
+
+💡 Recommended departure: ${recommendedDepartureTime}
+
+View your driver route summary and manage bookings at:
+${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${eventData.shareableUrl}
+
+We'll send updates when passengers book with you.`;
+
+    return client.messages.create({
+      body: message,
+      to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
+      from
+    });
+  },
+
+  async sendBookingUpdate(phoneNumber: string, carpoolData: any, eventData: any, bookingData: any, recommendedDepartureTime: string, allBookings: any[], channel: 'sms' | 'whatsapp' = 'sms') {
+    const from = channel === 'whatsapp' 
+      ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
+      : process.env.TWILIO_PHONE_NUMBER;
+
+    const directionText = bookingData.needsPickup && bookingData.needsDropoff ? "round trip" : 
+                         (bookingData.needsPickup ? "pickup" : "dropoff");
+    
+    const approvedBookings = allBookings.filter(b => b.approvalStatus === 'approved');
+    const pickupBookings = approvedBookings.filter(b => b.needsPickup);
+    
+    let collectingText = "";
+    if (pickupBookings.length > 0) {
+      const names = pickupBookings.map(b => b.childName).join(", ");
+      collectingText = `\n\nYou're collecting: ${names}`;
+    }
+
+    const message = `📍 New ${directionText} booking for ${eventData.name}
+
+${bookingData.childName} from ${bookingData.address}, ${bookingData.city}
+
+💡 Updated departure time: ${recommendedDepartureTime}${collectingText}
+
+View updated route summary:
+${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${eventData.shareableUrl}`;
+
+    return client.messages.create({
+      body: message,
+      to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
+      from
+    });
   }
 };

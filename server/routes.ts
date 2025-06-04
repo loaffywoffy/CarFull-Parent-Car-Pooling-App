@@ -404,6 +404,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const newCarpool = await storage.createCarpool(validationResult.data);
+      
+      // Send SMS confirmation with departure timing
+      try {
+        const eventData = await storage.getPartyGroupById(newCarpool.partyGroupId);
+        if (eventData && newCarpool.phoneNumber) {
+          // Calculate recommended departure time using driving distance
+          let recommendedDepartureTime = "Check route summary for timing";
+          
+          if (eventData.targetArrivalTime && newCarpool.address) {
+            try {
+              const distance = await calculateDrivingDistance(
+                `${newCarpool.address}, ${newCarpool.city} ${newCarpool.postcode}`,
+                `${eventData.eventAddress}, ${eventData.eventCity} ${eventData.eventPostcode}`
+              );
+              
+              if (distance) {
+                // Calculate departure time by subtracting travel time from target arrival
+                const [hours, minutes] = eventData.targetArrivalTime.split(':').map(Number);
+                const targetMinutes = hours * 60 + minutes;
+                const departureMinutes = targetMinutes - distance.duration;
+                
+                if (departureMinutes >= 0) {
+                  const depHours = Math.floor(departureMinutes / 60);
+                  const depMins = departureMinutes % 60;
+                  recommendedDepartureTime = `${depHours.toString().padStart(2, '0')}:${depMins.toString().padStart(2, '0')}`;
+                }
+              }
+            } catch (distanceError) {
+              console.error("Error calculating departure time:", distanceError);
+            }
+          }
+          
+          await messagingService.sendCarpoolConfirmation(
+            newCarpool.phoneNumber,
+            newCarpool,
+            eventData,
+            recommendedDepartureTime
+          );
+        }
+      } catch (smsError) {
+        console.error("Error sending carpool confirmation SMS:", smsError);
+        // Don't fail the carpool creation if SMS fails
+      }
+      
       res.status(201).json(newCarpool);
     } catch (error) {
       console.error("Error creating carpool:", error);

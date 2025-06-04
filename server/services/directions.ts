@@ -10,9 +10,17 @@ interface DirectionsResult {
  * Server-side implementation to avoid CORS issues
  */
 export async function calculateDrivingDistance(
-  startCoords: [number, number],
-  endCoords: [number, number]
+  start: [number, number] | string,
+  end: [number, number] | string
 ): Promise<DirectionsResult | null> {
+  // Handle string addresses by using them directly in the API call
+  if (typeof start === 'string' && typeof end === 'string') {
+    return calculateDrivingDistanceFromAddresses(start, end);
+  }
+  
+  // Handle coordinate arrays
+  const startCoords = start as [number, number];
+  const endCoords = end as [number, number];
   // Skip calculation if coordinates are invalid (0,0)
   if ((startCoords[0] === 0 && startCoords[1] === 0) || 
       (endCoords[0] === 0 && endCoords[1] === 0)) {
