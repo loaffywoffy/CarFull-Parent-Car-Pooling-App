@@ -578,6 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/carpool-requests", async (req, res) => {
+    console.error(`[FORCE DEBUG] =============== CARPOOL REQUEST ENDPOINT CALLED ===============`);
     console.error(`[FORCE DEBUG] Carpool request received for carpool ID: ${req.body.carpoolId}`);
     console.error(`[FORCE DEBUG] Request data:`, JSON.stringify(req.body));
     try {
