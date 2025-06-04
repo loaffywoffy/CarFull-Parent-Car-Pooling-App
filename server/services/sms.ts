@@ -83,7 +83,7 @@ We'll send updates when passengers book with you.`;
     });
   },
 
-  async sendBookingUpdate(phoneNumber: string, carpoolData: any, eventData: any, bookingData: any, recommendedDepartureTime: string, allBookings: any[], channel: 'sms' | 'whatsapp' = 'sms') {
+  async sendBookingUpdate(phoneNumber: string, carpoolData: any, eventData: any, bookingData: any, recommendedDepartureTime: string, allBookings: any[], estimatedArrivalTime?: string, channel: 'sms' | 'whatsapp' = 'sms') {
     const from = channel === 'whatsapp' 
       ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
       : process.env.TWILIO_PHONE_NUMBER;
@@ -100,11 +100,18 @@ We'll send updates when passengers book with you.`;
       collectingText = `\n\nYou're collecting: ${names}`;
     }
 
+    // Add estimated arrival time if provided
+    let arrivalTimeText = "";
+    if (estimatedArrivalTime) {
+      const serviceType = bookingData.needsPickup ? "pickup" : "dropoff";
+      arrivalTimeText = `\n⏰ Estimated ${serviceType} time: ${estimatedArrivalTime}`;
+    }
+
     const message = `📍 New ${directionText} booking for ${eventData.name}
 
 ${bookingData.childName} from ${bookingData.address}, ${bookingData.city}
 
-💡 Updated departure time: ${recommendedDepartureTime}${collectingText}
+💡 Updated departure time: ${recommendedDepartureTime}${collectingText}${arrivalTimeText}
 
 View updated route summary:
 ${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${eventData.shareableUrl}`;

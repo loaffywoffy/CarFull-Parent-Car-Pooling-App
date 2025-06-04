@@ -903,7 +903,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Failed to send approval confirmation SMS:", smsError);
         }
 
-        // Send booking update SMS to carpool creator with departure timing
+        // Send booking update SMS to carpool creator with departure timing and estimated arrival time
         try {
           if (carpool && partyGroup && carpool.phoneNumber) {
             // Get all approved bookings for this carpool to calculate updated timing
@@ -911,6 +911,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Calculate recommended departure time using direct driving distance calculation
             let recommendedDepartureTime = "Check route summary for timing";
+            let estimatedArrivalTime = "";
             
             if (partyGroup.targetArrivalTime && carpool.address) {
               try {
@@ -935,16 +936,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     recommendedDepartureTime = `${depHours.toString().padStart(2, '0')}:${depMins.toString().padStart(2, '0')}`;
                     console.log(`SMS booking update - calculated departure time: ${recommendedDepartureTime}`);
                   }
-                } else {
-                  console.log("SMS booking update - no distance result, using route optimization");
-                  console.log("SMS booking update - using simple calculation from event arrival time");
                 }
               } catch (distanceError) {
                 console.error("Error calculating updated departure time:", distanceError);
               }
             }
-            
 
+            // Calculate estimated arrival time at passenger's address using route optimization
+            try {
+              const { geocodeAddress } = await import('./services/distance-cache');
+              
+              // Determine direction based on request type
+              const direction = request.needsPickup ? 'outbound' : 'return';
+              
+              // Set up route start and destination based on direction
+              let startLocation, destinationLocation;
+              
+              if (direction === 'outbound') {
+                // For pickup: start from driver's home, end at event
+                startLocation = {
+                  address: `${carpool.address}, ${carpool.city} ${carpool.postcode}`,
+                  lat: 0,
+                  lng: 0
+                };
+                destinationLocation = {
+                  address: `${partyGroup.eventAddress}, ${partyGroup.eventCity} ${partyGroup.eventPostcode}`,
+                  lat: 0,
+                  lng: 0
+                };
+              } else {
+                // For dropoff: start from event, end at driver's home
+                startLocation = {
+                  address: `${partyGroup.eventAddress}, ${partyGroup.eventCity} ${partyGroup.eventPostcode}`,
+                  lat: 0,
+                  lng: 0
+                };
+                destinationLocation = {
+                  address: `${carpool.address}, ${carpool.city} ${carpool.postcode}`,
+                  lat: 0,
+                  lng: 0
+                };
+              }
+
+              // Geocode addresses
+              const startCoords = await geocodeAddress(startLocation.address, process.env.VITE_GOOGLE_MAPS_API_KEY || '');
+              const destCoords = await geocodeAddress(destinationLocation.address, process.env.VITE_GOOGLE_MAPS_API_KEY || '');
+              
+              if (startCoords && destCoords) {
+                startLocation.lat = startCoords.lat;
+                startLocation.lng = startCoords.lng;
+                destinationLocation.lat = destCoords.lat;
+                destinationLocation.lng = destCoords.lng;
+
+                // Get optimized route to calculate arrival time at passenger's address
+                const optimizedRoute = await routeOptimizationService.optimizeRouteWithDirection(
+                  request.carpoolId,
+                  startLocation,
+                  destinationLocation,
+                  direction
+                );
+
+                // Find passenger's waypoint in the route and calculate arrival time
+                const passengerWaypoint = optimizedRoute.waypoints.find(waypoint => 
+                  waypoint.requestId === request.id
+                );
+
+                if (passengerWaypoint && optimizedRoute.legs) {
+                  // Calculate cumulative time to reach passenger's address
+                  let cumulativeMinutes = 0;
+                  let waypointIndex = optimizedRoute.waypoints.findIndex(w => w.requestId === request.id);
+                  
+                  for (let i = 0; i < waypointIndex; i++) {
+                    if (optimizedRoute.legs[i]) {
+                      // Parse duration from "X mins" format
+                      const durationMatch = optimizedRoute.legs[i].duration.match(/(\d+)/);
+                      if (durationMatch) {
+                        cumulativeMinutes += parseInt(durationMatch[1]);
+                      }
+                    }
+                  }
+
+                  // Calculate arrival time based on direction
+                  if (direction === 'outbound' && recommendedDepartureTime !== "Check route summary for timing") {
+                    // For pickup: add travel time to departure time
+                    const [depHours, depMinutes] = recommendedDepartureTime.split(':').map(Number);
+                    const departureInMinutes = depHours * 60 + depMinutes;
+                    const arrivalInMinutes = departureInMinutes + cumulativeMinutes;
+                    const arrivalHours = Math.floor(arrivalInMinutes / 60);
+                    const arrivalMins = arrivalInMinutes % 60;
+                    estimatedArrivalTime = `${arrivalHours.toString().padStart(2, '0')}:${arrivalMins.toString().padStart(2, '0')}`;
+                  } else if (direction === 'return' && partyGroup.endTime) {
+                    // For dropoff: add travel time to event end time
+                    const [endHours, endMinutes] = partyGroup.endTime.split(':').map(Number);
+                    const endInMinutes = endHours * 60 + endMinutes;
+                    const arrivalInMinutes = endInMinutes + cumulativeMinutes;
+                    const arrivalHours = Math.floor(arrivalInMinutes / 60);
+                    const arrivalMins = arrivalInMinutes % 60;
+                    estimatedArrivalTime = `${arrivalHours.toString().padStart(2, '0')}:${arrivalMins.toString().padStart(2, '0')}`;
+                  }
+                }
+              }
+            } catch (routeError) {
+              console.error("Error calculating estimated arrival time:", routeError);
+            }
 
             await messagingService.sendBookingUpdate(
               carpool.phoneNumber,
@@ -952,7 +1046,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               partyGroup,
               request,
               recommendedDepartureTime,
-              allBookings
+              allBookings,
+              estimatedArrivalTime
             );
           }
         } catch (smsError) {
