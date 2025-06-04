@@ -682,6 +682,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error(`[FORCE DEBUG] Created request with approval token: ${newRequest.approvalToken}, status: ${newRequest.approvalStatus}`);
       console.error(`[FORCE DEBUG] About to start SMS notification process`);
 
+      // Test SMS service availability
+      try {
+        console.error(`[FORCE DEBUG] Testing SMS service availability...`);
+        console.error(`[FORCE DEBUG] TWILIO_PHONE_NUMBER exists: ${!!process.env.TWILIO_PHONE_NUMBER}`);
+        console.error(`[FORCE DEBUG] TWILIO_ACCOUNT_SID exists: ${!!process.env.TWILIO_ACCOUNT_SID}`);
+        console.error(`[FORCE DEBUG] TWILIO_AUTH_TOKEN exists: ${!!process.env.TWILIO_AUTH_TOKEN}`);
+      } catch (testError) {
+        console.error(`[FORCE DEBUG] SMS service test failed:`, testError);
+      }
+
       // Send immediate confirmation SMS to the requesting parent
       try {
         const partyGroup = await storage.getPartyGroupById(carpool.partyGroupId);
