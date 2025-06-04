@@ -1699,6 +1699,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SafeList management endpoints
+  app.post("/api/safelist/add", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      const result = await messagingService.addToSafeList(phoneNumber);
+      res.json({ success: true, sid: result.sid, phoneNumber });
+    } catch (error: any) {
+      console.error("SafeList add error:", error);
+      res.status(500).json({ message: error.message || "Failed to add to SafeList" });
+    }
+  });
+
+  app.get("/api/safelist/check/:phoneNumber", async (req, res) => {
+    try {
+      const { phoneNumber } = req.params;
+      const result = await messagingService.checkSafeList(phoneNumber);
+      res.json({ inSafeList: !!result, data: result });
+    } catch (error: any) {
+      console.error("SafeList check error:", error);
+      res.status(500).json({ message: error.message || "Failed to check SafeList" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

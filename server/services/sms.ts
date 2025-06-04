@@ -8,6 +8,42 @@ const client = twilio(
 );
 
 export const messagingService = {
+  async addToSafeList(phoneNumber: string) {
+    try {
+      const response = await client.verify.v2.safelist
+        .create({
+          phoneNumber: phoneNumber
+        });
+      console.log(`Added ${phoneNumber} to Twilio SafeList:`, response.sid);
+      return response;
+    } catch (error) {
+      console.error(`Failed to add ${phoneNumber} to SafeList:`, error);
+      throw error;
+    }
+  },
+
+  async removeFromSafeList(phoneNumber: string) {
+    try {
+      await client.verify.v2.safelist(phoneNumber).remove();
+      console.log(`Removed ${phoneNumber} from Twilio SafeList`);
+    } catch (error) {
+      console.error(`Failed to remove ${phoneNumber} from SafeList:`, error);
+      throw error;
+    }
+  },
+
+  async checkSafeList(phoneNumber: string) {
+    try {
+      const response = await client.verify.v2.safelist(phoneNumber).fetch();
+      return response;
+    } catch (error) {
+      if (error.code === 20404) {
+        return null; // Phone number not in SafeList
+      }
+      throw error;
+    }
+  },
+
   async sendVerificationCode(phoneNumber: string, code: string, action: string = 'verification', channel: 'sms' | 'whatsapp' = 'sms') {
     const from = channel === 'whatsapp' 
       ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
@@ -37,11 +73,36 @@ export const messagingService = {
       ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
       : process.env.TWILIO_PHONE_NUMBER;
 
-    return client.messages.create({
-      body: message,
-      to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
-      from
-    });
+    try {
+      return await client.messages.create({
+        body: message,
+        to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
+        from
+      });
+    } catch (error: any) {
+      console.error(`SMS send failed for ${phoneNumber}:`, error);
+      
+      // Check if the error is related to flagged number
+      if (error.code === 21610 || error.message?.includes('flagged') || error.message?.includes('blocked')) {
+        console.log(`Phone number ${phoneNumber} appears to be flagged. Adding to SafeList...`);
+        try {
+          await this.addToSafeList(phoneNumber);
+          console.log(`Added ${phoneNumber} to SafeList. Retrying SMS...`);
+          
+          // Retry sending the message
+          return await client.messages.create({
+            body: message,
+            to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
+            from
+          });
+        } catch (safelistError) {
+          console.error(`Failed to add ${phoneNumber} to SafeList or retry SMS:`, safelistError);
+          throw safelistError;
+        }
+      }
+      
+      throw error;
+    }
   },
 
   async sendCarpoolGroupMessage(numbers: string[], message: string, channel: 'sms' | 'whatsapp' = 'sms') {
