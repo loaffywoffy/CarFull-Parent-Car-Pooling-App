@@ -1202,7 +1202,12 @@ export default function CarpoolOfferForm({ onSuccess, onCancel, partyGroupId }: 
             <Button 
               type="submit" 
               className="w-full sm:w-auto"
-              disabled={carpoolMutation.isPending || isLoadingPartyGroup}
+              disabled={carpoolMutation.isPending || isLoadingPartyGroup || !form.formState.isValid}
+              onClick={() => {
+                console.log("Form validation state:", form.formState);
+                console.log("Form errors:", form.formState.errors);
+                console.log("Form values:", form.getValues());
+              }}
             >
               {carpoolMutation.isPending ? "Submitting..." : "Share My Ride"}
             </Button>
