@@ -18,26 +18,21 @@ import { calculateDrivingDistance } from "./services/directions-fixed";
 import { routeOptimizationService } from "./services/route-optimization";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Automatically add known flagged numbers to SafeList on startup
-  const initializeSafeList = async () => {
-    const flaggedNumbers = ['+447961318588', '07961318588'];
-    for (const number of flaggedNumbers) {
-      try {
-        console.log(`Adding ${number} to Twilio SafeList...`);
-        await messagingService.addToSafeList(number);
-        console.log(`Successfully added ${number} to SafeList`);
-      } catch (error: any) {
-        if (error.code === 20409) {
-          console.log(`${number} already in SafeList`);
-        } else {
-          console.error(`Failed to add ${number} to SafeList:`, error.message);
-        }
-      }
+  // Test Twilio authentication on startup
+  const testTwilioAuth = async () => {
+    try {
+      console.log('Testing Twilio authentication...');
+      // Simple test to verify credentials work
+      const testMessage = await messagingService.sendCarpoolUpdate('+447961318588', 'Carfull SMS system is now active and ready!');
+      console.log(`✓ Twilio authentication successful. Test SMS sent with SID: ${testMessage.sid}`);
+    } catch (error: any) {
+      console.error('✗ Twilio authentication failed:', error.message);
+      console.error('Please provide valid Twilio credentials to enable SMS notifications');
     }
   };
 
-  // Initialize SafeList on startup
-  initializeSafeList().catch(console.error);
+  // Test authentication on startup
+  testTwilioAuth().catch(console.error);
   // Auth system is disabled for MVP
   // setupAuth(app);
 
@@ -1743,6 +1738,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("SafeList check error:", error);
       res.status(500).json({ message: error.message || "Failed to check SafeList" });
+    }
+  });
+
+  // Test SMS endpoint to verify Twilio functionality
+  app.post("/api/test-sms", async (req, res) => {
+    try {
+      const { phoneNumber, message } = req.body;
+      if (!phoneNumber || !message) {
+        return res.status(400).json({ message: "Phone number and message are required" });
+      }
+      
+      console.log(`Sending test SMS to ${phoneNumber}: ${message}`);
+      const result = await messagingService.sendCarpoolUpdate(phoneNumber, message);
+      res.json({ success: true, sid: result.sid, status: result.status });
+    } catch (error: any) {
+      console.error("Test SMS error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message || "Failed to send SMS",
+        code: error.code || 'UNKNOWN_ERROR'
+      });
     }
   });
 

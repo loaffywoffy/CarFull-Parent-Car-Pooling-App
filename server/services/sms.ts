@@ -124,13 +124,16 @@ export const messagingService = {
                            (carpoolData.canPickup ? carpoolData.spacesAvailable : 
                             (carpoolData.returnSpacesAvailable || carpoolData.spacesAvailable));
     
+    // Format departure time to hr:min without seconds
+    const formattedDepartureTime = recommendedDepartureTime.replace(/:\d{2}$/, '');
+    
     const message = `🚗 Carpool offer created for ${eventData.name}!
 
 ${directionText} service for ${passengersCount} passengers
 Event: ${eventData.eventAddress}, ${eventData.eventCity}
 Date: ${eventData.eventDate} at ${eventData.targetArrivalTime}
 
-💡 Recommended departure: ${recommendedDepartureTime}
+💡 Recommended departure: ${formattedDepartureTime}
 
 View your driver route summary and manage bookings at:
 ${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${eventData.shareableUrl}
@@ -170,7 +173,8 @@ We'll send updates when passengers book with you.`;
     // Only include departure time recommendation for pickup/outbound trips
     let departureTimeText = "";
     if (bookingData.needsPickup) {
-      departureTimeText = `\n💡 Recommended departure time based on new booking: ${recommendedDepartureTime}`;
+      const formattedDepartureTime = recommendedDepartureTime.replace(/:\d{2}$/, '');
+      departureTimeText = `\n💡 Recommended departure time based on new booking: ${formattedDepartureTime}`;
     }
 
     const message = `📍 New ${directionText} booking for ${eventData.name}
