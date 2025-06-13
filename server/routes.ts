@@ -926,7 +926,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           // Create link to view carpool details
-          const carpoolLink = `${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${partyGroup?.shareableUrl}`;
+          const carpoolLink = `${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/events/${partyGroup?.shareableUrl}`;
 
           const message = `Great news! ${request.parentName} has approved your ride request for ${request.childName} to ${eventName}.\n\n` +
             `${departureInfo}${pickupDetails}${pickupDetails && dropoffDetails ? '\n' : ''}${dropoffDetails}\n\n` +

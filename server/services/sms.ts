@@ -136,7 +136,7 @@ Date: ${eventData.eventDate} at ${eventData.targetArrivalTime}
 💡 Recommended departure: ${formattedDepartureTime}
 
 View your driver route summary and manage bookings at:
-${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${eventData.shareableUrl}
+${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/events/${eventData.shareableUrl}
 
 We'll send updates when passengers book with you.`;
 
@@ -182,7 +182,7 @@ We'll send updates when passengers book with you.`;
 ${bookingData.childName} from ${bookingData.address}, ${bookingData.city}${departureTimeText}${collectingText}${arrivalTimeText}
 
 View updated route summary:
-${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/event/${eventData.shareableUrl}`;
+${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/events/${eventData.shareableUrl}`;
 
     return client.messages.create({
       body: message,
