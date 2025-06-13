@@ -18,13 +18,16 @@ import { calculateDrivingDistance } from "./services/directions-fixed";
 import { routeOptimizationService } from "./services/route-optimization";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Test Twilio authentication on startup
+  // Test Twilio authentication on startup (without sending SMS)
   const testTwilioAuth = async () => {
     try {
       console.log('Testing Twilio authentication...');
-      // Simple test to verify credentials work
-      const testMessage = await messagingService.sendCarpoolUpdate('+447961318588', 'Carfull SMS system is now active and ready!');
-      console.log(`✓ Twilio authentication successful. Test SMS sent with SID: ${testMessage.sid}`);
+      // Just verify the client can be initialized without sending a message
+      if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+        console.log('✓ Twilio credentials configured successfully');
+      } else {
+        console.error('✗ Missing Twilio credentials');
+      }
     } catch (error: any) {
       console.error('✗ Twilio authentication failed:', error.message);
       console.error('Please provide valid Twilio credentials to enable SMS notifications');
