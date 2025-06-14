@@ -1788,6 +1788,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SMS logs endpoint - get last 10 SMS messages
+  app.get("/api/sms-logs", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const logs = messagingService.getSMSLogs(limit);
+      
+      // Set content type explicitly to JSON
+      res.setHeader('Content-Type', 'application/json');
+      
+      // Format logs for display (hide full phone numbers for privacy)
+      const formattedLogs = logs.map(log => ({
+        ...log,
+        phoneNumber: log.phoneNumber.replace(/(\d{5})\d{5}(\d{3})/, '$1****$2'), // Mask middle digits
+        timestamp: log.timestamp.toISOString()
+      }));
+      
+      res.json(formattedLogs);
+    } catch (error) {
+      console.error("Error fetching SMS logs:", error);
+      res.status(500).json({ message: "Failed to fetch SMS logs" });
+    }
+  });
+
+  // Alternative SMS logs endpoint that returns HTML directly
+  app.get("/sms-logs", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const logs = messagingService.getSMSLogs(limit);
+      
+      // Format logs for display (hide full phone numbers for privacy)
+      const formattedLogs = logs.map(log => ({
+        ...log,
+        phoneNumber: log.phoneNumber.replace(/(\d{5})\d{5}(\d{3})/, '$1****$2'),
+        timestamp: log.timestamp.toLocaleString()
+      }));
+
+      const logsHtml = formattedLogs.length > 0 
+        ? formattedLogs.map(log => `
+          <div style="border: 1px solid #ddd; margin: 10px 0; padding: 15px; border-radius: 5px; ${log.status === 'sent' ? 'border-left: 4px solid #28a745;' : 'border-left: 4px solid #dc3545;'}">
+            <div style="font-weight: bold; margin-bottom: 8px;">
+              <span style="background: ${log.status === 'sent' ? '#d4edda' : '#f8d7da'}; color: ${log.status === 'sent' ? '#155724' : '#721c24'}; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; text-transform: uppercase;">${log.status}</span>
+              <span style="font-family: monospace; background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-left: 10px;">${log.phoneNumber}</span>
+              <span style="float: right; color: #666; font-weight: normal;">${log.timestamp}</span>
+            </div>
+            <div style="white-space: pre-wrap; background: #f8f9fa; padding: 10px; border-radius: 4px; margin-top: 8px;">${log.message}</div>
+            ${log.error ? `<div style="color: #dc3545; font-style: italic; margin-top: 8px; padding: 8px; background: #f8d7da; border-radius: 4px;">Error: ${log.error}</div>` : ''}
+          </div>
+        `).join('')
+        : '<div style="text-align: center; color: #666; padding: 40px; font-style: italic;">No SMS messages have been sent yet.</div>';
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>SMS Logs - Carfull</title>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+            .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
+            .header { background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; }
+            .refresh-btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; }
+            .refresh-btn:hover { background: #0056b3; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>SMS Message Logs</h1>
+              <p>Last ${limit} SMS messages sent from Carfull</p>
+            </div>
+            <div class="content">
+              <button class="refresh-btn" onclick="window.location.reload()">Refresh Logs</button>
+              ${logsHtml}
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      res.setHeader('Content-Type', 'text/html');
+      res.send(html);
+    } catch (error) {
+      console.error("Error fetching SMS logs:", error);
+      res.status(500).send(`<html><body><h1>Error</h1><p>Failed to fetch SMS logs: ${error.message}</p></body></html>`);
+    }
+  });
+
   // Test SMS endpoint to verify Twilio functionality
   app.post("/api/test-sms", async (req, res) => {
     try {
