@@ -7,6 +7,37 @@ const client = twilio(
   process.env.TWILIO_AUTH_TOKEN
 );
 
+// SMS logging system
+interface SMSLog {
+  id: string;
+  timestamp: Date;
+  phoneNumber: string;
+  message: string;
+  status: 'sent' | 'failed';
+  error?: string;
+}
+
+const smsLogs: SMSLog[] = [];
+const MAX_LOGS = 50; // Keep last 50 messages
+
+function logSMS(phoneNumber: string, message: string, status: 'sent' | 'failed', error?: string) {
+  const log: SMSLog = {
+    id: Date.now().toString(),
+    timestamp: new Date(),
+    phoneNumber,
+    message,
+    status,
+    error
+  };
+  
+  smsLogs.unshift(log);
+  
+  // Keep only the last MAX_LOGS entries
+  if (smsLogs.length > MAX_LOGS) {
+    smsLogs.splice(MAX_LOGS);
+  }
+}
+
 export const messagingService = {
   async addToSafeList(phoneNumber: string) {
     try {
@@ -74,11 +105,15 @@ export const messagingService = {
       : process.env.TWILIO_PHONE_NUMBER;
 
     try {
-      return await client.messages.create({
+      const result = await client.messages.create({
         body: message,
         to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
         from
       });
+      
+      // Log successful SMS
+      logSMS(phoneNumber, message, 'sent');
+      return result;
     } catch (error: any) {
       console.error(`SMS send failed for ${phoneNumber}:`, error);
       
@@ -90,17 +125,25 @@ export const messagingService = {
           console.log(`Added ${phoneNumber} to SafeList. Retrying SMS...`);
           
           // Retry sending the message
-          return await client.messages.create({
+          const retryResult = await client.messages.create({
             body: message,
             to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
             from
           });
+          
+          // Log successful retry
+          logSMS(phoneNumber, message, 'sent');
+          return retryResult;
         } catch (safelistError) {
           console.error(`Failed to add ${phoneNumber} to SafeList or retry SMS:`, safelistError);
+          // Log failed SMS
+          logSMS(phoneNumber, message, 'failed', safelistError.message);
           throw safelistError;
         }
       }
       
+      // Log failed SMS
+      logSMS(phoneNumber, message, 'failed', error.message);
       throw error;
     }
   },
@@ -225,5 +268,15 @@ You'll need to arrange alternative transport. Sorry for the inconvenience!`;
       to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
       from
     });
+  },
+
+  // Get SMS logs - returns last N messages
+  getSMSLogs(limit: number = 10): SMSLog[] {
+    return smsLogs.slice(0, limit);
+  },
+
+  // Get all SMS logs
+  getAllSMSLogs(): SMSLog[] {
+    return [...smsLogs];
   }
 };

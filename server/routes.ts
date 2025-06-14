@@ -971,7 +971,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const message = `Great news! ${request.parentName} has approved your ride request for ${request.childName} to ${eventName}.\n\n` +
             `${departureInfo}${pickupDetails}${pickupDetails && dropoffDetails ? '\n' : ''}${dropoffDetails}\n\n` +
             `Driver contact: ${carpool?.phoneNumber}\n\n` +
-            `View event details: ${carpoolLink}`;
+            `View event details: ${carpoolLink}\n\n` +
+            `To cancel your booking, click: ${carpoolLink}`;
 
           await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
         } catch (smsError) {
@@ -1231,7 +1232,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Send confirmation SMS to the parent
         try {
-          const message = `Great news! Your ride request for ${request.childName} has been approved by the driver.`;
+          const carpool = await storage.getCarpoolById(request.carpoolId);
+          const partyGroup = await storage.getPartyGroupById(carpool?.partyGroupId || 0);
+          const carpoolLink = `${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/events/${partyGroup?.shareableUrl}`;
+          
+          const message = `Great news! Your ride request for ${request.childName} has been approved by the driver.\n\n` +
+            `View details: ${carpoolLink}\n\n` +
+            `To cancel your booking, click: ${carpoolLink}`;
           await messagingService.sendCarpoolUpdate(request.phoneNumber, message);
         } catch (smsError) {
           console.error("Failed to send approval confirmation SMS:", smsError);
