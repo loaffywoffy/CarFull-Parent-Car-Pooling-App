@@ -126,6 +126,9 @@ Carpull is a full-stack carpooling application designed to organize and coordina
 
 ```
 Changelog:
+- June 14, 2025. Added deletion links to parent booking confirmation SMS
+- June 14, 2025. Implemented SMS logging system with last 10 messages display
+- June 14, 2025. Added comprehensive SMS notifications for carpool deletion
 - June 13, 2025. Initial setup
 ```
 
