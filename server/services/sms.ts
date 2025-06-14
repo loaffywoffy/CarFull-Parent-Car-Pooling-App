@@ -189,5 +189,41 @@ ${process.env.VITE_APP_URL || 'https://carfull.replit.app'}/events/${eventData.s
       to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
       from
     });
+  },
+
+  async sendCarpoolCancellation(phoneNumber: string, carpoolData: any, eventData: any, affectedRequestsCount: number = 0, channel: 'sms' | 'whatsapp' = 'sms') {
+    const from = channel === 'whatsapp' 
+      ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
+      : process.env.TWILIO_PHONE_NUMBER;
+
+    const message = `🚫 Carpool cancellation for ${eventData.name}
+
+Your carpool offer has been successfully deleted.${affectedRequestsCount > 0 ? `\n\nWe've notified ${affectedRequestsCount} parent(s) about the cancellation.` : ''}
+
+Thank you for using Carfull.`;
+
+    return client.messages.create({
+      body: message,
+      to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
+      from
+    });
+  },
+
+  async sendParentCancellationNotice(phoneNumber: string, childName: string, eventName: string, direction: string, channel: 'sms' | 'whatsapp' = 'sms') {
+    const from = channel === 'whatsapp' 
+      ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`
+      : process.env.TWILIO_PHONE_NUMBER;
+
+    const message = `❗ Carpool cancelled
+
+Your carpool request for ${childName} (${direction}) to ${eventName} has been cancelled by the driver.
+
+You'll need to arrange alternative transport. Sorry for the inconvenience!`;
+
+    return client.messages.create({
+      body: message,
+      to: channel === 'whatsapp' ? `whatsapp:${phoneNumber}` : phoneNumber,
+      from
+    });
   }
 };

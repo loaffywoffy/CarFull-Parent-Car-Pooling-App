@@ -548,6 +548,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Get carpool requests before deletion to notify affected parents
+      const carpoolRequests = await storage.getCarpoolRequestsByCarpoolId(id);
+      const partyGroup = await storage.getPartyGroupById(carpool.partyGroupId);
+      
+      // Send SMS notifications before deleting
+      try {
+        // Notify parents with carpool requests
+        for (const request of carpoolRequests) {
+          if (request.phoneNumber) {
+            const directionText = request.needsBoth ? "both ways" : 
+                                (request.needsPickup ? "to event" : "from event");
+            
+            await messagingService.sendParentCancellationNotice(
+              request.phoneNumber, 
+              request.childName, 
+              partyGroup?.name || 'the event', 
+              directionText
+            );
+            console.log(`Sent carpool cancellation SMS to parent: ${request.phoneNumber}`);
+          }
+        }
+        
+        // Notify the driver (carpool creator) about successful deletion
+        if (carpool.phoneNumber && partyGroup) {
+          await messagingService.sendCarpoolCancellation(
+            carpool.phoneNumber, 
+            carpool, 
+            partyGroup, 
+            carpoolRequests.length
+          );
+          console.log(`Sent carpool deletion confirmation SMS to driver: ${carpool.phoneNumber}`);
+        }
+      } catch (smsError) {
+        console.error("Failed to send carpool deletion SMS notifications:", smsError);
+        // Don't fail the deletion if SMS fails
+      }
+
       const success = await storage.deleteCarpool(id);
       if (success) {
         res.status(204).send();
