@@ -1877,6 +1877,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test carpool deletion SMS notifications
+  app.post("/api/test-carpool-deletion", async (req, res) => {
+    try {
+      const { carpoolId } = req.body;
+      if (!carpoolId) {
+        return res.status(400).json({ message: "Carpool ID is required" });
+      }
+
+      const id = parseInt(carpoolId);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid carpool ID" });
+      }
+
+      // Check if the carpool exists
+      const carpool = await storage.getCarpoolById(id);
+      if (!carpool) {
+        return res.status(404).json({ message: "Carpool not found" });
+      }
+
+      // Get carpool requests before deletion to notify affected parents
+      const carpoolRequests = await storage.getCarpoolRequestsByCarpoolId(id);
+      const partyGroup = await storage.getPartyGroupById(carpool.partyGroupId);
+      
+      console.log(`[TEST] Testing deletion SMS for carpool ${id} with ${carpoolRequests.length} requests`);
+      
+      // Send SMS notifications (test mode - don't actually delete)
+      const notificationResults = [];
+      
+      try {
+        // Notify parents with carpool requests
+        for (const request of carpoolRequests) {
+          if (request.phoneNumber) {
+            const directionText = request.needsBoth ? "both ways" : 
+                                (request.needsPickup ? "to event" : "from event");
+            
+            await messagingService.sendParentCancellationNotice(
+              request.phoneNumber, 
+              request.childName, 
+              partyGroup?.name || 'the event', 
+              directionText
+            );
+            console.log(`[TEST] Sent carpool cancellation SMS to parent: ${request.phoneNumber}`);
+            notificationResults.push({
+              type: 'parent_notification',
+              phoneNumber: request.phoneNumber,
+              childName: request.childName,
+              status: 'sent'
+            });
+          }
+        }
+        
+        // Notify the driver (carpool creator) about successful deletion
+        if (carpool.phoneNumber && partyGroup) {
+          await messagingService.sendCarpoolCancellation(
+            carpool.phoneNumber, 
+            carpool, 
+            partyGroup, 
+            carpoolRequests.length
+          );
+          console.log(`[TEST] Sent carpool deletion confirmation SMS to driver: ${carpool.phoneNumber}`);
+          notificationResults.push({
+            type: 'driver_notification',
+            phoneNumber: carpool.phoneNumber,
+            affectedParents: carpoolRequests.length,
+            status: 'sent'
+          });
+        }
+      } catch (smsError) {
+        console.error("[TEST] Failed to send carpool deletion SMS notifications:", smsError);
+        return res.status(500).json({ 
+          message: "Failed to send SMS notifications", 
+          error: smsError.message 
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Test deletion SMS notifications sent successfully",
+        carpool: {
+          id: carpool.id,
+          parentName: carpool.parentName,
+          eventName: partyGroup?.name
+        },
+        notifications: notificationResults,
+        note: "This was a test - carpool was not actually deleted"
+      });
+    } catch (error: any) {
+      console.error("Test carpool deletion error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message || "Failed to test carpool deletion"
+      });
+    }
+  });
+
   // Test SMS endpoint to verify Twilio functionality
   app.post("/api/test-sms", async (req, res) => {
     try {
